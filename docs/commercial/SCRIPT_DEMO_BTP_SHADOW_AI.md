@@ -480,3 +480,187 @@ Le cas d'usage créé reste dans BATIVAL Construction. Pour repartir d'une
 organisation vierge à la prochaine démonstration, supprimez le cas d'usage
 depuis sa fiche — **ne touchez jamais à IzarLink Demo**, qui porte le jeu de
 données complet dont dépendent les autres démonstrations et les tests.
+
+---
+
+# Annexe — La suite de l'histoire
+
+*Huit minutes. Se déroule après l'étape 8, et seulement si le prospect en
+redemande. Objectif : éprouver et montrer les quatre vues de **Processus et
+risques**.*
+
+## Pourquoi cette annexe existe
+
+La démonstration principale suit **un** usage, de bout en bout. Elle convainc
+sur la chaîne de responsabilité, et laisse une question ouverte :
+
+> *« D'accord pour un usage. Mais nous, on en a combien qu'on ne connaît pas ? »*
+
+C'est exactement la question à laquelle la cartographie répond. Et la réponse
+n'est pas un chiffre : c'est **une case vide**.
+
+---
+
+## Le décor : trois semaines plus tard
+
+À raconter en une phrase avant de cliquer.
+
+> « Trois semaines ont passé. Le devis par IA est encadré, sa charte est
+> déposée, Marc Lecomte a assumé l'écart de preuve. Et le directeur général
+> pose la question qui fâche : *est-ce que c'était le seul ?* »
+
+---
+
+## A1 — Cartographier ce que fait l'entreprise *(2 min)*
+
+**`officer@aigms.eu` · Processus et risques → Ajouter un processus**
+
+Deux processus, trois activités. C'est le minimum qui fasse une carte lisible.
+
+| | Nom | Code | Nature |
+|---|---|---|---|
+| Processus 1 | Répondre aux appels d'offres | `AO` | **Réalisation** |
+| Processus 2 | Gérer les ressources humaines | `RH` | **Support** |
+
+Puis **Ajouter une activité** :
+
+| Activité | Processus | Description |
+|---|---|---|
+| Chiffrage et rédaction des devis | Répondre aux appels d'offres | Établir le prix et rédiger la proposition remise au client. |
+| Analyse des pièces marché | Répondre aux appels d'offres | Dépouiller les CCTP et les pièces administratives d'un dossier de consultation. |
+| Recrutement des compagnons | Gérer les ressources humaines | Recevoir les candidatures, présélectionner, conduire les entretiens. |
+
+> **Insistez ici.** « Je ne décris pas mon informatique. Je décris **ce que
+> l'entreprise fait**. Trois nature de processus : pilotage, réalisation,
+> support — c'est la structure d'un système de management, pas un organigramme
+> technique. L'IA viendra se ranger là-dedans, et nulle part ailleurs. »
+
+---
+
+## A2 — Rattacher l'usage à son activité *(30 s)*
+
+**Vue Processus → déplier « Répondre aux appels d'offres » → activité
+« Chiffrage et rédaction des devis » → le bouton `+`**
+
+Rattachez le cas d'usage **Génération de devis par IA générative**.
+
+> **Confirmation visuelle.** Le panneau de droite se remplit : l'usage, sa
+> criticité, ses risques, ses contrôles. « L'usage que nous venons de gouverner
+> pendant dix minutes vient de trouver sa place dans l'entreprise. Ce n'est plus
+> une fiche isolée : c'est une activité du processus commercial. »
+
+---
+
+## A3 — Le second usage, celui qu'on n'avait pas déclaré *(1 min 30)*
+
+**Cas d'usage → Déclarer un cas d'usage**, puis rattacher à l'activité
+**Analyse des pièces marché**.
+
+| Champ | À saisir |
+|---|---|
+| Nom | Dépouillement assisté des CCTP |
+| Finalité | Extraire d'un dossier de consultation les exigences techniques, les pénalités et les délais, pour décider s'il faut répondre. |
+| Porteur de l'IA | Dominique Etchart |
+| Responsable redevable | Marc Lecomte |
+| Données traitées | Pièces marché publiques, notes internes de décision |
+| Niveau d'autonomie | **L1 — il propose, un humain valide** |
+
+Criticité : **Modérée** *(pas de données personnelles, erreur rattrapable)*.
+
+> **Le geste qui porte.** « Celui-ci ne traite aucune donnée personnelle. Et
+> regardez ce qu'AIGMS n'exige pas : pas d'étude d'impact, pas d'AIPD, presque
+> aucun contrôle déclenché. **L'effort de gouvernance suit le risque.** Un outil
+> qui vous demande la même chose pour les deux vous fera abandonner. »
+
+---
+
+## A4 — Vue **Couverture** : ce que les contrôles couvrent vraiment *(1 min 30)*
+
+**Onglet Couverture, par activité**
+
+Les barres sont basses, voire vides. C'est le moment le plus utile de l'annexe.
+
+> **Insistez ici, lentement.** « Un contrôle n'est compté comme couvrant que
+> s'il est **opérant** *et* **prouvé par une pièce validée et non échue**. Nous
+> avons retenu cinq contrôles il y a dix minutes, et déposé **une** preuve.
+> Cette barre dit la vérité : quatre contrôles sur cinq ne protègent encore
+> personne. »
+
+> **Et la phrase qui vend.** « C'est exactement ce qu'un auditeur vient
+> vérifier. La différence entre un tableur de conformité et AIGMS est là : le
+> tableur aurait affiché cinq contrôles verts. »
+
+---
+
+## A5 — Vue **Risques** : une décision n'est pas une alerte *(1 min 30)*
+
+**Onglet Risques, par processus**
+
+Le risque *Fuite de données commerciales* apparaît en **rouge** sur le processus
+commercial.
+
+**Basculez sur `risk-comity@aigms.eu` (Sacha Belarbi)** et acceptez le risque :
+justification, date de revue.
+
+**Revenez à la vue Risques.** La barre rouge a disparu.
+
+> **Insistez ici.** « Le risque n'a pas été résolu. Il a été **assumé**, par une
+> personne nommée, avec une justification et une date de revue. Les couleurs
+> comptent les risques **ouverts**, pas le total — laisser celui-ci en rouge
+> reviendrait à confondre une décision avec une alerte. »
+
+> **Et la limite, à dire soi-même.** « Ce que vous ne devez jamais avoir, c'est
+> un risque **sans décision**. Ni traité, ni accepté. Celui-là, AIGMS le garde
+> en rouge et retient la mise en production. »
+
+---
+
+## A6 — Vue **Graphe** : où la chaîne rompt *(1 min 30)*
+
+**Onglet Graphe → suivre le risque *Fuite de données commerciales***
+
+Le chemin s'illumine : processus → activité → cas d'usage → risque → contrôle →
+**preuve**. Et il s'arrête quelque part.
+
+> **Le geste qui porte.** Laissez le prospect lire le chemin avant de parler.
+> « AIGMS ne dit pas *“il manque des preuves”*. Il dit **où**, sur quel
+> contrôle, pour quel risque, dans quelle activité de quel processus. C'est la
+> différence entre un constat et une action. »
+
+Montrez aussi un **contrôle partagé** entre les deux cas d'usage, s'il y en a
+un : la preuve se collecte une fois et sert deux fois.
+
+---
+
+## A7 — La case vide *(1 min)*
+
+**Retournez à la vue Processus.** L'activité **Recrutement des compagnons**
+n'affiche aucun usage d'IA.
+
+> **La phrase de clôture.** « Voilà la case la plus intéressante de l'écran.
+> Elle ne dit pas *“il n'y a pas d'IA au recrutement”*. Elle dit *“personne n'a
+> déclaré d'IA au recrutement”*. Nous avons commencé cette démonstration parce
+> que des commerciaux utilisaient ChatGPT sans le dire. Combien de vos cases
+> sont vides pour la même raison ? »
+
+> **Et la sortie.** « C'est le travail de l'AI Governance Officer : passer de la
+> case vide à la case déclarée. AIGMS ne le fait pas à votre place — il rend le
+> travail visible, et il garde la trace de qui a décidé quoi. »
+
+---
+
+## Ce que cette annexe a démontré, en une ligne chacun
+
+| Vue | Ce qu'elle prouve |
+|---|---|
+| **Processus** | L'IA se range dans ce que fait l'entreprise, pas dans un inventaire technique |
+| **Couverture** | Un contrôle déclaré n'est pas un contrôle prouvé — et l'outil ne triche pas |
+| **Risques** | Une décision assumée sort du rouge ; un risque sans décision n'en sort pas |
+| **Graphe** | L'outil nomme l'endroit exact où la chaîne rompt |
+| **La case vide** | Ce qu'on ne sait pas encore est une information, pas un trou |
+
+## Après cette annexe
+
+Les deux processus, les trois activités et le second cas d'usage restent dans
+BATIVAL Construction. Pour repartir d'une carte vierge, supprimez les activités
+puis les processus depuis leur fiche. **Ne touchez jamais à IzarLink Demo.**

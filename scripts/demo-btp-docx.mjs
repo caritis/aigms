@@ -340,6 +340,108 @@ const doc = new Document({
       h('6. Après la démonstration'),
       p('Le cas d’usage créé reste dans BATIVAL Construction. Pour repartir d’une organisation vierge, supprimez-le depuis sa fiche.'),
       p('Ne touchez jamais à IzarLink Demo : elle porte le jeu de données complet dont dépendent les autres démonstrations et les tests automatisés.', { bold: true }),
+
+      // ---------------------------------------------------------------------
+      // Annexe : la suite de l'histoire
+      // ---------------------------------------------------------------------
+      new Paragraph({ children: [], pageBreakBefore: true }),
+      new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 },
+        children: [t('Annexe', { bold: true, size: 32, color: '0C2036' })] }),
+      new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 },
+        children: [t('La suite de l’histoire', { size: 26, color: '09AEAE' })] }),
+      new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 280 },
+        children: [t('Huit minutes · après l’étape 8, et seulement si le prospect en redemande', { size: 18, italics: true, color: '595959' })] }),
+
+      h('Pourquoi cette annexe existe'),
+      p('La démonstration principale suit UN usage, de bout en bout. Elle convainc sur la chaîne de responsabilité, et laisse une question ouverte :'),
+      p('« D’accord pour un usage. Mais nous, on en a combien qu’on ne connaît pas ? »', { italics: true, bold: true }),
+      p('C’est exactement la question à laquelle la cartographie répond. Et la réponse n’est pas un chiffre : c’est une case vide.'),
+
+      h('Le décor : trois semaines plus tard'),
+      insister('Trois semaines ont passé. Le devis par IA est encadré, sa charte est déposée, Marc Lecomte a assumé l’écart de preuve. Et le directeur général pose la question qui fâche : est-ce que c’était le seul ?'),
+
+      ...etape('A1', 'Cartographier ce que fait l’entreprise', '2 min',
+        'officer@aigms.eu · Processus et risques → Ajouter un processus',
+        [
+          ['Processus 1 — nom', 'Répondre aux appels d’offres'],
+          ['Processus 1 — code, nature', 'AO · Réalisation'],
+          ['Processus 2 — nom', 'Gérer les ressources humaines'],
+          ['Processus 2 — code, nature', 'RH · Support'],
+        ],
+        'Je ne décris pas mon informatique. Je décris ce que l’entreprise FAIT. Trois natures de processus : pilotage, réalisation, support — c’est la structure d’un système de management, pas un organigramme technique. L’IA viendra se ranger là-dedans, et nulle part ailleurs.'),
+
+      p('Puis « Ajouter une activité », trois fois :'),
+      table([
+        ligne(['Activité', 'Processus', 'Description'], { header: true }),
+        ligne(['Chiffrage et rédaction des devis', 'Répondre aux appels d’offres', 'Établir le prix et rédiger la proposition remise au client.'], { saisie: true }),
+        ligne(['Analyse des pièces marché', 'Répondre aux appels d’offres', 'Dépouiller les CCTP et les pièces administratives d’un dossier de consultation.'], { saisie: true }),
+        ligne(['Recrutement des compagnons', 'Gérer les ressources humaines', 'Recevoir les candidatures, présélectionner, conduire les entretiens.'], { saisie: true }),
+      ]),
+      p(''),
+
+      h('Étape A2 — Rattacher l’usage à son activité', HeadingLevel.HEADING_2),
+      new Paragraph({ spacing: { after: 100 }, children: [
+        t('30 s  ·  ', { bold: true, color: '09AEAE', size: 18 }),
+        t('Vue Processus → déplier « Répondre aux appels d’offres » → activité « Chiffrage et rédaction des devis » → le bouton +', { size: 18, color: '535C66' }),
+      ]}),
+      p('Rattachez le cas d’usage « Génération de devis par IA générative ».'),
+      insister('Confirmation visuelle : le panneau de droite se remplit — l’usage, sa criticité, ses risques, ses contrôles. L’usage que nous venons de gouverner pendant dix minutes vient de trouver sa place dans l’entreprise. Ce n’est plus une fiche isolée : c’est une activité du processus commercial.'),
+
+      ...etape('A3', 'Le second usage, celui qu’on n’avait pas déclaré', '1 min 30',
+        'Cas d’usage → Déclarer un cas d’usage, puis rattacher à l’activité « Analyse des pièces marché »',
+        [
+          ['Nom', 'Dépouillement assisté des CCTP'],
+          ['Finalité', 'Extraire d’un dossier de consultation les exigences techniques, les pénalités et les délais, pour décider s’il faut répondre.'],
+          ['Porteur de l’IA', 'Dominique Etchart'],
+          ['Responsable redevable', 'Marc Lecomte'],
+          ['Données traitées', 'Pièces marché publiques, notes internes de décision'],
+          ['Niveau d’autonomie', 'L1 — il propose, un humain valide'],
+          ['Criticité', 'Modérée — pas de données personnelles, erreur rattrapable'],
+        ],
+        'Celui-ci ne traite aucune donnée personnelle. Et regardez ce qu’AIGMS n’exige PAS : pas d’étude d’impact, pas d’AIPD, presque aucun contrôle déclenché. L’effort de gouvernance suit le risque. Un outil qui vous demande la même chose pour les deux vous fera abandonner.'),
+
+      ...etape('A4', 'Vue Couverture — ce que les contrôles couvrent vraiment', '1 min 30',
+        'Onglet Couverture, par activité',
+        [],
+        'Un contrôle n’est compté comme couvrant que s’il est OPÉRANT et PROUVÉ par une pièce validée et non échue. Nous avons retenu cinq contrôles il y a dix minutes, et déposé UNE preuve. Cette barre dit la vérité : quatre contrôles sur cinq ne protègent encore personne.'),
+      insister('C’est exactement ce qu’un auditeur vient vérifier. La différence entre un tableur de conformité et AIGMS est là : le tableur aurait affiché cinq contrôles verts.'),
+
+      ...etape('A5', 'Vue Risques — une décision n’est pas une alerte', '1 min 30',
+        'Onglet Risques, par processus · puis bascule sur risk-comity@aigms.eu',
+        [
+          ['1. Observer', 'Le risque « Fuite de données commerciales » en rouge sur le processus commercial'],
+          ['2. Basculer', 'risk-comity@aigms.eu — Sacha Belarbi'],
+          ['3. Accepter le risque', 'Justification et date de revue'],
+          ['4. Revenir', 'Vue Risques — la barre rouge a disparu'],
+        ],
+        'Le risque n’a pas été résolu. Il a été ASSUMÉ, par une personne nommée, avec une justification et une date de revue. Les couleurs comptent les risques OUVERTS, pas le total — laisser celui-ci en rouge reviendrait à confondre une décision avec une alerte.'),
+      insister('Et la limite, à dire soi-même : ce que vous ne devez jamais avoir, c’est un risque SANS décision. Ni traité, ni accepté. Celui-là, AIGMS le garde en rouge et retient la mise en production.'),
+
+      ...etape('A6', 'Vue Graphe — où la chaîne rompt', '1 min 30',
+        'Onglet Graphe → suivre le risque « Fuite de données commerciales »',
+        [],
+        'Laissez le prospect lire le chemin avant de parler. AIGMS ne dit pas « il manque des preuves ». Il dit OÙ : sur quel contrôle, pour quel risque, dans quelle activité de quel processus. C’est la différence entre un constat et une action.'),
+      p('Montrez aussi un contrôle partagé entre les deux cas d’usage, s’il y en a un : la preuve se collecte une fois et sert deux fois.'),
+
+      ...etape('A7', 'La case vide', '1 min',
+        'Retour à la vue Processus — l’activité « Recrutement des compagnons » n’affiche aucun usage d’IA',
+        [],
+        'Voilà la case la plus intéressante de l’écran. Elle ne dit pas « il n’y a pas d’IA au recrutement ». Elle dit « personne n’a déclaré d’IA au recrutement ». Nous avons commencé cette démonstration parce que des commerciaux utilisaient ChatGPT sans le dire. Combien de vos cases sont vides pour la même raison ?'),
+      insister('Et la sortie : c’est le travail de l’AI Governance Officer — passer de la case vide à la case déclarée. AIGMS ne le fait pas à votre place ; il rend le travail visible, et il garde la trace de qui a décidé quoi.'),
+
+      h('Ce que cette annexe a démontré, en une ligne chacun'),
+      table([
+        ligne(['Vue', 'Ce qu’elle prouve'], { header: true }),
+        ligne(['Processus', 'L’IA se range dans ce que fait l’entreprise, pas dans un inventaire technique']),
+        ligne(['Couverture', 'Un contrôle déclaré n’est pas un contrôle prouvé — et l’outil ne triche pas']),
+        ligne(['Risques', 'Une décision assumée sort du rouge ; un risque sans décision n’en sort pas']),
+        ligne(['Graphe', 'L’outil nomme l’endroit exact où la chaîne rompt']),
+        ligne(['La case vide', 'Ce qu’on ne sait pas encore est une information, pas un trou']),
+      ]),
+      p(''),
+      h('Après cette annexe'),
+      p('Les deux processus, les trois activités et le second cas d’usage restent dans BATIVAL Construction. Pour repartir d’une carte vierge, supprimez les activités puis les processus depuis leur fiche.'),
+      p('Ne touchez jamais à IzarLink Demo.', { bold: true }),
     ],
   }],
 })
