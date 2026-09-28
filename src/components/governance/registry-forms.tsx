@@ -279,9 +279,11 @@ export function AssetForm({
 // Rattachements
 // -----------------------------------------------------------------------------
 export function LinkAssetForm({
+  organizationId,
   useCaseId,
   assets,
 }: {
+  organizationId: string
   useCaseId: string
   assets: { id: string; name: string; kind: string }[]
 }) {
@@ -290,11 +292,31 @@ export function LinkAssetForm({
     null,
   )
 
-  if (!assets.length) return null
-
   return (
-    <Modal trigger="Rattacher un actif" title="Actif d’IA employé par ce cas d’usage">
-      {() => (
+    <Modal
+      trigger="Rattacher un actif"
+      title="Actif d’IA employé par ce cas d’usage"
+      description="Ce que le cas d’usage EMPLOIE : un modèle, un agent, un système, un jeu de données. À ne pas confondre avec l’outillage, qui est ce AVEC QUOI on tient les contrôles."
+    >
+      {() =>
+        !assets.length ? (
+          /*
+            Le bouton disparaissait quand le registre etait vide : on cherchait
+            une fonction absente de l'ecran, sans savoir qu'elle attendait une
+            fiche d'actif. Il reste, et dit ou aller.
+          */
+          <p className="text-sm leading-relaxed text-ink-600">
+            Aucun actif d’IA n’est encore inscrit au registre de cette organisation. Un actif se décrit
+            une fois et se lit ensuite depuis tous ses cas d’usage : inscrivez-le d’abord depuis{' '}
+            <a
+              href={`/admin/organizations/${organizationId}/actifs`}
+              className="font-medium text-brand-600 hover:underline"
+            >
+              Registres → Actifs d’IA et fournisseurs
+            </a>
+            .
+          </p>
+        ) : (
         <form action={formAction} className="flex flex-col gap-4">
           <input type="hidden" name="useCaseId" value={useCaseId} />
           <Field label="Actif" htmlFor="link-asset">
@@ -315,15 +337,18 @@ export function LinkAssetForm({
           <FormFeedback state={state} />
           <Submit pending={pending} idle="Rattacher" />
         </form>
-      )}
+        )
+      }
     </Modal>
   )
 }
 
 export function LinkVendorForm({
+  organizationId,
   useCaseId,
   vendors,
 }: {
+  organizationId: string
   useCaseId: string
   vendors: { id: string; name: string }[]
 }) {
@@ -332,15 +357,26 @@ export function LinkVendorForm({
     null,
   )
 
-  if (!vendors.length) return null
-
   return (
     <Modal
       trigger="Rattacher un fournisseur"
       title="Fournisseur impliqué"
       description="Sa revue tiers devra être close avant la mise en production."
     >
-      {() => (
+      {() =>
+        !vendors.length ? (
+          <p className="text-sm leading-relaxed text-ink-600">
+            Aucun fournisseur n’est encore inscrit au registre de cette organisation. Inscrivez-le
+            depuis{' '}
+            <a
+              href={`/admin/organizations/${organizationId}/actifs`}
+              className="font-medium text-brand-600 hover:underline"
+            >
+              Registres → Actifs d’IA et fournisseurs
+            </a>
+            .
+          </p>
+        ) : (
         <form action={formAction} className="flex flex-col gap-4">
           <input type="hidden" name="useCaseId" value={useCaseId} />
           <Field label="Fournisseur" htmlFor="link-vendor">
@@ -358,7 +394,8 @@ export function LinkVendorForm({
           <FormFeedback state={state} />
           <Submit pending={pending} idle="Rattacher" />
         </form>
-      )}
+        )
+      }
     </Modal>
   )
 }

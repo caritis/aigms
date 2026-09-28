@@ -17,9 +17,9 @@ import type { RegisterAsset } from '@/lib/domain/assets'
 import {
   AttachAssetToolingForm,
   DetachAssetToolingButton,
-  PHASE_LABELS,
   type AssetTooling,
 } from '@/components/governance/asset-tooling-forms'
+import { PHASE_LABELS } from '@/lib/domain/tooling-phases'
 
 /**
  * La fiche d'un actif : ce qu'il est, qui l'emploie, les mesures techniques
