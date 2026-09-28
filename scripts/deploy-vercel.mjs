@@ -83,6 +83,56 @@ if (git('status', '--porcelain')) {
 }
 
 /**
+ * Le code et la base avancent-ils ensemble ?
+ *
+ * Ce script deploie le CODE. Les migrations, elles, ne partent que par
+ * `npm run db:push` — et rien ne le rappelait. Une page qui lit une colonne
+ * qu'une migration non appliquee n'a pas encore creee voit sa requete refusee,
+ * rend `null`, et affiche une liste vide : l'ecran annonce « aucun risque »
+ * alors que la base a refuse de repondre. On a saisi trois fois le meme risque
+ * en croyant qu'il ne s'enregistrait pas.
+ *
+ * On refuse donc de deployer un code en avance sur sa base. Si la comparaison
+ * ne peut pas se faire — pas de jeton, pas de reseau, projet non lie — on
+ * previent sans bloquer : un garde-fou qui empeche de deployer parce qu'il
+ * n'arrive pas a verifier serait pire que le mal.
+ */
+function migrationsEnAvance() {
+  let brut
+  try {
+    brut = execFileSync('npx', ['supabase', 'migration', 'list', '--linked'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    })
+  } catch {
+    return null
+  }
+  const ligne = brut.split('\n').find((l) => l.includes('"migrations"'))
+  if (!ligne) return null
+  try {
+    const { migrations } = JSON.parse(ligne)
+    return migrations.filter((m) => m.local && !m.remote).map((m) => m.local)
+  } catch {
+    return null
+  }
+}
+
+const enAvance = migrationsEnAvance()
+if (enAvance === null) {
+  console.warn('Migrations : comparaison impossible avec la base liee. Deploiement poursuivi.')
+} else if (enAvance.length) {
+  console.error(
+    `Refus : ${enAvance.length} migration(s) ne sont pas appliquees a la base liee.`,
+  )
+  for (const m of enAvance) console.error(`  ${m}`)
+  console.error('')
+  console.error('Le code deploye lirait des colonnes qui n existent pas encore : les requetes')
+  console.error('seraient refusees et les listes s afficheraient vides, sans rien dire.')
+  console.error('Appliquer d abord :  npm run db:push')
+  process.exit(1)
+}
+
+/**
  * La branche est-elle poussee, au meme commit ?
  *
  * C'est la condition pour laisser Vercel cloner. Sinon il construirait un

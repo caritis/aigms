@@ -209,27 +209,17 @@ export default async function UseCasePage({
 
   const status = useCase.status as UseCaseStatus
 
-  // Les requetes sont independantes : elles partent ensemble pour eviter une
-  // cascade d'allers-retours.
-  const [
-    { data: classification },
-    { data: risks },
-    { data: impacts },
-    { data: oversight },
-    { data: decisions },
-    { data: controls },
-    { data: actions },
-    { data: changes },
-    { data: incidents },
-    { data: suggestionsData },
-    { data: actionSuggestionsData },
-    { data: gateData },
-    { data: reviewGateData },
-    { data: memberships },
-    { data: orgControls },
-    { data: orgVendors },
-    { data: orgAssets },
-  ] = await Promise.all([
+  /*
+    Les requetes sont independantes : elles partent ensemble pour eviter une
+    cascade d'allers-retours.
+
+    Leurs erreurs ne se perdent plus. Une lecture qui echoue rendait `null`, et
+    `null` s'affichait comme une liste vide : l'ecran annoncait « Aucun risque
+    identifie » alors que la base avait refuse la requete. Un ecran qui ment
+    sur l'etat du dossier est pire qu'un ecran en panne — on a saisi trois fois
+    le meme risque en croyant qu'il ne s'enregistrait pas.
+  */
+  const lectures = await Promise.all([
     supabase
       .from('regulatory_classification')
       .select(
@@ -324,6 +314,35 @@ export default async function UseCasePage({
     supabase.from('vendor').select('id, name, organization_id').order('name'),
     supabase.from('ai_asset').select('id, name, kind, organization_id').order('name'),
   ])
+
+  const [
+    { data: classification },
+    { data: risks },
+    { data: impacts },
+    { data: oversight },
+    { data: decisions },
+    { data: controls },
+    { data: actions },
+    { data: changes },
+    { data: incidents },
+    { data: suggestionsData },
+    { data: actionSuggestionsData },
+    { data: gateData },
+    { data: reviewGateData },
+    { data: memberships },
+    { data: orgControls },
+    { data: orgVendors },
+    { data: orgAssets },
+  ] = lectures
+
+  /*
+    Ce que la base a refuse de lire. On ne le devine pas : on le dit. Une
+    colonne absente parce qu'une migration n'est pas passee, une politique qui
+    ferme une table — l'ecran doit l'annoncer, pas afficher une liste vide.
+  */
+  const lecturesEnEchec = lectures
+    .map((l) => (l as { error?: { message: string } | null }).error?.message)
+    .filter((m): m is string => Boolean(m))
 
   const gate = gateData as GateResult | null
   const reviewGate = reviewGateData as GateResult | null
@@ -722,6 +741,33 @@ export default async function UseCasePage({
       </StatStrip>
 
       <UseCaseTabs useCaseId={id} active={tab} signals={signals} />
+
+      {/*
+        Une lecture refusee ne se tait pas. Sans cela, une liste vide veut dire
+        deux choses opposees — « rien a montrer » et « la base a refuse » — et
+        l'on croit que la saisie ne s'enregistre pas.
+      */}
+      {lecturesEnEchec.length ? (
+        <div
+          role="alert"
+          className="mb-5 rounded-md border border-stop-600/30 bg-stop-600/5 px-4 py-3 text-sm leading-relaxed text-ink-800"
+        >
+          <p className="font-medium text-stop-600">
+            {lecturesEnEchec.length === 1
+              ? 'Une lecture de ce dossier a échoué.'
+              : `${lecturesEnEchec.length} lectures de ce dossier ont échoué.`}
+          </p>
+          <p className="mt-1 text-ink-600">
+            Ce qui en dépend s’affiche vide, et ne reflète donc pas l’état réel du dossier. La
+            cause la plus fréquente est une migration de base non appliquée à cet environnement.
+          </p>
+          <ul className="mt-2 list-disc pl-5 text-xs text-ink-500">
+            {[...new Set(lecturesEnEchec)].map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {tab === 'avancement' ? (
         <div className="grid gap-5 lg:grid-cols-3">
