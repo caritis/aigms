@@ -173,17 +173,46 @@ versées sortent du périmètre contractuel. »*
 
 ### Étape 4 — Coter le risque
 
-**Onglet *Risques* → Ajouter un risque**
+**Onglet *Risques* → Identifier un risque**
 
 | Champ | À saisir |
 |---|---|
-| Titre | Fuite de données commerciales vers un tiers |
-| Description | Devis, marges et prix fournisseurs versés dans un service public, hors contrat, potentiellement réutilisés pour l'entraînement du modèle. |
-| Vraisemblance | Probable |
-| Gravité | Majeure |
+| Intitulé | Fuite de données commerciales vers un tiers |
+| Scénario | Devis, marges et prix fournisseurs versés dans un service public, hors contrat, potentiellement réutilisés pour l'entraînement du modèle. |
+| Catégorie | **Tiers** |
 | Qui répond de ce risque | Sacha Belarbi |
+| Vraisemblance | **4 — Probable** |
+| Gravité | **4 — Majeure** |
 
-Niveau inhérent obtenu : **Critique**.
+Sous le bandeau gris : **Niveau inhérent obtenu : Critique — 4 × 4 = 16.**
+
+> **Ne passez pas trop vite sur la cotation.** Les deux listes portent le
+> chiffre *et* le mot — « 4 — Probable », « 4 — Majeure » — et la définition du
+> cran choisi s'écrit dessous. « Un outil qui vous demande de noter de 1 à 5
+> sans dire ce que 4 veut dire vous donnera cinq cotations différentes pour cinq
+> personnes. Ici, *Probable* signifie *s'est déjà produit chez vous, ou les
+> conditions sont réunies*. Deux personnes cotent pareil. »
+
+> **La catégorie n'est pas un classement décoratif.** L'infobulle à côté du
+> champ donne les treize définitions. Celle-ci nourrit la recherche de contrôle
+> à l'étape suivante.
+
+#### Ce qui se produit pendant que vous écrivez
+
+Dès que le scénario est rédigé, **sans que vous cliquiez sur quoi que ce soit**,
+un encadré s'ouvre en bas de la fenêtre : *« L'assistant lit ce que vous écrivez
+— intitulé, scénario, catégorie — et propose les contrôles du registre et des
+référentiels qui s'en approchent. »* La liste apparaît seule, chaque ligne avec
+l'extrait du contrôle qui correspond.
+
+> **Le geste qui porte.** Laissez le silence s'installer une seconde avant de
+> commenter. « Je n'ai rien demandé. J'ai décrit un risque en français, et
+> l'outil est allé chercher dans cent vingt contrôles-types ce qui le traite.
+> Vous pouvez en retenir un tout de suite — il rejoindra le registre et
+> deviendra applicable — ou passer, et décider au traitement. »
+
+Pour la démonstration, **ne retenez rien ici** : les contrôles se choisissent à
+l'étape 5, et l'on veut montrer les deux chemins.
 
 > **Insistez ici.** « Le risque n'est pas une ligne dans un tableur. Il appelle
 > des contrôles, et il retiendra la mise en production tant qu'il n'est ni
