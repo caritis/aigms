@@ -39,8 +39,11 @@ describe('Organisations gérées', () => {
   it('ne retient que celles où un rôle a été attribué', async () => {
     const rows = await managed(DEMO.officerA)
 
-    expect(rows.map((r) => r.id)).toEqual([DEMO.orgA])
-    expect(rows[0]!.role).toBe('governance_officer')
+    // Le portefeuille d'un cabinet : le meme officer sur deux organisations du
+    // meme tenant. Ce qui compte n'est pas leur nombre mais leur origine — une
+    // attribution de role, et rien d'autre.
+    expect(rows.map((r) => r.id).sort()).toEqual([DEMO.orgA, DEMO.orgBtp].sort())
+    expect(rows.every((r) => r.role === 'governance_officer')).toBe(true)
   })
 
   it('porte le rôle attribué, qui peut différer du rôle de tenant', async () => {
@@ -63,14 +66,44 @@ describe('Organisations gérées', () => {
 
 describe('Organisation courante', () => {
   it('vaut la seule gérée quand il n’y a rien à choisir', async () => {
+    /*
+      Le jeu de demonstration porte desormais un portefeuille : le meme officer
+      sur deux organisations. Pour eprouver la branche « une seule », on lui
+      retire son second mandat et sa preference, le temps d'une transaction
+      annulee — plutot que de reecrire le decor pour arranger un test.
+    */
+    await db.query('begin')
+    try {
+      await db.query('delete from public.role_assignment where user_id = $1 and organization_id = $2', [
+        DEMO.officerA,
+        DEMO.orgBtp,
+      ])
+      await db.query('update public.user_profile set current_organization_id = null where id = $1', [
+        DEMO.officerA,
+      ])
+      await db.query("select set_config('role', 'authenticated', true)")
+      await db.query("select set_config('request.jwt.claims', $1, true)", [
+        JSON.stringify({ sub: DEMO.officerA, role: 'authenticated' }),
+      ])
+      const { rows } = await db.query<{ id: string | null }>('select app.current_organization() as id')
+      expect(rows[0]!.id).toBe(DEMO.orgA)
+    } finally {
+      await db.query('rollback')
+    }
+  })
+
+  it('reste vide tant que le portefeuille en compte plusieurs', async () => {
+    // Deux organisations gerees, aucune preference : deviner ouvrirait un
+    // ecran qui n'est pas celui qu'on regardait. La personne choisit.
     const current = await asUser(db, DEMO.officerA, async (c) => {
-      const { rows } = await c.query<{ id: string | null }>(
-        'select app.current_organization() as id',
-      )
+      await c.query('update public.user_profile set current_organization_id = null where id = $1', [
+        DEMO.officerA,
+      ])
+      const { rows } = await c.query<{ id: string | null }>('select app.current_organization() as id')
       return rows[0]!.id
     })
 
-    expect(current).toBe(DEMO.orgA)
+    expect(current).toBeNull()
   })
 
   it('refuse un choix hors du périmètre géré', async () => {

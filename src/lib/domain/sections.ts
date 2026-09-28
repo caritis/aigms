@@ -38,3 +38,74 @@ export const REGISTER_SECTIONS = [
   'suivi',
   'revues',
 ] as const
+
+/**
+ * Ce que chaque rôle voit en premier, et ce qui ne le sollicite pas.
+ *
+ * La barre montrait les neuf sections à tout le monde. Ce n'est pas un trou de
+ * sécurité — la RLS ouvre la lecture à tout le tenant et refuse les écritures —
+ * mais un défaut de pertinence : un Comité de direction n'a rien à faire dans
+ * le registre des preuves, et le lui présenter au même rang que ses décisions
+ * lui fait chercher son travail.
+ *
+ * Trois règles, tenues pour chaque ligne :
+ *
+ *   1. Ne jamais masquer ce qu'un rôle PEUT faire. Un R ou un A de la matrice
+ *      RACI met la section en première ligne.
+ *   2. Estomper plutôt que retirer. Un I laisse la section accessible, sous
+ *      « Registres », sans pastille — être informé ne veut pas dire être
+ *      sollicité.
+ *   3. Toujours laisser une porte. AUCUNE section n'est retirée : elles
+ *      restent atteignables par leur adresse, un lien partagé continue de
+ *      fonctionner, et la RLS reste seule juge de ce qui s'ouvre.
+ */
+export type MenuProfile = {
+  /** Les sections en première ligne, dans l'ordre où ce rôle y travaille. */
+  primary: readonly OrganizationSection[]
+  /** Celles dont la pastille se tait : ce rôle en est informé, pas saisi. */
+  muted: readonly OrganizationSection[]
+  /** Le pilotage passe devant : le rôle lit un portefeuille, pas un dossier. */
+  pilotageFirst?: boolean
+}
+
+const TOUTES = ORGANIZATION_SECTIONS.map((s) => s.key)
+
+export const MENU_BY_ROLE: Record<string, MenuProfile> = {
+  // Ils conduisent le système : rien ne leur est étranger.
+  governance_officer: { primary: ['apercu', 'processus'], muted: [] },
+  client_admin: { primary: ['apercu', 'processus'], muted: [] },
+  platform_admin: { primary: ['apercu', 'processus'], muted: [] },
+
+  // Il déclare, répond et fournit les preuves. La Déclaration, les décisions
+  // et les revues se lisent, mais ne l'appellent pas.
+  system_owner: { primary: ['apercu', 'processus'], muted: ['decisions', 'soa', 'revues'] },
+
+  // Il répond des risques : la cartographie d'abord, puis ce qui les solde.
+  risk_owner: { primary: ['processus', 'apercu'], muted: ['actifs', 'preuves', 'soa'] },
+
+  // Il est consulté sur les contrôles et la conformité, pas sur l'inventaire.
+  reviewer: { primary: ['apercu', 'processus'], muted: ['actifs', 'revues'] },
+
+  // Il tranche là où cela engage. Le portefeuille d'abord, ses décisions
+  // ensuite ; le reste reste lisible, sans le solliciter.
+  executive_viewer: {
+    primary: ['decisions'],
+    muted: TOUTES.filter((k) => k !== 'decisions'),
+    pilotageFirst: true,
+  },
+
+  // Il constate, il ne solde rien. Lui compter des retards qu'il ne peut pas
+  // clore serait l'inviter à sortir de son rôle — le même raisonnement que
+  // pour l'administration, qui n'a pas de gouvernance à suivre.
+  auditor: { primary: ['apercu'], muted: TOUTES, pilotageFirst: true },
+}
+
+/** Le profil d'un rôle, ou celui qui ne présume rien quand il est inconnu. */
+export function menuProfile(role: string | null): MenuProfile {
+  return MENU_BY_ROLE[role ?? ''] ?? { primary: PRIMARY_SECTIONS, muted: [] }
+}
+
+/** Ce qui n'est pas en première ligne se lit sous « Registres ». */
+export function registerSections(profile: MenuProfile): OrganizationSection[] {
+  return TOUTES.filter((key) => !profile.primary.includes(key))
+}

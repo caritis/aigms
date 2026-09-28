@@ -64,10 +64,26 @@ export function FormFeedback({
   )
 }
 
-export function Submit({ pending, children, idle }: { pending: boolean; children?: ReactNode; idle: string }) {
+export function Submit({
+  pending,
+  children,
+  idle,
+  form,
+}: {
+  pending: boolean
+  children?: ReactNode
+  idle: string
+  /**
+   * Rattache le bouton a un formulaire qu'il ne contient pas. Sert au pied
+   * fixe d'une fenetre : le bouton reste visible pendant qu'on fait defiler,
+   * sans imbriquer les formulaires — ce que HTML interdit.
+   */
+  form?: string
+}) {
   return (
     <button
       type="submit"
+      form={form}
       disabled={pending}
       className="self-start rounded-md bg-night-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-night-800 disabled:opacity-60"
     >

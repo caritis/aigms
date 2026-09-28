@@ -16,12 +16,12 @@ import { Wordmark } from '@/components/logo'
 import { NavDropdown } from '@/components/nav-dropdown'
 import { UserMenu } from '@/components/admin/user-menu'
 import { AttentionDot } from '@/components/governance/attention'
-import type { Attention } from '@/lib/governance/attention'
+import { describeAttention, SECTION_ATTENTION, type Attention } from '@/lib/governance/attention'
 import type { Branding } from '@/lib/branding'
 import {
   ORGANIZATION_SECTIONS,
-  PRIMARY_SECTIONS,
-  REGISTER_SECTIONS,
+  menuProfile,
+  registerSections,
   type OrganizationSection,
 } from '@/lib/domain/sections'
 
@@ -96,18 +96,21 @@ function fromPathname(pathname: string): Announcement {
  */
 function compter(row: Attention | undefined, key: OrganizationSection): number {
   if (!row) return 0
-  switch (key) {
-    case 'preuves':
-      return row.stale_evidence + row.evidence_to_review
-    case 'soa':
-      return row.soa_undecided
-    case 'processus':
-      return row.high_risks_open
-    case 'suivi':
-      return row.overdue_actions + row.open_incidents + row.reviews_due
-    default:
-      return 0
-  }
+  return (SECTION_ATTENTION[key] ?? []).reduce((n, kind) => n + row[kind], 0)
+}
+
+/**
+ * Ce que la pastille compte, en toutes lettres.
+ *
+ * Un chiffre nu se lit comme un retard : on voyait « 1 » sur « Processus et
+ * risques » en arrivant sur une cartographie vide, sans moyen de savoir qu'il
+ * s'agissait d'un risque eleve ouvert. Le survol le dit.
+ */
+function detailler(row: Attention | undefined, keys: readonly OrganizationSection[]): string {
+  if (!row) return 'élément(s) appelant une action'
+  const kinds = keys.flatMap((k) => SECTION_ATTENTION[k] ?? [])
+  const parts = describeAttention(row, kinds)
+  return parts.length ? parts.join(', ') : 'élément(s) appelant une action'
 }
 
 function SectionDot({
@@ -115,16 +118,26 @@ function SectionDot({
   organizationId,
   keys,
   late = false,
+  muted = false,
   label,
 }: {
   attention: Promise<Attention[]>
   organizationId: string | null
   keys: readonly OrganizationSection[]
   late?: boolean
+  /**
+   * Ce role est INFORME de cette section, pas saisi : le chiffre se tait.
+   * Compter a quelqu'un des retards qu'il ne peut pas solder, c'est l'inviter
+   * a sortir de son role.
+   */
+  muted?: boolean
   label: string
 }) {
   const row = use(attention).find((a) => a.organization_id === organizationId)
-  return <AttentionDot count={keys.reduce((n, k) => n + compter(row, k), 0)} late={late} inverted label={label} />
+  if (muted) return null
+  const total = keys.reduce((n, k) => n + compter(row, k), 0)
+  // Le libelle donne passe si le detail est vide : il reste la reponse par defaut.
+  return <AttentionDot count={total} late={late} inverted label={detailler(row, keys) || label} />
 }
 
 /** La meme, en clair : dans le menu deroulant, le fond n'est plus sombre. */
@@ -132,19 +145,58 @@ function SectionDotLight({
   attention,
   organizationId,
   section,
+  muted = false,
 }: {
   attention: Promise<Attention[]>
   organizationId: string | null
   section: OrganizationSection
+  muted?: boolean
 }) {
   const row = use(attention).find((a) => a.organization_id === organizationId)
-  return <AttentionDot count={compter(row, section)} late={false} label="élément(s) appelant une action" />
+  if (muted) return null
+  return <AttentionDot count={compter(row, section)} late={false} label={detailler(row, [section])} />
 }
 
 /** Tout ce qui appelle une action sur le perimetre : la pastille du pilotage. */
+/**
+ * L'organisation sur laquelle on travaille, a droite de la barre.
+ *
+ * Elle affichait le nom du TENANT — « Demo » — c'est-a-dire le cabinet, pas le
+ * client ouvert. Sur un portefeuille de plusieurs organisations, c'etait la
+ * seule information que la barre ne donnait pas, et celle dont on a besoin
+ * avant d'agir. Elle vient de la meme lecture que les pastilles : aucune
+ * requete de plus. Pour l'administration, qui n'a pas de portefeuille, rien ne
+ * s'affiche — et c'est juste.
+ */
+function OrganizationName({
+  attention,
+  organizationId,
+}: {
+  attention: Promise<Attention[]>
+  organizationId: string | null
+}) {
+  const row = use(attention).find((a) => a.organization_id === organizationId)
+  if (!row) return null
+  return (
+    <span className="hidden max-w-56 truncate text-sm text-white/60 lg:inline" title={row.organization_name}>
+      {row.organization_name}
+    </span>
+  )
+}
+
 function TotalDot({ attention }: { attention: Promise<Attention[]> }) {
-  const total = use(attention).reduce((n, a) => n + a.total, 0)
-  return <AttentionDot count={total} inverted label="élément(s) appelant une action" />
+  const rows = use(attention)
+  const total = rows.reduce((n, a) => n + a.total, 0)
+  /*
+    Le pilotage porte le portefeuille ENTIER : son chiffre additionne toutes
+    les organisations. Sans le dire, on le lisait comme celui de
+    l'organisation courante — et « 80 » restait incomprehensible.
+  */
+  const libelle =
+    rows.length > 1
+      ? `élément(s) appelant une action, sur ${rows.length} organisations`
+      : 'élément(s) appelant une action'
+  return <AttentionDot count={total} inverted label={libelle} />
 }
 
 /** Le compte d'alertes non lues, sur la cloche. */
@@ -162,6 +214,7 @@ export function Chrome({
   viewer,
   branding,
   roleLabel,
+  role,
   administrating,
   unread,
   attention,
@@ -173,6 +226,8 @@ export function Chrome({
   viewer: { fullName: string | null; email: string; tenantName: string | null } | null
   branding: Branding
   roleLabel: string
+  /** Le rôle attribué : il commande ce que la barre met en avant (sections.ts). */
+  role: string | null
   administrating: boolean
   unread: Promise<number>
   attention: Promise<Attention[]>
@@ -190,6 +245,29 @@ export function Chrome({
   const activePilotage = pathname.startsWith('/admin/pilotage')
 
   const nav = administrating ? adminNav : governanceNav
+  /*
+    Ce que ce role voit en premier, et ce qui ne le sollicite pas. La barre
+    n'ouvre ni ne ferme aucun droit : elle range. Toute section reste
+    atteignable par son adresse, et la RLS reste seule juge.
+  */
+  const profile = menuProfile(role)
+  const registres = registerSections(profile)
+
+  const pilotage = nav.map((link) => (
+    <Link
+      key={link.href}
+      href={link.href}
+      aria-current={activePilotage ? 'page' : undefined}
+      className={`inline-flex items-baseline rounded-md px-3 py-1.5 transition-colors hover:bg-white/10 hover:text-white ${
+        activePilotage ? 'bg-white/10 text-white' : 'text-white/75'
+      }`}
+    >
+      {link.label}
+      <Suspense fallback={null}>
+        <TotalDot attention={attention} />
+      </Suspense>
+    </Link>
+  ))
   const orgBase = organizationId ? `/admin/organizations/${organizationId}` : null
 
   const announceValue = useMemo(() => setAnnounced, [])
@@ -235,11 +313,17 @@ export function Chrome({
               ) : (
                 <>
                   {/*
+                    Le pilotage passe devant pour qui lit un portefeuille et non
+                    un dossier — la direction, l'auditeur. Ce qu'on ouvre en
+                    premier dit ce qu'on attend de vous.
+                  */}
+                  {profile.pilotageFirst ? pilotage : null}
+                  {/*
                     Les sections de l'organisation courante — celle de la page,
                     sinon celle du profil. Sans organisation, les liens conduisent
                     a la liste : il faut en choisir une.
                   */}
-                  {PRIMARY_SECTIONS.map((key) => {
+                  {profile.primary.map((key) => {
                     const section = ORGANIZATION_SECTIONS.find((s) => s.key === key)!
                     const active = activeSection === key
                     return (
@@ -258,6 +342,7 @@ export function Chrome({
                             organizationId={organizationId}
                             keys={[key]}
                             late={key === 'processus'}
+                            muted={profile.muted.includes(key)}
                             label="élément(s) appelant une action"
                           />
                         </Suspense>
@@ -266,18 +351,18 @@ export function Chrome({
                   })}
                   <NavDropdown
                     label="Registres"
-                    active={REGISTER_SECTIONS.some((key) => activeSection === key)}
+                    active={registres.some((key) => activeSection === key)}
                     badge={
                       <Suspense fallback={null}>
                         <SectionDot
                           attention={attention}
                           organizationId={organizationId}
-                          keys={REGISTER_SECTIONS}
+                          keys={registres.filter((key) => !profile.muted.includes(key))}
                           label="élément(s) appelant une action dans les registres"
                         />
                       </Suspense>
                     }
-                    items={REGISTER_SECTIONS.map((key) => {
+                    items={registres.map((key) => {
                       const section = ORGANIZATION_SECTIONS.find((s) => s.key === key)!
                       return {
                         href: orgBase ? `${orgBase}${section.href}` : '/admin/organizations',
@@ -289,34 +374,23 @@ export function Chrome({
                               attention={attention}
                               organizationId={organizationId}
                               section={key}
+                              muted={profile.muted.includes(key)}
                             />
                           </Suspense>
                         ),
                       }
                     })}
                   />
-                  {nav.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      aria-current={activePilotage ? 'page' : undefined}
-                      className={`inline-flex items-baseline rounded-md px-3 py-1.5 transition-colors hover:bg-white/10 hover:text-white ${
-                        activePilotage ? 'bg-white/10 text-white' : 'text-white/75'
-                      }`}
-                    >
-                      {link.label}
-                      <Suspense fallback={null}>
-                        <TotalDot attention={attention} />
-                      </Suspense>
-                    </Link>
-                  ))}
+                  {profile.pilotageFirst ? null : pilotage}
                 </>
               )}
             </nav>
 
             <div className="ml-auto flex items-center gap-3">
-              {viewer?.tenantName ? (
-                <span className="hidden text-sm text-white/50 lg:inline">{viewer.tenantName}</span>
+              {viewer ? (
+                <Suspense fallback={null}>
+                  <OrganizationName attention={attention} organizationId={organizationId} />
+                </Suspense>
               ) : null}
               {viewer ? (
                 <Link

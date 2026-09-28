@@ -174,6 +174,17 @@ insert into public.organization (id, tenant_id, name, legal_name, sector, countr
    'SIREN 812 345 678', 'FR00812345678', 'https://izarlink.example',
    'Claire Ferrand', 'claire.ferrand@izarlink.example', '+33 5 59 00 00 00',
    'Confidentiel', 'Diffusion restreinte — comité de gouvernance'),
+  -- Seconde organisation du MEME tenant : le portefeuille d'un cabinet, et le
+  -- terrain du scenario de demonstration BTP (Shadow AI sur la generation de
+  -- devis). `business_user` = exploitant d'une solution tierce : on ne repond
+  -- pas de l'entrainement d'un modele qu'on n'entraine pas.
+  ('cccccccc-0000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'BATIVAL Construction', 'BATIVAL Construction SAS', 'Bâtiment et travaux publics', 'FR', 340,
+   'active', 'business_user',
+   '12 avenue des Chantiers', '33000', 'Bordeaux',
+   '902 145 776 R.C.S. Bordeaux', null, 'https://bativalconstruction.example',
+   'Marc Lecomte', 'dsi-admin@aigms.eu', '+33 5 56 00 00 00',
+   'Diffusion restreinte', 'Société fictive — jeu de démonstration AIGMS.'),
   ('dddddddd-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002',
    -- Archivee : elle ne sert qu'aux tests d'etancheite, pas a la demonstration.
    'Client Concurrent', 'Concurrent SA', 'Industrie', 'FR', 90, 'archived',
@@ -205,6 +216,25 @@ insert into public.role_assignment (tenant_id, organization_id, user_id, role) v
   -- Sans lui, une mise en production n'a personne à qui s'adresser, et
   -- l'avertissement d'écart de preuve n'a pas de destinataire (0098, 0105).
   ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
+   '6c7e46ef-80f1-4054-82bb-7bc8c19a584a', 'client_admin'),
+
+  -- BATIVAL Construction : les MEMES personnes, sur une seconde organisation.
+  -- C'est la realite d'un cabinet — un officer, plusieurs clients — et c'est ce
+  -- que le pilotage de portefeuille donne a voir. Une adresse de courriel ne
+  -- porte qu'une identite : on ne duplique pas les comptes, on affecte.
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '11111111-1111-4111-8111-111111111111', 'governance_officer'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '22222222-2222-4222-8222-222222222222', 'system_owner'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '33333333-3333-4333-8333-333333333333', 'risk_owner'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '44444444-4444-4444-8444-444444444444', 'auditor'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '77777777-7777-4777-8777-777777777777', 'reviewer'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '88888888-8888-4888-8888-888888888888', 'executive_viewer'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
    '6c7e46ef-80f1-4054-82bb-7bc8c19a584a', 'client_admin')
 on conflict do nothing;
 
@@ -339,6 +369,40 @@ values
   ('a2000000-0000-4000-8000-000000000005', 'aaaaaaaa-0000-4000-8000-000000000001',
    'cccccccc-0000-4000-8000-000000000001', 'ai_agent', 'Agent de planification tournées',
    'Agent optimisant les tournées de livraison.', null, '0.9', false, 'France');
+
+-- --- BATIVAL Construction : le decor du scenario BTP ---------------------------
+-- Le scenario declare l'usage devant le prospect, mais il ne peut pas inventer
+-- ce que l'entreprise emploie deja : un actif d'IA se rattache, il ne se cree
+-- pas au milieu d'une demonstration. Les deux actifs ci-dessous sont ce que
+-- les commerciaux utilisent SANS AUTORISATION — c'est tout le sujet — et le
+-- fournisseur qui les porte n'a ni DPA signe ni revue close.
+--
+-- Rappel de la distinction que l'ecran doit tenir : ces lignes sont des
+-- ACTIFS D'IA — ce que le cas d'usage emploie. L'OUTILLAGE — passerelle, DLP,
+-- journalisation — se declare pendant la demonstration, depuis le controle
+-- qui l'appelle : c'est l'un des gestes que le prospect doit voir.
+insert into public.vendor (id, tenant_id, organization_id, name, is_model_provider, criticality,
+                           country_code, dpa_signed, security_assessed, reversibility_documented,
+                           review_status, reviewed_at, next_review_at, notes)
+values
+  ('a1000000-0000-4000-8000-000000000010', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000002', 'Fournisseur de LLM grand public', true, 'critical', 'US',
+   false, false, false, 'in_progress', null, current_date + interval '1 month',
+   'Comptes personnels souscrits par les commerciaux. Aucun contrat d''entreprise, aucun DPA, transfert hors UE non encadré.')
+on conflict (id) do nothing;
+
+insert into public.ai_asset (id, tenant_id, organization_id, kind, name, description, vendor_id, version,
+                             contains_personal_data, hosting_location)
+values
+  ('a2000000-0000-4000-8000-000000000010', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000002', 'ai_system', 'Assistant conversationnel grand public — comptes personnels',
+   'Service public de génération de texte, souscrit à titre individuel par les commerciaux. Aucune console d''entreprise, aucun réglage de rétention.',
+   'a1000000-0000-4000-8000-000000000010', null, true, 'États-Unis'),
+  ('a2000000-0000-4000-8000-000000000011', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000002', 'dataset', 'Devis émis et grilles de prix fournisseurs',
+   'Historique des devis, marges pratiquées et coordonnées clients — ce que les commerciaux versent dans l''assistant.',
+   null, '2026.1', true, 'France')
+on conflict (id) do nothing;
 
 -- --- Contrôles (8) ------------------------------------------------------------
 insert into public.control (id, tenant_id, organization_id, code, name, objective, owner_user_id, status, is_mandatory, frequency, last_tested_at, next_test_at)

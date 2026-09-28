@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { resolveVendor } from '@/lib/actions/registry'
 
 /**
  * Avec quoi l'organisation tient ses controles.
@@ -73,12 +74,20 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     .maybeSingle()
   if (!organization) return { ok: false, message: 'Organisation introuvable.' }
 
+  // Le tiers peut naitre avec l'outil : un produit sans fournisseur declare
+  // laisse une revue tierce introuvable au moment ou elle conditionnera la
+  // mise en production.
+  const fournisseur = await resolveVendor(formData, d.organizationId, organization.tenant_id)
+  if (!fournisseur.ok) {
+    return { ok: false, message: fournisseur.message, fieldErrors: { vendorId: fournisseur.message } }
+  }
+
   const row = {
     tenant_id: organization.tenant_id,
     organization_id: d.organizationId,
     tool_code: d.toolCode,
     product: d.product,
-    vendor_id: d.vendorId || null,
+    vendor_id: fournisseur.vendorId,
     role: d.role,
     asset_id: d.assetId || null,
     note: d.note || null,
@@ -93,7 +102,12 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
   // Brancher une source pour en tirer les preuves reste a venir, et relevera
   // de l'administration de la plateforme : la colonne existe, l'ecran ne la
   // propose pas.
-  return { ok: true, message: `${d.product} enregistré. Les contrôles peuvent le retenir.` }
+  return {
+    ok: true,
+    message: fournisseur.cree
+      ? `${d.product} enregistré, et le tiers ${fournisseur.cree} créé — sa revue reste à ouvrir.`
+      : `${d.product} enregistré. Les contrôles peuvent le retenir.`,
+  }
 }
 
 export async function removeTooling(organizationId: string, toolingId: string): Promise<FormState> {

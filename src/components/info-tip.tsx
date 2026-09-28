@@ -19,6 +19,7 @@ export function InfoTip({
   title,
   tone = 'neutral',
   align = 'right',
+  sign = 'i',
   children,
 }: {
   /** Nom accessible du bouton. Decrit ce qu'on va lire, pas l'icone. */
@@ -28,6 +29,12 @@ export function InfoTip({
   tone?: 'neutral' | 'ok' | 'todo'
   /** Ou s'ouvre le panneau par rapport au bouton. */
   align?: 'right' | 'left'
+  /**
+   * Le signe porte par le bouton. « i » renseigne ; « ! » previent qu'il y a
+   * quelque chose a comprendre AVANT d'agir — le mode d'emploi d'un ecran, et
+   * non un complement qu'on peut ignorer.
+   */
+  sign?: 'i' | '!'
   children: ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -68,17 +75,26 @@ export function InfoTip({
                 : 'border-ink-300 text-ink-500 hover:border-ink-400 hover:text-ink-700'
         }`}
       >
-        <span aria-hidden>i</span>
+        <span aria-hidden>{sign}</span>
       </button>
 
       {open ? (
         <div
           role="dialog"
           aria-label={label}
-          className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} z-20 mt-2 w-[min(30rem,calc(100vw-3rem))] rounded-lg border border-ink-200 bg-white p-5 text-left shadow-[0_1px_2px_rgb(30_42_68/0.04),0_12px_32px_rgb(30_42_68/0.12)]`}
+          /*
+            Le panneau ne depasse pas la hauteur de la fenetre : treize
+            definitions tenaient sur deux ecrans et debordaient sous le pli,
+            sans rien pour le dire. Le titre reste en place, le corps defile.
+          */
+          className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} z-20 mt-2 flex max-h-[min(30rem,70vh)] w-[min(30rem,calc(100vw-3rem))] flex-col rounded-lg border border-ink-200 bg-white text-left shadow-[0_1px_2px_rgb(30_42_68/0.04),0_12px_32px_rgb(30_42_68/0.12)]`}
         >
-          {title ? <p className="mb-2 text-sm font-semibold text-ink-900">{title}</p> : null}
-          {children}
+          {title ? (
+            <p className="shrink-0 border-b border-ink-100 px-5 pb-2.5 pt-4 text-sm font-semibold text-ink-900">
+              {title}
+            </p>
+          ) : null}
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
         </div>
       ) : null}
     </div>

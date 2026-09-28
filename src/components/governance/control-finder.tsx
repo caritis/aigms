@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import {
   adoptCatalogControl,
   searchControlsForRisk,
@@ -27,12 +27,21 @@ export function ControlFinder({
   useCaseId,
   /** Ce qu'on a ecrit : intitule et scenario, lus au moment du clic. */
   readQuery,
+  autoQuery,
   ownerUserId,
   onPick,
 }: {
   organizationId: string
   useCaseId: string
   readQuery: () => string
+  /**
+   * Ce qu'on est en train d'ecrire.
+   *
+   * Renseigne, l'assistant cherche de lui-meme des que la description tient
+   * debout, sans attendre qu'on pense a cliquer. Chercher etait un geste
+   * qu'il fallait deviner ; proposer n'en demande aucun.
+   */
+  autoQuery?: string
   /** Le responsable a donner a un controle-type adopte. */
   ownerUserId?: () => string
   onPick: (option: ControlOption) => void
@@ -41,9 +50,11 @@ export function ControlFinder({
   const [message, setMessage] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
   const [adopting, setAdopting] = useState<string | null>(null)
+  /** La derniere requete lancee : on ne relance pas pour une virgule de plus. */
+  const lastQuery = useRef<string | null>(null)
 
-  function search() {
-    const query = readQuery()
+  function run(query: string) {
+    lastQuery.current = query
     setMessage(null)
     startTransition(async () => {
       const result = await searchControlsForRisk({ organizationId, useCaseId, query })
@@ -56,6 +67,26 @@ export function ControlFinder({
       if (!result.matches.length) setMessage('Rien ne correspond : reformuler, ou statuer un contrôle libre.')
     })
   }
+
+  function search() {
+    run(readQuery())
+  }
+
+  /*
+    La recherche se declenche seule, une demi-seconde apres la derniere
+    frappe, des que la description porte assez de mots pour valoir une
+    requete. Elle reste relancable a la main : reformuler le scenario doit
+    pouvoir donner une autre reponse tout de suite.
+  */
+  useEffect(() => {
+    if (autoQuery === undefined) return
+    const query = autoQuery.trim()
+    if (query.length < 25 || query === lastQuery.current) return
+    const timer = setTimeout(() => run(query), 600)
+    return () => clearTimeout(timer)
+    // `run` ne lit que des props stables pour ce qui nous interesse.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoQuery])
 
   function pick(match: ControlMatch) {
     if (match.source === 'control' && match.control_id) {
@@ -86,8 +117,9 @@ export function ControlFinder({
     <div className="rounded-md border border-dashed border-ink-200 bg-ink-50/60 px-3.5 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-ink-600">
-          Pas sûr du contrôle ? L’assistant cherche, d’après l’intitulé et le scénario, dans le registre et
-          les référentiels.
+          {autoQuery === undefined
+            ? 'Pas sûr du contrôle ? L’assistant cherche, d’après l’intitulé et le scénario, dans le registre et les référentiels.'
+            : 'L’assistant lit ce que vous écrivez — intitulé, scénario, catégorie — et propose les contrôles du registre et des référentiels qui s’en approchent.'}
         </p>
         <button
           type="button"
@@ -95,7 +127,11 @@ export function ControlFinder({
           disabled={pending}
           className="rounded-md border border-ink-200 bg-white px-3 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100 disabled:opacity-60"
         >
-          {pending && !adopting ? 'Recherche…' : 'Chercher un contrôle approprié'}
+          {pending && !adopting
+            ? 'Recherche…'
+            : autoQuery === undefined
+              ? 'Chercher un contrôle approprié'
+              : 'Proposer de nouveau'}
         </button>
       </div>
 

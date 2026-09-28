@@ -4,27 +4,15 @@ import { useActionState, useTransition } from 'react'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
 import { attachAssetTooling, detachAssetTooling, type FormState } from '@/lib/actions/asset-tooling'
+import { TOOLING_PHASES, type ToolingPhase } from '@/lib/domain/tooling-phases'
 
 /**
  * Avec quoi cet actif a ete fait.
  *
- * Les phases sont celles du cycle de vie d'ISO/IEC 42001 A.6, dans l'ordre ou
- * elles se suivent : l'ordre porte l'information autant que les mots.
+ * Les phases vivent dans `lib/domain/tooling-phases` : la fiche d'un actif est
+ * rendue sur le serveur et les lit. Exportees d'ici, elles ne lui
+ * parviendraient que comme une reference.
  */
-export const TOOLING_PHASES = [
-  { value: 'design', label: 'Conception' },
-  { value: 'data', label: 'Données' },
-  { value: 'training', label: 'Entraînement' },
-  { value: 'validation', label: 'Validation' },
-  { value: 'deployment', label: 'Déploiement' },
-  { value: 'operation', label: 'Exploitation' },
-] as const
-
-export type ToolingPhase = (typeof TOOLING_PHASES)[number]['value']
-
-export const PHASE_LABELS: Record<string, string> = Object.fromEntries(
-  TOOLING_PHASES.map((p) => [p.value, p.label]),
-)
 
 export type AssetTooling = {
   id: string

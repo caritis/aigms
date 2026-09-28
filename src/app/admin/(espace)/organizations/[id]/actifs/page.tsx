@@ -48,7 +48,15 @@ export default async function AssetRegisterPage({
   const assets = ((registerData ?? []) as RegisterAsset[]).sort(
     (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.name.localeCompare(b.name),
   )
-  const shown = nature ? assets.filter((a) => a.kind === nature) : assets
+  /*
+    Les fournisseurs n'avaient nulle part ou se lire : un panneau d'un tiers de
+    largeur, coince a droite de la liste des actifs, ou trois boutons ne
+    tenaient deja plus sur la ligne. Ils prennent maintenant la page entiere,
+    comme les actifs, sous le meme filtre — l'ecran s'appelle « Actifs d'IA ET
+    fournisseurs », il doit savoir montrer les deux.
+  */
+  const vueFournisseurs = nature === 'fournisseurs'
+  const shown = nature && !vueFournisseurs ? assets.filter((a) => a.kind === nature) : assets
   const counts = KIND_ORDER.map((k) => ({ kind: k, n: assets.filter((a) => a.kind === k).length }))
   const unused = assets.filter((a) => !a.use_cases.length).length
   const bare = assets.filter((a) => !a.measures.length).length
@@ -86,17 +94,25 @@ export default async function AssetRegisterPage({
     >
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <nav aria-label="Filtrer par nature" className="flex rounded-md border border-ink-200 bg-white p-0.5">
-          {[{ kind: '', n: assets.length }, ...counts].map((c) => (
+          {[
+            { kind: '', label: 'Tous les actifs', n: assets.length },
+            ...counts.map((c) => ({ ...c, label: ASSET_KIND_LABELS[c.kind] ?? c.kind })),
+            { kind: 'fournisseurs', label: 'Fournisseurs', n: vendors?.length ?? 0 },
+          ].map((c) => (
             <Link
               key={c.kind || 'tous'}
               href={c.kind ? `/admin/organizations/${id}/actifs?nature=${c.kind}` : `/admin/organizations/${id}/actifs`}
               scroll={false}
               aria-current={(nature ?? '') === c.kind ? 'page' : undefined}
               className={`rounded px-3 py-1.5 text-sm ${
-                (nature ?? '') === c.kind ? 'bg-night-900 font-medium text-white' : 'text-ink-600 hover:bg-ink-100'
+                (nature ?? '') === c.kind
+                  ? 'bg-night-900 font-medium text-white'
+                  : c.kind === 'fournisseurs' && vendorsToReview
+                    ? 'text-warn-600 hover:bg-ink-100'
+                    : 'text-ink-600 hover:bg-ink-100'
               }`}
             >
-              {c.kind ? ASSET_KIND_LABELS[c.kind] ?? c.kind : 'Tous'} {c.n}
+              {c.label} {c.n}
             </Link>
           ))}
         </nav>
@@ -106,6 +122,73 @@ export default async function AssetRegisterPage({
         </p>
       </div>
 
+      {vueFournisseurs ? (
+        <div className="max-w-5xl">
+          <Card
+            title="Fournisseurs"
+            subtitle={
+              vendors?.length
+                ? `${vendors.length} tiers${vendorsToReview ? ` · ${vendorsToReview} sans revue approuvée` : ' · tous revus'}`
+                : 'Aucun tiers déclaré'
+            }
+            tone={vendorsToReview ? 'warn' : 'neutral'}
+          >
+            {vendors?.length ? (
+              <ul className="divide-y divide-ink-100">
+                {vendors.map((v) => {
+                  // Ce que ce tiers porte chez nous : un fournisseur qu'aucun
+                  // actif n'emploie ne conditionne rien, et se lit autrement.
+                  const porte = assets.filter((a) => a.vendor === v.name)
+                  return (
+                    <li key={v.id} className="py-3.5 first:pt-0 last:pb-0">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-ink-900">
+                            {v.name}
+                            {v.is_model_provider ? <Badge tone="info">Fournisseur de modèle</Badge> : null}
+                            <Badge tone={['approved', 'approved_with_conditions'].includes(v.review_status) ? 'ok' : 'warn'}>
+                              {VENDOR_REVIEW_LABELS[v.review_status] ?? v.review_status}
+                            </Badge>
+                          </p>
+                          <p className="mt-0.5 text-xs text-ink-500">
+                            {v.business_ref} · criticité{' '}
+                            {CRITICALITY_LABELS[v.criticality as Criticality]?.toLowerCase() ?? v.criticality}
+                            {v.country_code ? ` · ${v.country_code}` : ''}
+                            {v.next_review_at ? ` · revue le ${formatDate(v.next_review_at)}` : ' · aucune revue datée'}
+                          </p>
+                          <p className="mt-1 text-xs text-ink-500">
+                            {porte.length
+                              ? `Employé par : ${porte.map((a) => a.name).join(', ')}.`
+                              : 'Aucun actif de ce registre ne vient de ce tiers.'}
+                          </p>
+                          {v.notes ? (
+                            <p className="mt-1 text-xs leading-relaxed text-ink-500">{v.notes}</p>
+                          ) : null}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <VendorLabelForm organizationId={id} vendor={v} />
+                          <VendorReviewForm
+                            organizationId={id}
+                            vendorId={v.id}
+                            name={v.name}
+                            reviewStatus={v.review_status}
+                            nextReviewAt={v.next_review_at}
+                          />
+                        </div>
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <Empty>
+                Aucun fournisseur. Tant qu’un tiers impliqué n’est pas déclaré, sa revue ne peut pas
+                être close — et le gate PRODUCTION l’exige.
+              </Empty>
+            )}
+          </Card>
+        </div>
+      ) : (
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card title="Actifs" subtitle={`${shown.length} actif${shown.length > 1 ? 's' : ''}`}>
@@ -197,6 +280,16 @@ export default async function AssetRegisterPage({
             title="Fournisseurs"
             subtitle={vendors?.length ? `${vendors.length} tiers${vendorsToReview ? ` · ${vendorsToReview} sans revue approuvée` : ''}` : 'Aucun tiers déclaré'}
             tone={vendorsToReview ? 'warn' : 'neutral'}
+            action={
+              vendors?.length ? (
+                <Link
+                  href={`/admin/organizations/${id}/actifs?nature=fournisseurs`}
+                  className="text-sm text-brand-600 hover:underline"
+                >
+                  Tout voir
+                </Link>
+              ) : null
+            }
           >
             {vendors?.length ? (
               <ul className="divide-y divide-ink-100">
@@ -212,7 +305,12 @@ export default async function AssetRegisterPage({
                           {v.next_review_at ? ` · revue le ${formatDate(v.next_review_at)}` : ''}
                         </p>
                       </div>
-                      <div className="flex shrink-0 items-center gap-2">
+                      {/*
+                        Trois elements sur un tiers de largeur : `shrink-0` les
+                        empechait de se replier, et le dernier bouton sortait
+                        de la carte. Ils s'enroulent.
+                      */}
+                      <div className="flex flex-wrap items-center gap-2">
                         <Badge tone={['approved', 'approved_with_conditions'].includes(v.review_status) ? 'ok' : 'warn'}>
                           {VENDOR_REVIEW_LABELS[v.review_status] ?? v.review_status}
                         </Badge>
@@ -238,6 +336,7 @@ export default async function AssetRegisterPage({
           </Card>
         </div>
       </div>
+      )}
     </Shell>
   )
 }

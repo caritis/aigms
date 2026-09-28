@@ -146,6 +146,27 @@ export function RiskNote() {
         risques du registre.
       </p>
       <p>
+        <strong className="font-medium text-ink-800">Retirer un risque : deux portes.</strong>{' '}
+        <em>Clore</em>, pour un risque qui a vécu et n’a plus lieu d’être — périmètre modifié, cas
+        d’usage abandonné, risque absorbé par un autre. Rien ne disparaît : traitements, constats
+        et décisions restent lisibles. Le motif est obligatoire et votre nom y reste attaché, parce
+        qu’un risque clos ne retient plus la mise en production. <em>Effacer</em>, pour une ligne
+        saisie par erreur — un doublon, un essai, un risque porté sur le mauvais cas d’usage — et
+        seulement si elle n’a rien laissé derrière elle : encore « identifié », jamais accepté,
+        sans traitement, sans décision qui la désigne, sans constat d’étude d’impact qui y
+        renvoie. Le journal en garde l’instantané complet, son auteur et son motif.
+      </p>
+      <p>
+        <strong className="font-medium text-ink-800">Qui peut quoi.</strong> La clôture revient à
+        l’AI Governance Officer, à l’administrateur client{' '}
+        <strong className="font-medium text-ink-800">et à la personne qui répond du risque</strong>{' '}
+        : elle en répond, elle peut dire qu’il est éteint. L’effacement, lui, est{' '}
+        <strong className="font-medium text-ink-800">fermé au responsable du risque</strong>, pour
+        la raison même qui lui ouvre la clôture — il en répond, il ne l’efface pas. Il revient au
+        seul officer ou à l’administrateur client. L’administrateur de plateforme en est exclu
+        aussi : il ouvre les accès, il ne gouverne rien.
+      </p>
+      <p>
         Un risque ni traité ni accepté bloque le passage en production s’il est élevé ou
         critique — et passe inaperçu s’il ne l’est pas : ne jamais laisser un risque sans
         décision. L’évaluation d’impact, elle, ne dépend pas des risques mais des faits du cas

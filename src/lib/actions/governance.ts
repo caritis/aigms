@@ -518,6 +518,162 @@ export async function createRisk(_previous: FormState | null, formData: FormData
   }
 }
 
+/**
+ * Corriger un risque deja enregistre.
+ *
+ * Une cotation se corrige, un scenario se precise, une categorie se reclasse :
+ * un registre qu'on ne peut pas amender se contourne par un second risque, et
+ * l'on perd le fil. Le niveau reste calcule par la base.
+ *
+ * Ce qui change vraiment se passe en base : `risk_compute_levels` recote,
+ * `risk_audit` garde trace, `risk_check_criticality` reveille le signal de
+ * criticite, et — depuis 0108 — recoter A LA HAUSSE un risque accepte retire
+ * l'acceptation, ramene le risque a « identifie » et en avertit la personne
+ * qui l'avait assumee.
+ */
+const updateRiskSchema = riskSchema
+  .omit({ controlId: true })
+  .extend({ riskId: z.string().uuid() })
+
+export async function updateRisk(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const parsed = updateRiskSchema.safeParse({
+    riskId: formData.get('riskId'),
+    useCaseId: formData.get('useCaseId'),
+    title: formData.get('title'),
+    scenario: formData.get('scenario'),
+    category: formData.get('category'),
+    inherentLikelihood: formData.get('inherentLikelihood'),
+    inherentImpact: formData.get('inherentImpact'),
+    ownerUserId: formData.get('ownerUserId'),
+    nextReviewAt: formData.get('nextReviewAt') ?? '',
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+  const d = parsed.data
+
+  const supabase = await createClient()
+  const { data: before } = await supabase
+    .from('risk')
+    .select('status, inherent_level, residual_level')
+    .eq('id', d.riskId)
+    .maybeSingle()
+  if (!before) return { ok: false, message: 'Risque introuvable.' }
+
+  const { data: after, error } = await supabase
+    .from('risk')
+    .update({
+      title: d.title,
+      scenario: d.scenario,
+      category: d.category,
+      inherent_likelihood: d.inherentLikelihood,
+      inherent_impact: d.inherentImpact,
+      owner_user_id: d.ownerUserId,
+      next_review_at: d.nextReviewAt || null,
+    })
+    .eq('id', d.riskId)
+    .select('status, inherent_level, residual_level')
+    .maybeSingle()
+  if (error) return { ok: false, message: explain(error) }
+
+  revalidatePath(`/admin/use-cases/${d.useCaseId}`)
+
+  // La base a pu retirer l'acceptation : le dire, plutot que de laisser
+  // decouvrir le changement de statut sur la ligne.
+  if (before.status === 'accepted' && after?.status !== 'accepted') {
+    return {
+      ok: true,
+      message:
+        'Risque recoté. Il était accepté à un niveau inférieur : l’acceptation ne le couvre plus, elle a été retirée et son auteur averti. Le risque revient à « identifié ».',
+    }
+  }
+  return { ok: true, message: 'Risque mis à jour ; le niveau a été recalculé.' }
+}
+
+/**
+ * Clore un risque — la voie normale pour ce qui n'a plus lieu d'etre.
+ *
+ * Perimetre modifie, cas d'usage abandonne, risque absorbe par un autre. Rien
+ * ne disparait : traitements, constats et decisions restent lisibles. Un
+ * risque clos sort de la passerelle RISKS_TREATED — c'est pourquoi le motif
+ * est obligatoire et l'auteur enregistre, comme pour une acceptation.
+ *
+ * La base garde la main : `guard_risk_closure` (0109) exige qu'on close en
+ * son propre nom et pose la date.
+ */
+const closeRiskSchema = z.object({
+  riskId: z.string().uuid(),
+  useCaseId: z.string().uuid(),
+  reason: z
+    .string()
+    .trim()
+    .min(20, 'Dites pourquoi ce risque n’a plus lieu d’être : une clôture le sort de la passerelle de production.')
+    .max(2000),
+})
+
+export async function closeRisk(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const parsed = closeRiskSchema.safeParse({
+    riskId: formData.get('riskId'),
+    useCaseId: formData.get('useCaseId'),
+    reason: formData.get('reason'),
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+  const d = parsed.data
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, message: 'Session expirée.' }
+
+  const { error } = await supabase
+    .from('risk')
+    .update({ status: 'closed', closed_by: user.id, closure_reason: d.reason })
+    .eq('id', d.riskId)
+  if (error) return { ok: false, message: explain(error) }
+
+  revalidatePath(`/admin/use-cases/${d.useCaseId}`)
+  return { ok: true, message: 'Risque clos. Son historique reste lisible ; il ne retient plus la mise en production.' }
+}
+
+/**
+ * Effacer un risque — l'erratum, et rien d'autre.
+ *
+ * Un doublon, un essai, une ligne saisie sur le mauvais cas d'usage. Les
+ * conditions sont tenues par la base (`guard_risk_delete`, 0109) : encore
+ * « identifie », jamais accepte, sans traitement, sans decision qui le
+ * designe, sans constat d'impact qui y renvoie — et reserve a l'officer ou a
+ * l'administrateur client. L'ecran n'en est que le miroir : si la base refuse,
+ * on rend son mot.
+ *
+ * Le motif part au journal AVANT l'effacement : l'instantane d'audit dit ce
+ * qui a ete efface, pas pourquoi.
+ */
+const eraseRiskSchema = z.object({
+  riskId: z.string().uuid(),
+  useCaseId: z.string().uuid(),
+  reason: z.string().trim().min(10, 'Dites en quoi cette ligne est une erreur de saisie.').max(500),
+})
+
+export async function eraseRisk(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const parsed = eraseRiskSchema.safeParse({
+    riskId: formData.get('riskId'),
+    useCaseId: formData.get('useCaseId'),
+    reason: formData.get('reason'),
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+  const d = parsed.data
+
+  const supabase = await createClient()
+  // Le motif se pose sur la ligne avant qu'elle ne parte : l'instantané que
+  // le journal conserve le porte alors avec elle.
+  await supabase.from('risk').update({ closure_reason: `Effacé — ${d.reason}` }).eq('id', d.riskId)
+
+  const { error } = await supabase.from('risk').delete().eq('id', d.riskId)
+  if (error) return { ok: false, message: explain(error) }
+
+  revalidatePath(`/admin/use-cases/${d.useCaseId}`)
+  return { ok: true, message: 'Risque effacé. Le journal en garde l’instantané, son auteur et son motif.' }
+}
+
 const acceptRiskSchema = z.object({
   riskId: z.string().uuid(),
   useCaseId: z.string().uuid(),

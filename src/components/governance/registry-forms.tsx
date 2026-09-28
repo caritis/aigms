@@ -184,24 +184,118 @@ export function VendorReviewForm({
   )
 }
 
-export function AssetForm({
-  organizationId,
+/**
+ * Ce qui decrit un actif d'IA, et rien d'autre.
+ *
+ * Les memes champs servent au registre et a la fiche d'un controle, ou l'on
+ * inscrit l'actif sur lequel poser une mesure. Deux formulaires jumeaux
+ * divergent au premier ajout — et l'on se retrouve a demander l'hebergement
+ * d'un cote et pas de l'autre, sans que personne ne l'ait decide.
+ *
+ * `idPrefix` evite la collision d'identifiants quand les deux vivent dans la
+ * meme page.
+ */
+/**
+ * Choisir un fournisseur, ou le nommer sur place.
+ *
+ * Un actif arrive avec son fournisseur, et le fournisseur arrive avec sa revue
+ * non close — donc avec une precondition de mise en production. Sortir vers le
+ * registre des tiers au milieu de la saisie fait perdre le fil au moment
+ * precis ou la chaine se noue.
+ *
+ * Ce qu'on demande ici est pauvre a dessein : un nom, un pays. Le reste — la
+ * criticite, le DPA, la revue de securite, la reversibilite — se renseigne sur
+ * la fiche du tiers, qui reste le lieu de la revue.
+ */
+export function VendorPicker({
+  idPrefix,
   vendors,
-  people,
+  error,
+  optional = true,
+  defaultValue = '',
 }: {
-  organizationId: string
+  idPrefix: string
   vendors: { id: string; name: string }[]
-  people: { id: string; label: string }[]
+  error?: string
+  optional?: boolean
+  /** Le tiers deja rattache, quand on corrige une fiche. */
+  defaultValue?: string
 }) {
-  const [state, formAction, pending] = useActionState<FormState | null, FormData>(createAsset, null)
-  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+  const [nouveau, setNouveau] = useState(false)
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
-      <input type="hidden" name="organizationId" value={organizationId} />
+    <div className="flex flex-col gap-3">
+      <Field label="Fournisseur" htmlFor={`${idPrefix}-vendor`} optional={optional} error={error}>
+        <select
+          id={`${idPrefix}-vendor`}
+          name="vendorId"
+          defaultValue={defaultValue}
+          onChange={(event) => setNouveau(event.target.value === '__nouveau__')}
+          className={FIELD}
+        >
+          <option value="">— Interne ou sans fournisseur</option>
+          {vendors.map((vendor) => (
+            <option key={vendor.id} value={vendor.id}>
+              {vendor.name}
+            </option>
+          ))}
+          <option value="__nouveau__">+ Nouveau fournisseur…</option>
+        </select>
+      </Field>
 
-      <Field label="Nature" htmlFor="asset-kind">
-        <select id="asset-kind" name="kind" defaultValue="ai_system" className={FIELD}>
+      {nouveau ? (
+        <div className="grid gap-3 rounded-md border border-ink-200 bg-ink-50 p-3.5 sm:grid-cols-[1fr_120px]">
+          <Field label="Nom du fournisseur" htmlFor={`${idPrefix}-new-vendor`}>
+            <input
+              id={`${idPrefix}-new-vendor`}
+              name="newVendorName"
+              type="text"
+              required
+              className={FIELD}
+              placeholder="Open.AI"
+            />
+          </Field>
+          <Field
+            label="Pays"
+            htmlFor={`${idPrefix}-new-country`}
+            optional
+            hint="Deux lettres."
+          >
+            <input
+              id={`${idPrefix}-new-country`}
+              name="newVendorCountry"
+              type="text"
+              maxLength={2}
+              className={`${FIELD} uppercase`}
+              placeholder="US"
+            />
+          </Field>
+          <p className="text-xs leading-relaxed text-ink-500 sm:col-span-2">
+            Il sera créé <strong className="font-medium text-ink-700">revue non commencée</strong> :
+            une revue tiers non close retient la mise en production. La criticité, le DPA et la
+            revue de sécurité se renseignent sur sa fiche, au registre des tiers.
+          </p>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+export function AssetFields({
+  idPrefix = 'asset',
+  vendors,
+  people,
+  errors,
+}: {
+  idPrefix?: string
+  vendors: { id: string; name: string }[]
+  people: { id: string; label: string }[]
+  errors: Record<string, string>
+}) {
+  return (
+    <>
+      <Field label="Nature" htmlFor={`${idPrefix}-kind`}>
+        <select id={`${idPrefix}-kind`} name="kind" defaultValue="ai_system" className={FIELD}>
           {ASSET_KINDS.map(([value, label]) => (
             <option key={value} value={value}>
               {label}
@@ -211,31 +305,22 @@ export function AssetForm({
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
-        <Field label="Nom" htmlFor="asset-name" error={errors.name}>
-          <input id="asset-name" name="name" type="text" required className={FIELD} />
+        <Field label="Nom" htmlFor={`${idPrefix}-name`} error={errors.name}>
+          <input id={`${idPrefix}-name`} name="name" type="text" required className={FIELD} />
         </Field>
-        <Field label="Version" htmlFor="asset-version" optional>
-          <input id="asset-version" name="version" type="text" className={FIELD} />
+        <Field label="Version" htmlFor={`${idPrefix}-version`} optional>
+          <input id={`${idPrefix}-version`} name="version" type="text" className={FIELD} />
         </Field>
       </div>
 
-      <Field label="Description" htmlFor="asset-description" optional>
-        <textarea id="asset-description" name="description" rows={2} className={FIELD} />
+      <Field label="Description" htmlFor={`${idPrefix}-description`} optional>
+        <textarea id={`${idPrefix}-description`} name="description" rows={2} className={FIELD} />
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Fournisseur" htmlFor="asset-vendor" optional>
-          <select id="asset-vendor" name="vendorId" defaultValue="" className={FIELD}>
-            <option value="">— Interne ou sans fournisseur</option>
-            {vendors.map((vendor) => (
-              <option key={vendor.id} value={vendor.id}>
-                {vendor.name}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Responsable" htmlFor="asset-owner" optional>
-          <select id="asset-owner" name="ownerUserId" defaultValue="" className={FIELD}>
+        <VendorPicker idPrefix={idPrefix} vendors={vendors} error={errors.vendorId} />
+        <Field label="Responsable" htmlFor={`${idPrefix}-owner`} optional>
+          <select id={`${idPrefix}-owner`} name="ownerUserId" defaultValue="" className={FIELD}>
             <option value="">— À désigner</option>
             {people.map((person) => (
               <option key={person.id} value={person.id}>
@@ -248,11 +333,11 @@ export function AssetForm({
 
       <Field
         label="Localisation d’hébergement"
-        htmlFor="asset-hosting"
+        htmlFor={`${idPrefix}-hosting`}
         optional
         hint="Où le traitement a lieu. Un transfert hors UE se documente."
       >
-        <input id="asset-hosting" name="hostingLocation" type="text" className={FIELD} />
+        <input id={`${idPrefix}-hosting`} name="hostingLocation" type="text" className={FIELD} />
       </Field>
 
       <label className="flex items-start gap-2.5 text-sm">
@@ -268,7 +353,26 @@ export function AssetForm({
           </span>
         </span>
       </label>
+    </>
+  )
+}
 
+export function AssetForm({
+  organizationId,
+  vendors,
+  people,
+}: {
+  organizationId: string
+  vendors: { id: string; name: string }[]
+  people: { id: string; label: string }[]
+}) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(createAsset, null)
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+
+  return (
+    <form action={formAction} className="flex flex-col gap-4">
+      <input type="hidden" name="organizationId" value={organizationId} />
+      <AssetFields vendors={vendors} people={people} errors={errors} />
       <FormFeedback state={state} />
       <Submit pending={pending} idle="Inscrire l’actif" />
     </form>
@@ -279,9 +383,11 @@ export function AssetForm({
 // Rattachements
 // -----------------------------------------------------------------------------
 export function LinkAssetForm({
+  organizationId,
   useCaseId,
   assets,
 }: {
+  organizationId: string
   useCaseId: string
   assets: { id: string; name: string; kind: string }[]
 }) {
@@ -290,11 +396,31 @@ export function LinkAssetForm({
     null,
   )
 
-  if (!assets.length) return null
-
   return (
-    <Modal trigger="Rattacher un actif" title="Actif d’IA employé par ce cas d’usage">
-      {() => (
+    <Modal
+      trigger="Rattacher un actif"
+      title="Actif d’IA employé par ce cas d’usage"
+      description="Ce que le cas d’usage EMPLOIE : un modèle, un agent, un système, un jeu de données. À ne pas confondre avec l’outillage, qui est ce AVEC QUOI on tient les contrôles."
+    >
+      {() =>
+        !assets.length ? (
+          /*
+            Le bouton disparaissait quand le registre etait vide : on cherchait
+            une fonction absente de l'ecran, sans savoir qu'elle attendait une
+            fiche d'actif. Il reste, et dit ou aller.
+          */
+          <p className="text-sm leading-relaxed text-ink-600">
+            Aucun actif d’IA n’est encore inscrit au registre de cette organisation. Un actif se décrit
+            une fois et se lit ensuite depuis tous ses cas d’usage : inscrivez-le d’abord depuis{' '}
+            <a
+              href={`/admin/organizations/${organizationId}/actifs`}
+              className="font-medium text-brand-600 hover:underline"
+            >
+              Registres → Actifs d’IA et fournisseurs
+            </a>
+            .
+          </p>
+        ) : (
         <form action={formAction} className="flex flex-col gap-4">
           <input type="hidden" name="useCaseId" value={useCaseId} />
           <Field label="Actif" htmlFor="link-asset">
@@ -315,15 +441,18 @@ export function LinkAssetForm({
           <FormFeedback state={state} />
           <Submit pending={pending} idle="Rattacher" />
         </form>
-      )}
+        )
+      }
     </Modal>
   )
 }
 
 export function LinkVendorForm({
+  organizationId,
   useCaseId,
   vendors,
 }: {
+  organizationId: string
   useCaseId: string
   vendors: { id: string; name: string }[]
 }) {
@@ -332,15 +461,26 @@ export function LinkVendorForm({
     null,
   )
 
-  if (!vendors.length) return null
-
   return (
     <Modal
       trigger="Rattacher un fournisseur"
       title="Fournisseur impliqué"
       description="Sa revue tiers devra être close avant la mise en production."
     >
-      {() => (
+      {() =>
+        !vendors.length ? (
+          <p className="text-sm leading-relaxed text-ink-600">
+            Aucun fournisseur n’est encore inscrit au registre de cette organisation. Inscrivez-le
+            depuis{' '}
+            <a
+              href={`/admin/organizations/${organizationId}/actifs`}
+              className="font-medium text-brand-600 hover:underline"
+            >
+              Registres → Actifs d’IA et fournisseurs
+            </a>
+            .
+          </p>
+        ) : (
         <form action={formAction} className="flex flex-col gap-4">
           <input type="hidden" name="useCaseId" value={useCaseId} />
           <Field label="Fournisseur" htmlFor="link-vendor">
@@ -358,7 +498,8 @@ export function LinkVendorForm({
           <FormFeedback state={state} />
           <Submit pending={pending} idle="Rattacher" />
         </form>
-      )}
+        )
+      }
     </Modal>
   )
 }

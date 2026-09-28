@@ -11,7 +11,6 @@ import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { TransitionModal } from '@/components/governance/transition-modal'
-import { AssetMeasureForm } from '@/components/governance/asset-measure-form'
 import { DecisionModal } from '@/components/governance/decision-modal'
 import { IncidentTicket } from '@/components/governance/incident-ticket'
 import { EvidenceDepositModal } from '@/components/governance/evidence-deposit-modal'
@@ -27,7 +26,8 @@ import {
 } from '@/lib/domain/classification'
 import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
-import { ApplicabilityForm, ApplicabilityPencil, RiskTreatmentForm } from '@/components/governance/control-forms'
+import { RiskTreatmentForm } from '@/components/governance/control-forms'
+import { ControlApplicabilityModal } from '@/components/governance/control-applicability-modal'
 import { ControlProposals, type Suggestions } from '@/components/governance/control-proposals'
 import { ActionProposals, type ActionSuggestions } from '@/components/governance/action-proposals'
 import {
@@ -59,6 +59,9 @@ import { DECISION_TYPES_BY_STATUS, UI_TRANSITIONS } from '@/lib/domain/transitio
 import {
   AcceptRiskForm,
   ClassificationPanel,
+  RiskCloseForm,
+  RiskEditForm,
+  RiskEraseForm,
   RiskPanel,
   CriticalityPanel,
 } from '@/components/governance/use-case-panels'
@@ -98,6 +101,7 @@ import {
   type RiskLevel,
   type UseCaseStatus,
 } from '@/lib/domain/governance'
+import { RISK_CATEGORY_LABELS } from '@/lib/domain/risk'
 
 /** « Camille Rousset », ou l'adresse, ou rien. */
 function personLabel(value: unknown): string | null {
@@ -205,27 +209,17 @@ export default async function UseCasePage({
 
   const status = useCase.status as UseCaseStatus
 
-  // Les requetes sont independantes : elles partent ensemble pour eviter une
-  // cascade d'allers-retours.
-  const [
-    { data: classification },
-    { data: risks },
-    { data: impacts },
-    { data: oversight },
-    { data: decisions },
-    { data: controls },
-    { data: actions },
-    { data: changes },
-    { data: incidents },
-    { data: suggestionsData },
-    { data: actionSuggestionsData },
-    { data: gateData },
-    { data: reviewGateData },
-    { data: memberships },
-    { data: orgControls },
-    { data: orgVendors },
-    { data: orgAssets },
-  ] = await Promise.all([
+  /*
+    Les requetes sont independantes : elles partent ensemble pour eviter une
+    cascade d'allers-retours.
+
+    Leurs erreurs ne se perdent plus. Une lecture qui echoue rendait `null`, et
+    `null` s'affichait comme une liste vide : l'ecran annoncait « Aucun risque
+    identifie » alors que la base avait refuse la requete. Un ecran qui ment
+    sur l'etat du dossier est pire qu'un ecran en panne — on a saisi trois fois
+    le meme risque en croyant qu'il ne s'enregistrait pas.
+  */
+  const lectures = await Promise.all([
     supabase
       .from('regulatory_classification')
       .select(
@@ -237,7 +231,9 @@ export default async function UseCasePage({
     supabase
       .from('risk')
       .select(
-        'id, business_ref, title, scenario, category, inherent_level, residual_level, inherent_likelihood, inherent_impact, residual_likelihood, residual_impact, status, accepted_at, acceptance_review_at, next_review_at, owner_user_id',
+                // Les traitements sont embarques, pas relus : l'ecran doit savoir si
+        // un risque a produit quelque chose avant d'offrir de l'effacer.
+        'id, business_ref, title, scenario, category, inherent_level, residual_level, inherent_likelihood, inherent_impact, residual_likelihood, residual_impact, status, accepted_at, acceptance_review_at, next_review_at, owner_user_id, closed_at, closure_reason, risk_treatment(id)',
       )
       .eq('use_case_id', id)
       .order('business_ref'),
@@ -316,8 +312,37 @@ export default async function UseCasePage({
       .select('id, code, name, status, organization_id')
       .order('code'),
     supabase.from('vendor').select('id, name, organization_id').order('name'),
-    supabase.from('ai_asset').select('id, name, kind, organization_id').order('name'),
+    supabase.from('ai_asset').select('id, name, kind, business_ref, organization_id').order('name'),
   ])
+
+  const [
+    { data: classification },
+    { data: risks },
+    { data: impacts },
+    { data: oversight },
+    { data: decisions },
+    { data: controls },
+    { data: actions },
+    { data: changes },
+    { data: incidents },
+    { data: suggestionsData },
+    { data: actionSuggestionsData },
+    { data: gateData },
+    { data: reviewGateData },
+    { data: memberships },
+    { data: orgControls },
+    { data: orgVendors },
+    { data: orgAssets },
+  ] = lectures
+
+  /*
+    Ce que la base a refuse de lire. On ne le devine pas : on le dit. Une
+    colonne absente parce qu'une migration n'est pas passee, une politique qui
+    ferme une table — l'ecran doit l'annoncer, pas afficher une liste vide.
+  */
+  const lecturesEnEchec = lectures
+    .map((l) => (l as { error?: { message: string } | null }).error?.message)
+    .filter((m): m is string => Boolean(m))
 
   const gate = gateData as GateResult | null
   const reviewGate = reviewGateData as GateResult | null
@@ -549,12 +574,33 @@ export default async function UseCasePage({
   // liste ne propose pas les cent vingt controles du referentiel.
   const treatmentChoices = controlChoices.filter((c) => applicableControlIds.includes(c.id))
 
+  /*
+    Qui voit le bouton « Effacer ». Le responsable du risque en est exclu : il
+    en repond, il ne l'efface pas — c'est la raison meme qui lui ouvre la
+    cloture. L'ecran n'ouvre aucun droit : `guard_risk_delete` (0109) tient la
+    meme liste, et c'est elle qui tranche.
+  */
+  const effaceurDeRisque =
+    viewer?.role === 'governance_officer' || viewer?.role === 'client_admin'
+
   const vendorChoices = (orgVendors ?? [])
     .filter((v) => v.organization_id === useCase.organization_id)
     .map((v) => ({ id: v.id, name: v.name }))
+  /*
+    Les actifs du registre que ce cas d'usage n'emploie pas encore : ce qu'on
+    peut lui rattacher, depuis la fiche d'un controle comme depuis l'onglet
+    Avancement.
+  */
   const assetChoices = (orgAssets ?? [])
     .filter((a) => a.organization_id === useCase.organization_id)
     .map((a) => ({ id: a.id, name: a.name, kind: a.kind }))
+  const attachableAssets = assetChoices.filter(
+    (a) => !useCaseAssets.some((u) => u.asset_id === a.id),
+  )
+  /* Pour « cet outil est lui-meme un actif d'IA », sur la carte d'outillage. */
+  const orgAssetOptions = (orgAssets ?? [])
+    .filter((a) => a.organization_id === useCase.organization_id)
+    .map((a) => ({ id: a.id, name: a.name, business_ref: a.business_ref }))
 
   // Les personnes qui peuvent se prononcer sur une decision.
   const reviewers = (await organizationPeople(useCase.organization_id, true)).map((p) => ({
@@ -708,6 +754,33 @@ export default async function UseCasePage({
 
       <UseCaseTabs useCaseId={id} active={tab} signals={signals} />
 
+      {/*
+        Une lecture refusee ne se tait pas. Sans cela, une liste vide veut dire
+        deux choses opposees — « rien a montrer » et « la base a refuse » — et
+        l'on croit que la saisie ne s'enregistre pas.
+      */}
+      {lecturesEnEchec.length ? (
+        <div
+          role="alert"
+          className="mb-5 rounded-md border border-stop-600/30 bg-stop-600/5 px-4 py-3 text-sm leading-relaxed text-ink-800"
+        >
+          <p className="font-medium text-stop-600">
+            {lecturesEnEchec.length === 1
+              ? 'Une lecture de ce dossier a échoué.'
+              : `${lecturesEnEchec.length} lectures de ce dossier ont échoué.`}
+          </p>
+          <p className="mt-1 text-ink-600">
+            Ce qui en dépend s’affiche vide, et ne reflète donc pas l’état réel du dossier. La
+            cause la plus fréquente est une migration de base non appliquée à cet environnement.
+          </p>
+          <ul className="mt-2 list-disc pl-5 text-xs text-ink-500">
+            {[...new Set(lecturesEnEchec)].map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {tab === 'avancement' ? (
         <div className="grid gap-5 lg:grid-cols-3">
           <div className="space-y-5 lg:col-span-2">
@@ -751,8 +824,16 @@ export default async function UseCasePage({
                   mise en production.
                 */}
                 <span className="ml-auto flex flex-wrap gap-2">
-                  <LinkAssetForm useCaseId={id} assets={assetChoices} />
-                  <LinkVendorForm useCaseId={id} vendors={vendorChoices} />
+                  <LinkAssetForm
+                    organizationId={useCase.organization_id}
+                    useCaseId={id}
+                    assets={assetChoices}
+                  />
+                  <LinkVendorForm
+                    organizationId={useCase.organization_id}
+                    useCaseId={id}
+                    vendors={vendorChoices}
+                  />
                 </span>
               </div>
 
@@ -1028,16 +1109,30 @@ export default async function UseCasePage({
         </div>
       ) : null}
 
+      {/*
+        Les controles prennent toute la largeur : les lignes portent un code, un
+        intitule, une justification, des pastilles d'etat et des actifs. A
+        quatre-vingt-seize caracteres, tout cela se replie sur trois lignes et
+        la liste devient illisible.
+      */}
       {tab === 'controles' ? (
-        <div className="max-w-4xl">
+        <div>
+          {/*
+            Le compte ne se compare plus au registre entier : il annoncait
+            « 4 sur 5 » alors que le cinquieme est un controle de portee
+            ORGANISATION, qui ne s'affecte a aucun cas d'usage. L'ecran
+            promettait un geste que le modele interdit.
+          */}
           <Card
             title="Contrôles affectés"
-            subtitle={`${controls?.length ?? 0} contrôle(s) statué(s) sur ${controlChoices.length} au référentiel · ${applicableControls.length} applicable(s), dont ${applicableControls.filter((c) => (c.control as unknown as { status: string } | null)?.status === 'operating').length} opérant(s)`}
+            subtitle={`${controls?.length ?? 0} contrôle(s) statué(s) sur ce cas d’usage · ${applicableControls.length} applicable(s), dont ${applicableControls.filter((c) => (c.control as unknown as { status: string } | null)?.status === 'operating').length} opérant(s)`}
             action={<ControlNote />}
           >
             {/*
-              Deux gestes : laisser l'assistant proposer — regles, faits, role —
-              et retenir ; ou statuer soi-meme sur un controle de la liste.
+              Un seul geste ici : laisser l'assistant proposer — regles, faits,
+              role — et retenir. Statuer se fait sur la ligne du controle, au
+              crayon : la modale generale obligeait a le rechoisir dans une
+              liste de cent vingt alors qu'on venait de le lire.
             */}
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <ControlProposals
@@ -1045,7 +1140,21 @@ export default async function UseCasePage({
                 useCaseId={id}
                 suggestions={(suggestionsData ?? { available: false }) as Suggestions}
               />
-              <ApplicabilityForm useCaseId={id} controls={controlChoices} />
+              {/*
+                Ou sont passes les autres. Un controle de portee organisation —
+                la politique d'usage, le comite, l'audit interne — se tient une
+                fois pour toute l'organisation : il ne s'affecte pas ici, et ne
+                figure donc dans aucune proposition. Le dire evite de le
+                chercher.
+              */}
+              {organization ? (
+                <Link
+                  href={`/admin/organizations/${organization.id}/controles`}
+                  className="text-xs text-ink-500 hover:text-ink-900 hover:underline"
+                >
+                  Les contrôles du système de management se tiennent une fois, au registre →
+                </Link>
+              ) : null}
             </div>
 
             {/*
@@ -1189,11 +1298,30 @@ export default async function UseCasePage({
                                     modale generale obligeait a le rechoisir
                                     dans une liste de cent vingt.
                                   */}
-                                  <ApplicabilityPencil
+                                  <ControlApplicabilityModal
+                                    organizationId={useCase.organization_id}
                                     useCaseId={id}
-                                    control={{ id: control.id, code: control.code, name: control.name }}
+                                    control={{
+                                      id: control.id,
+                                      code: control.code,
+                                      name: control.name,
+                                      measure_kind: control.measure_kind ?? 'organizational',
+                                    }}
                                     current={ca.status}
                                     justification={ca.justification}
+                                    assets={useCaseAssets.map((a) => ({
+                                      asset_id: a.asset_id,
+                                      name: a.name,
+                                      kind: a.kind,
+                                    }))}
+                                    attachableAssets={attachableAssets}
+                                    vendors={vendorChoices}
+                                    people={people}
+                                    orgAssets={orgAssetOptions}
+                                    carriers={carriers.map((a) => {
+                                      const m = a.measures.find((x) => x.control_id === control.id)!
+                                      return { asset_id: a.asset_id, name: a.name, status: m.status, note: m.note }
+                                    })}
                                   />
                                   <span className="min-w-0">
                                     {control.code} — {control.name}
@@ -1302,8 +1430,18 @@ export default async function UseCasePage({
                                   ) : null}
                                 </span>
                               </div>
+                              {/*
+                                Sur quoi la mesure est posee, sans ouvrir la
+                                fiche. Quand rien ne la porte, le dire : une
+                                mesure technique sans actif est une phrase.
+                              */}
                               {kind === 'technical' && applicable ? (
                                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                                  {carriers.length ? null : (
+                                    <span className="text-[11px] text-warn-600">
+                                      Aucun actif ne la porte — au crayon, « Actifs d’IA qui la portent ».
+                                    </span>
+                                  )}
                                   {carriers.map((a) => {
                                     const m = a.measures.find((x) => x.control_id === control.id)!
                                     return (
@@ -1320,12 +1458,6 @@ export default async function UseCasePage({
                                       </span>
                                     )
                                   })}
-                                  <AssetMeasureForm
-                                    useCaseId={id}
-                                    control={{ id: control.id, code: control.code, name: control.name }}
-                                    assets={useCaseAssets.map((a) => ({ asset_id: a.asset_id, name: a.name, kind: a.kind }))}
-                                    placed={carriers.map((a) => a.asset_id)}
-                                  />
                                 </div>
                               ) : null}
                             </li>
@@ -1370,10 +1502,27 @@ export default async function UseCasePage({
                   <li key={risk.id} className="py-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-ink-900">{risk.title}</p>
+                        {/*
+                          Une cotation se corrige, un scenario se precise. Le
+                          crayon evite qu'on ouvre un SECOND risque pour dire
+                          autrement le premier — et la fenetre annonce ce que
+                          la correction entraine.
+                        */}
+                        <p className="flex items-start gap-2 text-sm font-medium text-ink-900">
+                          {risk.status !== 'closed' ? (
+                            <RiskEditForm
+                              useCaseId={id}
+                              risk={risk}
+                              people={people}
+                              defaultOwnerUserId={useCase.accountable_user_id ?? useCase.owner_user_id}
+                              criticality={useCase.criticality}
+                            />
+                          ) : null}
+                          <span className="min-w-0">{risk.title}</span>
+                        </p>
                         <p className="text-xs text-ink-600">{risk.scenario}</p>
                         <p className="mt-1 text-xs text-ink-400">
-                          {risk.business_ref} · {risk.category} ·{' '}
+                          {risk.business_ref} · {RISK_CATEGORY_LABELS[risk.category] ?? risk.category} ·{' '}
                           {RISK_STATUS_LABELS[risk.status] ?? risk.status}
                           {risk.accepted_at
                             ? ` · accepté, revue le ${formatDate(risk.acceptance_review_at)}`
@@ -1433,6 +1582,40 @@ export default async function UseCasePage({
                           </p>
                         )}
                       </div>
+                    ) : null}
+
+                    {/*
+                      Retirer un risque du registre : deux portes, et elles ne
+                      servent pas la meme chose. On CLOT ce qui a vecu — rien
+                      ne disparait. On EFFACE l'erratum, et la base n'admet
+                      que ce qui n'a rien laisse derriere lui.
+                    */}
+                    {risk.status !== 'closed' ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <RiskCloseForm riskId={risk.id} riskRef={risk.business_ref} useCaseId={id} />
+                        {/*
+                          Effacer est ferme au responsable du risque, pour la
+                          raison meme qui lui ouvre la cloture : il en repond.
+                          L'ecran n'ouvre aucun droit — la base tient les
+                          memes conditions, et refuse en le disant.
+                        */}
+                        {effaceurDeRisque &&
+                        risk.status === 'identified' &&
+                        !risk.accepted_at &&
+                        !(risk.risk_treatment ?? []).length ? (
+                          <RiskEraseForm
+                            riskId={risk.id}
+                            riskRef={risk.business_ref}
+                            riskTitle={risk.title}
+                            useCaseId={id}
+                          />
+                        ) : null}
+                      </div>
+                    ) : risk.closure_reason ? (
+                      <p className="mt-2 text-xs leading-relaxed text-ink-500">
+                        <strong className="font-medium text-ink-700">Clos</strong>
+                        {risk.closed_at ? ` le ${formatDate(risk.closed_at)}` : ''} — {risk.closure_reason}
+                      </p>
                     ) : null}
                   </li>
                 ))}

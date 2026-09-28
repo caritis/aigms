@@ -55,10 +55,10 @@ export default async function ControlsPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ etat?: string; outillage?: string }>
+  searchParams: Promise<{ etat?: string; outillage?: string; domaine?: string }>
 }) {
   const { id } = await params
-  const { etat, outillage } = await searchParams
+  const { etat, outillage, domaine } = await searchParams
   const supabase = await createClient()
 
   const [{ data: organization }, { data: controlRows }, { data: requirementRows }, { data: links }, { data: orgSuggestions }] =
@@ -67,7 +67,9 @@ export default async function ControlsPage({
       supabase
         .from('control')
         .select(
-          'id, business_ref, code, name, objective, status, is_mandatory, measure_kind, frequency, last_tested_at, next_test_at, expected_evidence, assessment_questions, owner:owner_user_id (full_name, email), catalog:catalog_control_id (control_code, version:version_id (version, framework:framework_id (code)))',
+          // Le domaine vient du contrôle-type : « GOV », « Gouvernance ». Un
+          // contrôle libre n'en a pas — il se range à part, et c'est juste.
+          'id, business_ref, code, name, objective, status, is_mandatory, measure_kind, frequency, last_tested_at, next_test_at, expected_evidence, assessment_questions, owner:owner_user_id (full_name, email), catalog:catalog_control_id (control_code, domain:domain_id (code, name), version:version_id (version, framework:framework_id (code)))',
         )
         .eq('organization_id', id)
         .order('code'),
@@ -122,8 +124,40 @@ export default async function ControlsPage({
   const needsTooling = (c: Control) => c.measure_kind === 'technical' && !toolingBy.has(c.id)
   const missingTooling = controls.filter(needsTooling)
 
+  /*
+    Le domaine du controle-type — GOV, DAT, SEC… — comme sur la fenetre des
+    propositions. Un registre de cent-vingt controles ne se parcourt pas ; il
+    se filtre, et par les memes mots des deux cotes.
+  */
+  const domaineDe = (c: Control) => {
+    const cc = c.catalog as unknown as { domain: { code: string; name: string } | null } | null
+    return cc?.domain ?? null
+  }
+  const domaines = [
+    ...new Map(
+      controls
+        .map(domaineDe)
+        .filter((d): d is { code: string; name: string } => Boolean(d))
+        .map((d) => [d.code, d]),
+    ).values(),
+  ].sort((a, b) => a.code.localeCompare(b.code))
+  const libres = controls.filter((c) => !domaineDe(c)).length
+
+  /* Les comptes d'un filtre tiennent compte de l'autre : sinon ils annoncent
+     des lignes que le second filtre ne montrera pas. */
+  const byDomain2 = !domaine
+    ? controls
+    : domaine === 'libre'
+      ? controls.filter((c) => !domaineDe(c))
+      : controls.filter((c) => domaineDe(c)?.code === domaine)
+
   const byState = etat ? controls.filter((c) => c.status === etat) : controls
-  const shown = outillage === 'manquant' ? byState.filter(needsTooling) : byState
+  const byDomain = !domaine
+    ? byState
+    : domaine === 'libre'
+      ? byState.filter((c) => !domaineDe(c))
+      : byState.filter((c) => domaineDe(c)?.code === domaine)
+  const shown = outillage === 'manquant' ? byDomain.filter(needsTooling) : byDomain
   const operating = controls.filter((c) => c.status === 'operating').length
   const mandatory = controls.filter((c) => c.is_mandatory).length
   const unmapped = controls.filter((c) => !mappedBy.has(c.id)).length
@@ -138,20 +172,29 @@ export default async function ControlsPage({
       title="Liste des contrôles opérationnels"
       subtitle="Le dispositif de maîtrise de l’organisation, et ce qu’il couvre."
       actions={
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/admin/organizations/${id}/controles/nouveau`}
-            className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
-          >
-            Ajouter un contrôle
-          </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          {/*
+            L'ordre dit le geste attendu. Retenir ce que l'assistant propose
+            est la voie normale — le referentiel le calcule, l'officer
+            choisit. Ecrire un controle a la main reste possible, mais c'est
+            l'exception : un controle libre n'est rattache a aucun
+            controle-type, ne porte ni preuves attendues ni questions
+            d'evaluation, et n'apparait dans aucune proposition.
+          */}
           <ControlProposals
             organizationId={id}
             suggestions={(orgSuggestions ?? { available: false }) as Suggestions}
+            triggerClassName="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
           />
           <Link
+            href={`/admin/organizations/${id}/controles/nouveau`}
+            className="rounded-md border border-ink-200 px-3 py-1.5 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            Écrire un contrôle
+          </Link>
+          <Link
             href={`/admin/organizations/${id}/outillage`}
-            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+            className="rounded-md border border-ink-200 px-3 py-1.5 text-sm text-ink-700 hover:bg-ink-100"
           >
             Outillage
           </Link>
@@ -199,17 +242,48 @@ export default async function ControlsPage({
           label="Filtrer par état"
           param="etat"
           basePath={`/admin/organizations/${id}/controles`}
-          current={{ outillage: outillage ?? '' }}
+          current={{ outillage: outillage ?? '', domaine: domaine ?? '' }}
           selected={etat}
           options={STATE_FILTERS.map((option) => ({
             key: option.key,
             label: option.label,
             count: option.key
-              ? controls.filter((c) => c.status === option.key).length
-              : controls.length,
+              ? byDomain2.filter((c) => c.status === option.key).length
+              : byDomain2.length,
           }))}
         />
       </div>
+
+      {domaines.length > 1 ? (
+        <div className="mb-5">
+          <SegmentedFilter
+            label="Filtrer par domaine"
+            param="domaine"
+            basePath={`/admin/organizations/${id}/controles`}
+            current={{ etat: etat ?? '', outillage: outillage ?? '' }}
+            selected={domaine ?? ''}
+            options={[
+              { key: '', label: 'Tous les domaines', count: controls.length },
+              ...domaines.map((d) => ({
+                key: d.code,
+                label: d.code,
+                count: controls.filter((c) => domaineDe(c)?.code === d.code).length,
+                hint: d.name,
+              })),
+              ...(libres
+                ? [
+                    {
+                      key: 'libre',
+                      label: 'Libres',
+                      count: libres,
+                      hint: 'Écrits à la main : rattachés à aucun contrôle-type, donc absents des propositions et sans preuves attendues.',
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        </div>
+      ) : null}
 
       {missingTooling.length ? (
         <div className="mb-5">
@@ -217,7 +291,7 @@ export default async function ControlsPage({
             label="Outillage"
             param="outillage"
             basePath={`/admin/organizations/${id}/controles`}
-            current={{ etat: etat ?? '' }}
+            current={{ etat: etat ?? '', domaine: domaine ?? '' }}
             selected={outillage === 'manquant' ? 'manquant' : ''}
             options={[
               { key: '', label: 'Tous les contrôles', count: byState.length },
@@ -232,129 +306,201 @@ export default async function ControlsPage({
         </div>
       ) : null}
 
-      <Card title="Contrôles opérationnels" subtitle={`${shown.length} contrôle(s)`}>
-        {shown.length ? (
-          <ul className="flex flex-col divide-y divide-ink-100">
-            {shown.map((control) => (
-              <li key={control.id} className="py-4 first:pt-0 last:pb-0">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-ink-900">
-                      <span className="mr-2 font-mono text-xs text-ink-400">{control.code}</span>
-                      {control.name}
-                      {(() => {
-                        const origin = control.catalog as unknown as {
-                          control_code: string
-                          version: { version: string; framework: { code: string } | null } | null
-                        } | null
-                        return origin ? (
-                          <span
-                            className="ml-2 rounded bg-ink-100 px-1.5 py-0.5 text-[10px] font-normal text-ink-600"
-                            title={`Instance du contrôle-type ${origin.control_code}`}
-                          >
-                            {origin.version?.framework?.code ?? 'référentiel'} v{origin.version?.version} · {origin.control_code}
-                          </span>
-                        ) : null
-                      })()}
-                    </p>
-                    <p className="mt-1 text-sm leading-relaxed text-ink-600">{control.objective}</p>
-                    <p className="mt-1.5 text-xs text-ink-500">
-                      {control.business_ref}
-                      {control.owner ? ` · ${control.owner.full_name ?? control.owner.email}` : ' · sans responsable'}
-                      {control.frequency ? ` · ${control.frequency}` : ''}
-                      {control.last_tested_at
-                        ? ` · dernier test le ${formatDate(control.last_tested_at)}`
-                        : ' · jamais testé'}
-                      {control.next_test_at
-                        ? ` · prochain le ${formatDate(control.next_test_at)}`
-                        : ''}
-                    </p>
-                    <p className="mt-1.5 text-xs text-ink-500">
-                      {mappedBy.get(control.id)?.length
-                        ? `Exigences : ${mappedBy.get(control.id)!.join(', ')}`
-                        : 'Aucune exigence rattachée — ce contrôle ne compte dans aucune Déclaration.'}
-                    </p>
-                    {/*
-                      Avec quoi il se tient : le produit employe ici, pas la
-                      famille du referentiel. C'est la qu'on prend sa preuve.
-                    */}
-                    <p className="mt-1.5 text-xs text-ink-500">
-                      {toolingBy.get(control.id)?.length
-                        ? `Se tient avec : ${toolingBy.get(control.id)!.map((t) => t.product).join(', ')}`
-                        : 'Se tient à la main — aucun outil retenu.'}
-                      {' · '}
-                      <ControlToolingModal
-                        organizationId={id}
-                        controlId={control.id}
-                        controlCode={control.code}
-                      />
-                    </p>
-                    {/*
-                      Le registre se lit pareil quelle que soit l'origine du
-                      controle : ce qu'il faut prouver, ce qu'on demande.
-                    */}
-                    {control.expected_evidence?.length || control.assessment_questions?.length ? (
-                      <details className="mt-1.5 text-xs text-ink-500">
-                        <summary className="cursor-pointer hover:text-ink-800">
-                          {control.expected_evidence?.length ?? 0} preuve(s) attendue(s) · {control.assessment_questions?.length ?? 0} question(s) d’évaluation
-                        </summary>
-                        <div className="mt-1.5 grid gap-3 sm:grid-cols-2">
-                          {control.expected_evidence?.length ? (
-                            <ul className="list-disc pl-4">
-                              {control.expected_evidence.map((e) => <li key={e}>{e}</li>)}
-                            </ul>
-                          ) : null}
-                          {control.assessment_questions?.length ? (
-                            <ul className="list-disc pl-4">
-                              {control.assessment_questions.map((q) => <li key={q}>{q}</li>)}
-                            </ul>
-                          ) : null}
-                        </div>
-                      </details>
-                    ) : (
-                      <p className="mt-1.5 text-xs text-warn-600">
-                        Ni preuve attendue ni question d’évaluation : le registre ne dit pas comment ce contrôle se démontre.
-                      </p>
-                    )}
-                  </div>
+      {/*
+        Chaque controle se replie.
+        La liste portait pour chacun son objectif, ses exigences, son
+        outillage, ses preuves attendues et deux boutons : six lignes par
+        controle, et vingt controles faisaient une page ou l'on ne retrouvait
+        rien. Repliee, une ligne tient sur deux — et ce qui manque s'y lit,
+        parce qu'un repli qui cache un ecart ne vaut rien.
 
-                  <div className="flex shrink-0 flex-col items-end gap-2">
-                    <div className="flex gap-2">
-                      <Badge tone="neutral">{MEASURE_KIND_LABELS[control.measure_kind] ?? control.measure_kind}</Badge>
-                      {control.is_mandatory ? <Badge tone="warn">Obligatoire</Badge> : null}
-                      <Badge
-                        tone={
-                          control.status === 'operating'
-                            ? 'ok'
-                            : control.status === 'ineffective'
-                              ? 'stop'
-                              : 'neutral'
-                        }
+        La zone defile pour elle-meme : les filtres restent sous les yeux
+        pendant qu'on parcourt la liste.
+      */}
+      <Card title="Contrôles opérationnels" subtitle={`${shown.length} contrôle(s) — replié ; le titre ouvre la fiche`}>
+        {shown.length ? (
+          <div className="-mx-5 max-h-[68vh] overflow-y-auto px-5">
+          <ul className="flex flex-col divide-y divide-ink-100">
+            {shown.map((control) => {
+              const origin = control.catalog as unknown as {
+                control_code: string
+                version: { version: string; framework: { code: string } | null } | null
+              } | null
+              const exigences = mappedBy.get(control.id) ?? []
+              const outils = toolingBy.get(control.id) ?? []
+              const preuves = control.expected_evidence?.length ?? 0
+              const questions = control.assessment_questions?.length ?? 0
+              // Ce qui appelle un geste, et se lit SANS ouvrir la fiche.
+              const manques = [
+                !control.owner ? 'sans responsable' : null,
+                !exigences.length ? 'aucune exigence' : null,
+                !preuves && !questions ? 'rien à prouver' : null,
+                control.measure_kind === 'technical' && !outils.length ? 'sans outillage' : null,
+              ].filter(Boolean) as string[]
+
+              return (
+                <li key={control.id} className="py-1">
+                  <details className="group">
+                    <summary className="grid cursor-pointer grid-cols-[1.25rem_1fr_auto] items-start gap-x-3 gap-y-1 rounded-md px-1 py-2.5 marker:content-[''] hover:bg-ink-50">
+                      <span
+                        aria-hidden
+                        className="pt-0.5 text-center text-ink-400 transition-transform group-open:rotate-90"
                       >
-                        {CONTROL_STATUS_LABELS[control.status] ?? control.status}
-                      </Badge>
+                        ›
+                      </span>
+
+                      <span className="min-w-0">
+                        <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                          <span className="font-mono text-xs text-ink-400">{control.code}</span>
+                          <span className="text-sm font-medium text-ink-900">{control.name}</span>
+                          {origin ? (
+                            <span
+                              className="rounded bg-ink-100 px-1.5 py-0.5 text-[10px] font-normal text-ink-600"
+                              title={`Instance du contrôle-type ${origin.control_code}`}
+                            >
+                              {origin.version?.framework?.code ?? 'référentiel'} v{origin.version?.version} · {origin.control_code}
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="mt-1 block text-xs text-ink-500">
+                          {control.business_ref}
+                          {control.owner ? ` · ${control.owner.full_name ?? control.owner.email}` : ''}
+                          {control.frequency ? ` · ${control.frequency}` : ''}
+                          {control.last_tested_at
+                            ? ` · testé le ${formatDate(control.last_tested_at)}`
+                            : ' · jamais testé'}
+                        </span>
+                        {manques.length ? (
+                          <span className="mt-1 block text-xs text-warn-600">{manques.join(' · ')}</span>
+                        ) : null}
+                      </span>
+
+                      {/*
+                        Les pastilles s'alignent a droite, dans le meme ordre
+                        sur toutes les lignes : nature, obligation, etat. On
+                        balaye une colonne, pas une ligne brisee.
+                      */}
+                      <span className="flex flex-wrap items-center justify-end gap-2">
+                        <Badge tone="neutral">{MEASURE_KIND_LABELS[control.measure_kind] ?? control.measure_kind}</Badge>
+                        {control.is_mandatory ? <Badge tone="warn">Obligatoire</Badge> : null}
+                        <Badge
+                          tone={
+                            control.status === 'operating'
+                              ? 'ok'
+                              : control.status === 'ineffective'
+                                ? 'stop'
+                                : 'neutral'
+                          }
+                        >
+                          {CONTROL_STATUS_LABELS[control.status] ?? control.status}
+                        </Badge>
+                      </span>
+                    </summary>
+
+                    <div className="grid grid-cols-[1.25rem_1fr] gap-x-3 pb-3">
+                      <span />
+                      <div className="flex flex-col gap-3 border-l-2 border-ink-100 pl-4">
+                        <p className="text-sm leading-relaxed text-ink-600">{control.objective}</p>
+
+                        <dl className="grid gap-x-6 gap-y-2 text-xs sm:grid-cols-2">
+                          <div>
+                            <dt className="font-medium text-ink-700">Exigences rattachées</dt>
+                            <dd className={exigences.length ? 'text-ink-600' : 'text-warn-600'}>
+                              {exigences.length
+                                ? exigences.join(', ')
+                                : 'Aucune — ce contrôle ne compte dans aucune Déclaration.'}
+                            </dd>
+                          </div>
+                          <div>
+                            {/*
+                              Avec quoi il se tient : le produit employe ici,
+                              pas la famille du referentiel. C'est la qu'on
+                              prend sa preuve.
+                            */}
+                            <dt className="font-medium text-ink-700">Avec quoi il se tient</dt>
+                            <dd className={outils.length ? 'text-ink-600' : 'text-ink-500'}>
+                              {outils.length
+                                ? outils.map((t) => t.product).join(', ')
+                                : 'À la main — aucun outil retenu.'}
+                              {' · '}
+                              <ControlToolingModal
+                                organizationId={id}
+                                controlId={control.id}
+                                controlCode={control.code}
+                              />
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="font-medium text-ink-700">Cadence</dt>
+                            <dd className="text-ink-600">
+                              {control.frequency ?? 'non fixée'}
+                              {control.next_test_at ? ` · prochain test le ${formatDate(control.next_test_at)}` : ''}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt className="font-medium text-ink-700">Responsable</dt>
+                            <dd className={control.owner ? 'text-ink-600' : 'text-warn-600'}>
+                              {control.owner
+                                ? (control.owner.full_name ?? control.owner.email)
+                                : 'Aucun — un contrôle sans responsable ne se tient pas.'}
+                            </dd>
+                          </div>
+                        </dl>
+
+                        {/*
+                          Le registre se lit pareil quelle que soit l'origine
+                          du controle : ce qu'il faut prouver, ce qu'on demande.
+                        */}
+                        {preuves || questions ? (
+                          <div className="grid gap-4 text-xs sm:grid-cols-2">
+                            {preuves ? (
+                              <div>
+                                <p className="mb-1 font-medium text-ink-700">Preuves attendues · {preuves}</p>
+                                <ul className="list-disc space-y-0.5 pl-4 text-ink-600">
+                                  {control.expected_evidence!.map((e) => <li key={e}>{e}</li>)}
+                                </ul>
+                              </div>
+                            ) : null}
+                            {questions ? (
+                              <div>
+                                <p className="mb-1 font-medium text-ink-700">Questions d’évaluation · {questions}</p>
+                                <ul className="list-disc space-y-0.5 pl-4 text-ink-600">
+                                  {control.assessment_questions!.map((q) => <li key={q}>{q}</li>)}
+                                </ul>
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-warn-600">
+                            Ni preuve attendue ni question d’évaluation : le registre ne dit pas
+                            comment ce contrôle se démontre.
+                          </p>
+                        )}
+
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <ControlStateForm
+                            organizationId={id}
+                            controlId={control.id}
+                            code={control.code}
+                            status={control.status}
+                            lastTestedAt={control.last_tested_at}
+                            nextTestAt={control.next_test_at}
+                          />
+                          <RequirementMappingForm
+                            organizationId={id}
+                            controlId={control.id}
+                            code={control.code}
+                            requirements={requirements}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap justify-end gap-2">
-                      <ControlStateForm
-                        organizationId={id}
-                        controlId={control.id}
-                        code={control.code}
-                        status={control.status}
-                        lastTestedAt={control.last_tested_at}
-                        nextTestAt={control.next_test_at}
-                      />
-                      <RequirementMappingForm
-                        organizationId={id}
-                        controlId={control.id}
-                        code={control.code}
-                        requirements={requirements}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </li>
-            ))}
+                  </details>
+                </li>
+              )
+            })}
           </ul>
+          </div>
         ) : controls.length ? (
           <Empty>
             Aucun contrôle dans cet état.{' '}

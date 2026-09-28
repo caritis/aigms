@@ -3,14 +3,25 @@
 import { useActionState, useState } from 'react'
 import {
   acceptRisk,
+  closeRisk,
   createRisk,
+  eraseRisk,
   saveClassification,
   saveTriage,
+  updateRisk,
   type FormState,
 } from '@/lib/actions/governance'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
 import { ControlFinder } from '@/components/governance/control-finder'
+import { InfoTip } from '@/components/info-tip'
+import {
+  IMPACT_SCALE,
+  LIKELIHOOD_SCALE,
+  RISK_CATEGORIES,
+  rateRiskLevel,
+} from '@/lib/domain/risk'
+import { RISK_LEVEL_LABELS } from '@/lib/domain/governance'
 import {
   CLASSIFICATION_FLAG_EFFECTS,
   CLASSIFICATION_FLAG_LABELS,
@@ -378,21 +389,296 @@ export function ClassificationPanel({
   )
 }
 
-const CATEGORIES = [
-  ['bias_discrimination', 'Biais et discrimination'],
-  ['fundamental_rights', 'Droits fondamentaux'],
-  ['privacy', 'Vie privée'],
-  ['security', 'Sécurité'],
-  ['safety', 'Sécurité des personnes'],
-  ['accuracy_robustness', 'Exactitude et robustesse'],
-  ['transparency', 'Transparence'],
-  ['operational', 'Opérationnel'],
-  ['financial', 'Financier'],
-  ['reputational', 'Réputation'],
-  ['legal_compliance', 'Conformité'],
-  ['third_party', 'Tiers'],
-  ['environmental', 'Environnement'],
-] as const
+/**
+ * Ce qui decrit un risque, et rien d'autre.
+ *
+ * Les memes champs servent a l'identifier et a le corriger : deux formulaires
+ * jumeaux divergent au premier ajout, et c'est l'ecran de correction qui perd
+ * — celui qu'on relit le moins. Le composant tient l'etat de ce qui s'affiche
+ * en direct — la definition de la categorie, le niveau calcule — et le rend a
+ * son parent quand celui-ci en a besoin.
+ */
+function RiskFields({
+  idPrefix,
+  people,
+  defaultOwnerUserId,
+  criticality,
+  errors,
+  defaults,
+  onChange,
+}: {
+  idPrefix: string
+  people: { id: string; label: string }[]
+  defaultOwnerUserId?: string | null
+  criticality?: string | null
+  errors: Record<string, string>
+  defaults?: {
+    title?: string
+    scenario?: string
+    category?: string
+    likelihood?: number
+    impact?: number
+    ownerUserId?: string | null
+    nextReviewAt?: string | null
+  }
+  /** Ce qui vient d'etre ecrit, pour nourrir la recherche de controle. */
+  onChange?: (value: { title: string; scenario: string; categoryLabel: string }) => void
+}) {
+  const [category, setCategory] = useState(defaults?.category ?? 'operational')
+  const [title, setTitle] = useState(defaults?.title ?? '')
+  const [scenario, setScenario] = useState(defaults?.scenario ?? '')
+  const [likelihood, setLikelihood] = useState(defaults?.likelihood ?? 3)
+  const [impact, setImpact] = useState(defaults?.impact ?? 3)
+  const level = rateRiskLevel(likelihood, impact)
+  const categoryDef = RISK_CATEGORIES.find((c) => c.value === category)
+
+  const emit = (next: Partial<{ title: string; scenario: string; category: string }>) => {
+    const t = next.title ?? title
+    const s = next.scenario ?? scenario
+    const c = next.category ?? category
+    onChange?.({
+      title: t,
+      scenario: s,
+      categoryLabel: RISK_CATEGORIES.find((x) => x.value === c)?.label ?? '',
+    })
+  }
+
+  return (
+    <>
+      {/*
+        Une seule infobulle pour toute la fenetre, plutot qu'une par champ :
+        huit ronds « i » cote a cote ne se distinguent plus, et ce qu'on
+        cherche a savoir en cotant un risque se lit d'un trait.
+      */}
+      <div className="flex justify-end">
+        <InfoTip label="Ce qu’on attend de chaque champ" title="Coter un risque">
+          <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+            <p>
+              <strong className="font-medium text-ink-800">Intitulé.</strong> Ce qui peut mal
+              tourner, en une ligne. Pas la cause, pas la parade : l’événement redouté.
+            </p>
+            <p>
+              <strong className="font-medium text-ink-800">Scénario.</strong> Ce qui arrive, à qui,
+              par quel enchaînement. C’est le seul champ qu’un auditeur relit : un risque sans
+              scénario ne se traite pas, et l’assistant s’en sert pour chercher le contrôle.
+            </p>
+            <p>
+              <strong className="font-medium text-ink-800">Catégorie.</strong> La nature de
+              l’atteinte. Elle sert au rapprochement avec les contrôles et aux tableaux de bord :
+              une catégorie posée au hasard fausse les deux.
+            </p>
+            <p>
+              <strong className="font-medium text-ink-800">Qui répond du risque.</strong> Pas qui
+              exécute la mesure — celui-là se désigne au traitement. Cette personne seule pourra
+              accepter le risque, et la base le lui réserve.
+            </p>
+            <p>
+              <strong className="font-medium text-ink-800">Vraisemblance × gravité.</strong> Deux
+              crans de 1 à 5, cotés <em>avant</em> tout traitement : c’est le risque inhérent. Le
+              niveau en découle et ne se saisit pas, pour qu’il ne puisse pas diverger de sa
+              cotation.
+            </p>
+          </div>
+        </InfoTip>
+      </div>
+
+      <Field label="Intitulé" htmlFor={`${idPrefix}-title`} error={errors.title}>
+        <input
+          id={`${idPrefix}-title`}
+          name="title"
+          type="text"
+          required
+          value={title}
+          onChange={(event) => {
+            setTitle(event.target.value)
+            emit({ title: event.target.value })
+          }}
+          className={FIELD}
+          placeholder="Réponse erronée transmise au client"
+        />
+      </Field>
+
+      <Field
+        label="Scénario"
+        htmlFor={`${idPrefix}-scenario`}
+        error={errors.scenario}
+        hint="Ce qui arrive, à qui, par quel enchaînement. Un risque sans scénario ne se traite pas."
+      >
+        <textarea
+          id={`${idPrefix}-scenario`}
+          name="scenario"
+          rows={3}
+          required
+          value={scenario}
+          onChange={(event) => {
+            setScenario(event.target.value)
+            emit({ scenario: event.target.value })
+          }}
+          className={FIELD}
+        />
+      </Field>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {/*
+          La definition de la categorie choisie s'affiche sous le champ : on
+          classait au hasard faute de savoir ce que chaque mot recouvre, et un
+          classement au hasard fausse le rapprochement avec les controles.
+        */}
+        <Field label="Catégorie" htmlFor={`${idPrefix}-category`} hint={categoryDef?.description}>
+          <div className="flex items-center gap-1.5">
+            <select
+              id={`${idPrefix}-category`}
+              name="category"
+              value={category}
+              onChange={(event) => {
+                setCategory(event.target.value)
+                emit({ category: event.target.value })
+              }}
+              className={FIELD}
+            >
+              {RISK_CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+            <InfoTip label="Ce que recouvre chaque catégorie" title="Les treize catégories">
+              <dl className="flex flex-col gap-2.5 text-sm leading-relaxed">
+                {RISK_CATEGORIES.map((c) => (
+                  <div key={c.value}>
+                    <dt className="font-medium text-ink-800">{c.label}</dt>
+                    <dd className="text-ink-600">{c.description}</dd>
+                  </div>
+                ))}
+              </dl>
+            </InfoTip>
+          </div>
+        </Field>
+
+        {/*
+          Ce n'est pas la personne qui exécute — le traitement designe son
+          propre responsable. C'est celle qui REPOND du risque : elle seule
+          pourra l'accepter, et la base le lui reserve.
+        */}
+        <Field
+          label="Qui répond de ce risque"
+          htmlFor={`${idPrefix}-owner`}
+          error={errors.ownerUserId}
+          hint={
+            criticality === 'high' || criticality === 'critical'
+              ? 'Cette personne seule pourra l’accepter — et, ce cas d’usage étant de criticité élevée, une décision approuvée par le Comité de direction sera exigée en plus. Qui exécute la mesure se désigne au traitement.'
+              : 'Cette personne seule pourra l’accepter. Qui exécute la mesure se désigne au traitement, pas ici.'
+          }
+        >
+          <select
+            id={`${idPrefix}-owner`}
+            name="ownerUserId"
+            required
+            defaultValue={defaults?.ownerUserId ?? defaultOwnerUserId ?? ''}
+            className={FIELD}
+          >
+            <option value="" disabled>
+              Choisir…
+            </option>
+            {people.map((person) => (
+              <option key={person.id} value={person.id}>
+                {person.label}
+                {person.id === defaultOwnerUserId ? ' — répond du cas d’usage' : ''}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+
+      {/*
+        La base ne stocke qu'un chiffre : c'est ce qui rend la cotation
+        calculable et testable. Mais un chiffre nu ne se cote pas — deux
+        personnes n'entendent pas la meme chose par « 4 ». Le libelle
+        accompagne donc le chiffre, et la definition du cran choisi s'affiche
+        dessous.
+      */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Field
+          label="Vraisemblance"
+          htmlFor={`${idPrefix}-likelihood`}
+          hint={LIKELIHOOD_SCALE.find((c) => c.value === likelihood)?.hint}
+        >
+          <select
+            id={`${idPrefix}-likelihood`}
+            name="inherentLikelihood"
+            value={likelihood}
+            onChange={(event) => setLikelihood(Number(event.target.value))}
+            required
+            className={FIELD}
+          >
+            {LIKELIHOOD_SCALE.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.value} — {c.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field
+          label="Gravité"
+          htmlFor={`${idPrefix}-impact`}
+          hint={IMPACT_SCALE.find((c) => c.value === impact)?.hint}
+        >
+          <select
+            id={`${idPrefix}-impact`}
+            name="inherentImpact"
+            value={impact}
+            onChange={(event) => setImpact(Number(event.target.value))}
+            required
+            className={FIELD}
+          >
+            {IMPACT_SCALE.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.value} — {c.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Prochaine revue" htmlFor={`${idPrefix}-review`} optional>
+          <input
+            id={`${idPrefix}-review`}
+            name="nextReviewAt"
+            type="date"
+            defaultValue={defaults?.nextReviewAt ?? ''}
+            className={FIELD}
+          />
+        </Field>
+      </div>
+
+      {/*
+        Le niveau se voit AVANT d'enregistrer. Il est recopie de la regle de la
+        base (`app.rate_risk_level`), jamais ecrit : un test unitaire confronte
+        les deux sur les vingt-cinq combinaisons.
+      */}
+      <p className="flex flex-wrap items-center gap-2 rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+        <span>Niveau inhérent obtenu :</span>
+        <span
+          className={`rounded px-2 py-0.5 text-[11px] font-semibold ${
+            level === 'critical'
+              ? 'bg-stop-600/10 text-stop-600'
+              : level === 'high'
+                ? 'bg-warn-600/10 text-warn-600'
+                : level === 'moderate'
+                  ? 'bg-ink-200 text-ink-700'
+                  : 'bg-ok-600/10 text-ok-600'
+          }`}
+        >
+          {RISK_LEVEL_LABELS[level]}
+        </span>
+        <span>
+          — {likelihood} × {impact} = {likelihood * impact}. Le niveau est calculé, jamais saisi,
+          pour qu’il ne puisse pas diverger de sa cotation.
+        </span>
+      </p>
+    </>
+  )
+}
 
 export function RiskPanel({
   useCaseId,
@@ -418,6 +704,9 @@ export function RiskPanel({
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
   const [options, setOptions] = useState<{ id: string; code: string; name: string }[]>(controls)
   const [controlId, setControlId] = useState('')
+  /** Ce qui est ecrit en ce moment : l'assistant cherche dessus. */
+  const [written, setWritten] = useState({ title: '', scenario: '', categoryLabel: '' })
+  const query = [written.title, written.scenario, written.categoryLabel].filter(Boolean).join(' ')
 
   // Le volet deplie occupait la colonne au-dessus de la liste des risques :
   // on lisait le formulaire avant ce qu'il complete. Un risque n'existe que
@@ -433,112 +722,14 @@ export function RiskPanel({
       <form action={formAction} className="flex flex-col gap-4">
         <input type="hidden" name="useCaseId" value={useCaseId} />
 
-        <Field label="Intitulé" htmlFor="risk-title" error={errors.title}>
-          <input
-            id="risk-title"
-            name="title"
-            type="text"
-            required
-            className={FIELD}
-            placeholder="Réponse erronée transmise au client"
-          />
-        </Field>
-
-        <Field
-          label="Scénario"
-          htmlFor="risk-scenario"
-          error={errors.scenario}
-          hint="Ce qui arrive, à qui, par quel enchaînement. Un risque sans scénario ne se traite pas."
-        >
-          <textarea id="risk-scenario" name="scenario" rows={3} required className={FIELD} />
-        </Field>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Catégorie" htmlFor="risk-category">
-            <select id="risk-category" name="category" defaultValue="operational" className={FIELD}>
-              {CATEGORIES.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          {/*
-            Ce n'est pas la personne qui exécute — le traitement designe son
-            propre responsable. C'est celle qui REPOND du risque : elle seule
-            pourra l'accepter, et la base le lui reserve.
-          */}
-          <Field
-            label="Qui répond de ce risque"
-            htmlFor="risk-owner"
-            error={errors.ownerUserId}
-            hint={
-              criticality === 'high' || criticality === 'critical'
-                ? 'Cette personne seule pourra l’accepter — et, ce cas d’usage étant de criticité élevée, une décision approuvée par le Comité de direction sera exigée en plus. Qui exécute la mesure se désigne au traitement.'
-                : 'Cette personne seule pourra l’accepter. Qui exécute la mesure se désigne au traitement, pas ici.'
-            }
-          >
-            <select
-              id="risk-owner"
-              name="ownerUserId"
-              required
-              defaultValue={defaultOwnerUserId ?? ''}
-              className={FIELD}
-            >
-              <option value="" disabled>
-                Choisir…
-              </option>
-              {people.map((person) => (
-                <option key={person.id} value={person.id}>
-                  {person.label}
-                  {person.id === defaultOwnerUserId ? ' — répond du cas d’usage' : ''}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field
-            label="Vraisemblance"
-            htmlFor="risk-likelihood"
-            hint="1 improbable, 5 quasi certain"
-          >
-            <input
-              id="risk-likelihood"
-              name="inherentLikelihood"
-              type="number"
-              min={1}
-              max={5}
-              defaultValue={3}
-              required
-              className={FIELD}
-            />
-          </Field>
-
-          <Field label="Gravité" htmlFor="risk-impact" hint="1 négligeable, 5 majeure">
-            <input
-              id="risk-impact"
-              name="inherentImpact"
-              type="number"
-              min={1}
-              max={5}
-              defaultValue={3}
-              required
-              className={FIELD}
-            />
-          </Field>
-
-          <Field label="Prochaine revue" htmlFor="risk-review" optional>
-            <input id="risk-review" name="nextReviewAt" type="date" className={FIELD} />
-          </Field>
-        </div>
-
-        <p className="text-xs text-ink-500">
-          Le niveau est calculé par vraisemblance × gravité : il n’est pas saisi, pour qu’il ne
-          puisse pas diverger de sa cotation.
-        </p>
+        <RiskFields
+          idPrefix="risk"
+          people={people}
+          defaultOwnerUserId={defaultOwnerUserId}
+          criticality={criticality}
+          errors={errors}
+          onChange={setWritten}
+        />
 
         {/*
           Le traitement est un acte distinct de l'identification — on cote
@@ -552,8 +743,8 @@ export function RiskPanel({
           optional
           hint={
             options.length
-              ? 'Parmi les contrôles affectés à ce cas d’usage, ou trouvé par l’assistant. Un traitement « réduire » s’ouvre alors, porté par le responsable du risque, et le contrôle devient applicable.'
-              : 'Aucun contrôle n’est encore affecté à ce cas d’usage : la liste est vide. « Proposer des contrôles » (onglet Contrôles affectés) en calcule depuis les faits ; l’assistant ci-dessous cherche par les mots.'
+              ? 'Les contrôles déjà affectés à ce cas d’usage, et ceux que l’assistant retient ci-dessous. Le renseigner ouvre un traitement « réduire », porté par le responsable du risque, et rend le contrôle applicable.'
+              : 'Aucun contrôle n’est encore affecté à ce cas d’usage. Décrivez le scénario : l’assistant propose de lui-même, ci-dessous, ce qui s’en approche dans le registre et les référentiels.'
           }
         >
           <select
@@ -571,17 +762,17 @@ export function RiskPanel({
             ))}
           </select>
         </Field>
+        {/*
+          L'assistant lit ce qui est ecrit et propose, au lieu d'attendre un
+          clic sur « chercher ». La categorie entre dans la requete : elle dit
+          la nature de l'atteinte, et c'est elle qui separe une fuite de
+          donnees d'une erreur de calcul quand le scenario parle des deux.
+        */}
         <ControlFinder
           organizationId={organizationId}
           useCaseId={useCaseId}
-          readQuery={() =>
-            [
-              (document.getElementById('risk-title') as HTMLInputElement | null)?.value ?? '',
-              (document.getElementById('risk-scenario') as HTMLTextAreaElement | null)?.value ?? '',
-            ]
-              .filter(Boolean)
-              .join(' ')
-          }
+          autoQuery={query}
+          readQuery={() => query}
           ownerUserId={() => (document.getElementById('risk-owner') as HTMLSelectElement | null)?.value ?? ''}
           onPick={(option) => {
             setOptions((current) => (current.some((c) => c.id === option.id) ? current : [...current, option]))
@@ -592,6 +783,212 @@ export function RiskPanel({
         <FormFeedback state={state} />
         <Submit pending={pending} idle="Enregistrer le risque" />
       </form>
+      )}
+    </Modal>
+  )
+}
+
+/**
+ * Corriger un risque deja enregistre.
+ *
+ * Une cotation se corrige : on cote souvent avant d'avoir tout compris, et un
+ * registre qu'on ne peut pas amender se contourne par un second risque — on
+ * perd alors le fil de celui qu'on avait ouvert.
+ *
+ * Ce que la correction entraine est dit dans la fenetre, pas decouvert apres
+ * coup : la base recalcule le niveau, garde trace du changement, reveille le
+ * signal de criticite du cas d'usage — et, si le risque etait accepte et que
+ * son niveau monte, retire l'acceptation en avertissant celui qui l'avait
+ * donnee. Une acceptation vaut pour le niveau auquel elle a ete donnee.
+ */
+export function RiskEditForm({
+  useCaseId,
+  risk,
+  people,
+  defaultOwnerUserId,
+  criticality,
+}: {
+  useCaseId: string
+  risk: {
+    id: string
+    business_ref: string
+    title: string
+    scenario: string | null
+    category: string
+    inherent_likelihood: number
+    inherent_impact: number
+    owner_user_id: string | null
+    next_review_at: string | null
+    status: string
+  }
+  people: { id: string; label: string }[]
+  defaultOwnerUserId?: string | null
+  criticality?: string | null
+}) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(updateRisk, null)
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+
+  return (
+    <Modal
+      trigger={
+        <span aria-hidden className="text-sm leading-none">
+          ✎
+        </span>
+      }
+      triggerLabel={`Corriger ${risk.business_ref}`}
+      triggerClassName="inline-flex size-6 items-center justify-center rounded-md border border-ink-200 text-ink-500 hover:border-ink-400 hover:text-ink-800"
+      title={`${risk.business_ref} — corriger`}
+      description="Le niveau se recalcule. Ce qui change est enregistré au journal."
+    >
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="useCaseId" value={useCaseId} />
+          <input type="hidden" name="riskId" value={risk.id} />
+
+          {/*
+            L'avertissement AVANT le geste, pas apres : recoter a la hausse un
+            risque accepte retire l'acceptation. Le dire une fois que c'est
+            fait serait le decouvrir.
+          */}
+          {risk.status === 'accepted' ? (
+            <p className="rounded-md border border-warn-600/25 bg-warn-600/5 px-3.5 py-2.5 text-xs leading-relaxed text-ink-700">
+              <strong className="font-medium text-ink-900">Ce risque est accepté.</strong> Une
+              acceptation vaut pour le niveau auquel elle a été donnée : si votre correction fait
+              monter le niveau, elle sera retirée, le risque reviendra à « identifié », et la
+              personne qui l’avait acceptée en sera avertie. Une correction à la baisse ne change
+              rien.
+            </p>
+          ) : null}
+
+          <RiskFields
+            idPrefix={`risk-edit-${risk.id}`}
+            people={people}
+            defaultOwnerUserId={defaultOwnerUserId}
+            criticality={criticality}
+            errors={errors}
+            defaults={{
+              title: risk.title,
+              scenario: risk.scenario ?? '',
+              category: risk.category,
+              likelihood: risk.inherent_likelihood,
+              impact: risk.inherent_impact,
+              ownerUserId: risk.owner_user_id,
+              nextReviewAt: risk.next_review_at,
+            }}
+          />
+
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Enregistrer la correction" />
+        </form>
+      )}
+    </Modal>
+  )
+}
+
+/**
+ * Retirer un risque du registre — deux gestes, et ils ne servent pas la meme
+ * chose.
+ *
+ * CLORE : un risque qui a vecu et n'a plus lieu d'etre. Rien ne disparait ;
+ * le motif est obligatoire parce qu'un risque clos sort de la passerelle de
+ * production. Ouvert au responsable du risque : il en repond, il peut dire
+ * qu'il est eteint.
+ *
+ * EFFACER : l'erratum, et rien d'autre. Ferme au responsable du risque, pour
+ * la meme raison qui lui ouvre la cloture — il en repond, il ne l'efface pas.
+ */
+export function RiskCloseForm({
+  riskId,
+  riskRef,
+  useCaseId,
+}: {
+  riskId: string
+  riskRef: string
+  useCaseId: string
+}) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(closeRisk, null)
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+
+  return (
+    <Modal
+      trigger="Clore"
+      triggerClassName="rounded-md border border-ink-200 px-2.5 py-1 text-xs font-medium text-ink-700 hover:bg-ink-100"
+      title={`Clore ${riskRef}`}
+      description="Pour un risque qui n’a plus lieu d’être. Rien n’est effacé."
+    >
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="riskId" value={riskId} />
+          <input type="hidden" name="useCaseId" value={useCaseId} />
+          <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+            Les traitements, les constats d’étude d’impact et les décisions qui désignent ce risque
+            restent lisibles. Un risque clos <strong className="font-medium text-ink-800">ne retient
+            plus la mise en production</strong> : c’est pourquoi le motif n’est pas facultatif, et
+            pourquoi votre nom y reste attaché.
+          </p>
+          <Field
+            label="Pourquoi ce risque n’a plus lieu d’être"
+            htmlFor={`close-${riskId}`}
+            error={errors.reason}
+            hint="Périmètre modifié, cas d’usage abandonné, risque absorbé par un autre — dites lequel."
+          >
+            <textarea id={`close-${riskId}`} name="reason" rows={3} required className={FIELD} />
+          </Field>
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Clore le risque" />
+        </form>
+      )}
+    </Modal>
+  )
+}
+
+export function RiskEraseForm({
+  riskId,
+  riskRef,
+  riskTitle,
+  useCaseId,
+}: {
+  riskId: string
+  riskRef: string
+  riskTitle: string
+  useCaseId: string
+}) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(eraseRisk, null)
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+
+  return (
+    <Modal
+      trigger="Effacer"
+      triggerClassName="rounded-md border border-stop-600/30 px-2.5 py-1 text-xs font-medium text-stop-600 hover:bg-stop-600/10"
+      title={`Effacer ${riskRef}`}
+      description="Pour une ligne saisie par erreur, et rien d’autre."
+    >
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="riskId" value={riskId} />
+          <input type="hidden" name="useCaseId" value={useCaseId} />
+          <p className="rounded-md border border-stop-600/25 bg-stop-600/5 px-3.5 py-2.5 text-xs leading-relaxed text-ink-700">
+            <strong className="font-medium text-ink-900">« {riskTitle} » disparaîtra du
+            registre.</strong> La base ne l’admet que si ce risque n’a rien laissé derrière lui :
+            encore « identifié », jamais accepté, sans traitement, sans décision qui le désigne,
+            sans constat d’étude d’impact qui y renvoie. Autrement, elle refuse et vous le dit —
+            ce risque se clôt.
+          </p>
+          <p className="text-xs leading-relaxed text-ink-500">
+            Le journal en conserve l’instantané complet, votre nom, la date et le motif ci-dessous.
+            Un effacement est tracé, pas silencieux.
+          </p>
+          <Field
+            label="En quoi cette ligne est une erreur de saisie"
+            htmlFor={`erase-${riskId}`}
+            error={errors.reason}
+            hint="Un doublon, un essai, un risque saisi sur le mauvais cas d’usage."
+          >
+            <input id={`erase-${riskId}`} name="reason" type="text" required className={FIELD} />
+          </Field>
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Effacer définitivement" />
+        </form>
       )}
     </Modal>
   )

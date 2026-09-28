@@ -48,3 +48,20 @@ body {
 [id] {
   scroll-margin-top: 84px;
 }
+
+/*
+  Une barre d'onglets qui defile horizontalement quand l'ecran est etroit.
+  `overflow-x: auto` seul fait passer l'autre axe de `visible` a `auto` — et
+  Windows y dessine alors un ascenseur vertical, fleches comprises, sur une
+  barre qui ne defile pas. On ferme l'axe vertical et on masque la barre.
+*/
+@utility onglets-defilants {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

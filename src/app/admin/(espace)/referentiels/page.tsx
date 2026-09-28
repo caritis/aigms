@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
-import { CatalogPublishForm, CatalogUploadForm } from '@/components/admin/catalog-forms'
+import { CatalogPublishForm, CatalogUploadForm, ToolingCatalogUploadForm } from '@/components/admin/catalog-forms'
 import { InfoTip } from '@/components/info-tip'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_LABELS } from '@/lib/domain/roles'
@@ -261,6 +261,56 @@ export default async function CatalogPage() {
               </p>
             </div>
           </Card>
+
+        {/*
+          La typologie d'outillage vit a cote du referentiel de controles, pas
+          dedans : un controle-type dit QUOI maitriser, une famille d'outillage
+          dit AVEC QUOI. Les deux s'entretiennent, et jusqu'ici l'une seulement
+          pouvait l'etre sans migration.
+        */}
+        <div className="lg:col-span-2">
+          <Card
+            title="Importer la typologie d’outillage"
+            subtitle="Les familles d’outils avec lesquelles les contrôles se tiennent et se prouvent."
+            action={
+              <InfoTip
+                label="Ce qu’un import d’outillage fait à l’application"
+                title="Une typologie, pas un inventaire"
+              >
+                <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+                  <p>
+                    <strong className="font-medium text-ink-800">Ce qui s’importe ici.</strong> Des
+                    <em> familles</em> d’outillage — passerelle d’appels d’IA, prévention des
+                    fuites, journalisation, supervision humaine. Le référentiel dit qu’un contrôle
+                    « se tient avec un outil de ce type » ; chaque organisation y inscrit ensuite le
+                    produit qu’elle emploie réellement.
+                  </p>
+                  <p>
+                    <strong className="font-medium text-ink-800">Ce que le rang commande.</strong>{' '}
+                    Une famille au rang <span className="font-mono">ai_core</span> est proposée
+                    d’emblée à la saisie ; une famille <span className="font-mono">it_support</span>{' '}
+                    reste derrière un repli. La distinction existe parce qu’AIGMS ne construit pas
+                    de CMDB : on ne fait pas recenser un système d’information pour tenir un
+                    contrôle d’IA.
+                  </p>
+                  <p>
+                    <strong className="font-medium text-ink-800">Ce que l’import ne fait pas.</strong>{' '}
+                    Il ne supprime aucune famille. Une famille absente du fichier reste en place :
+                    un produit peut y être déclaré chez un client, et un contrôle-type s’y
+                    rattacher. Retirer une famille se fait à la main, en connaissance de cause.
+                  </p>
+                  <p>
+                    <strong className="font-medium text-ink-800">Qui peut l’entretenir.</strong> La
+                    typologie livrée appartient à l’éditeur : sa modification est réservée à
+                    l’administrateur de la plateforme, et la base le vérifie elle-même.
+                  </p>
+                </div>
+              </InfoTip>
+            }
+          >
+            <ToolingCatalogUploadForm />
+          </Card>
+        </div>
         </div>
       </div>
     </Shell>
