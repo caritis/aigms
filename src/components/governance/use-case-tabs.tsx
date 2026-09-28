@@ -13,10 +13,16 @@ import Link from 'next/link'
  * directement (une alerte, un tableau de bord), et un enregistrement — qui
  * revalide la page — ne la referme pas.
  */
+/*
+ * L'ordre suit le cycle de vie, pas l'ordre d'ecriture du code : on situe le
+ * cas d'usage (avancement), on nomme ce qu'il fait courir (risques), on dit
+ * par quoi on le tient (controles), ce qu'il reste a faire (actions), qui
+ * garde la main (supervision), et ce qui a ete decide (decisions).
+ */
 export const USE_CASE_TABS = [
   { key: 'avancement', label: 'Avancement' },
-  { key: 'controles', label: 'Contrôles affectés' },
   { key: 'risques', label: 'Risques' },
+  { key: 'controles', label: 'Contrôles affectés' },
   { key: 'suivi', label: 'Actions et incidents' },
   { key: 'supervision', label: 'Supervision humaine' },
   { key: 'decisions', label: 'Décisions et changements' },
@@ -67,7 +73,7 @@ export function UseCaseTabs({
   return (
     <nav
       aria-label="Rubriques du cas d’usage"
-      className="mb-5 -mx-1 flex gap-1 overflow-x-auto border-b border-ink-200 px-1"
+      className="onglets-defilants mb-5 -mx-1 flex gap-1 border-b border-ink-200 px-1"
     >
       {USE_CASE_TABS.map((tab) => {
         const current = tab.key === active
@@ -86,10 +92,10 @@ export function UseCaseTabs({
             href={`/admin/use-cases/${useCaseId}?onglet=${tab.key}`}
             scroll={false}
             aria-current={current ? 'page' : undefined}
-            className={`-mb-px inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm transition-colors ${
+            className={`-mb-px inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-t-md border-b-[3px] px-3.5 py-2.5 text-sm transition-colors ${
               current
-                ? 'border-night-900 font-medium text-ink-900'
-                : 'border-transparent text-ink-500 hover:border-ink-300 hover:text-ink-900'
+                ? 'border-brand-600 bg-brand-500/10 font-semibold text-brand-700'
+                : 'border-transparent text-ink-500 hover:border-ink-300 hover:bg-ink-100 hover:text-ink-900'
             }`}
           >
             {dot ? <span aria-hidden className={`size-1.5 rounded-full ${dot}`} /> : null}
