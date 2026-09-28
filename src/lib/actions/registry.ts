@@ -80,6 +80,77 @@ const vendorSchema = z.object({
   notes: z.string().trim().max(2000).optional().or(z.literal('')),
 })
 
+/**
+ * Le fournisseur qu'on nomme au moment ou l'on en a besoin.
+ *
+ * Un actif arrive avec son fournisseur, et le fournisseur arrive avec sa revue
+ * non close — donc avec une precondition de mise en production. Faire sortir
+ * l'officer vers le registre des tiers au milieu de sa saisie, c'est perdre le
+ * fil au moment precis ou la chaine se noue.
+ *
+ * Ce qu'on cree ici est volontairement pauvre : un nom, un pays. La criticite,
+ * le DPA, la revue de securite et la reversibilite se renseignent sur la fiche
+ * du tiers — et le tiers nait « revue non commencee », ce que l'ecran dit.
+ */
+export type ResolutionFournisseur =
+  | { ok: true; vendorId: string | null; cree: string | null }
+  | { ok: false; message: string }
+
+export async function resolveVendor(
+  formData: FormData,
+  organizationId: string,
+  tenantId: string,
+): Promise<ResolutionFournisseur> {
+  const choisi = formData.get('vendorId')
+  if (typeof choisi === 'string' && choisi && choisi !== '__nouveau__') {
+    return { ok: true, vendorId: choisi, cree: null }
+  }
+  if (choisi !== '__nouveau__') return { ok: true, vendorId: null, cree: null }
+
+  const parsed = z
+    .object({
+      name: z.string().trim().min(2, 'Nommez le fournisseur.').max(160),
+      countryCode: z
+        .string()
+        .trim()
+        .length(2, 'Code pays sur deux lettres, par exemple US ou FR.')
+        .optional()
+        .or(z.literal('')),
+    })
+    .safeParse({
+      name: formData.get('newVendorName') ?? '',
+      countryCode: formData.get('newVendorCountry') ?? '',
+    })
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? 'Fournisseur invalide.' }
+  }
+
+  const supabase = await createClient()
+  const { data: existant } = await supabase
+    .from('vendor')
+    .select('id')
+    .eq('organization_id', organizationId)
+    .ilike('name', parsed.data.name)
+    .maybeSingle()
+  if (existant) return { ok: true, vendorId: existant.id, cree: null }
+
+  const { data: vendor, error } = await supabase
+    .from('vendor')
+    .insert({
+      tenant_id: tenantId,
+      organization_id: organizationId,
+      name: parsed.data.name,
+      country_code: parsed.data.countryCode || null,
+      criticality: 'moderate',
+      is_model_provider: false,
+      review_status: 'not_started',
+    })
+    .select('id')
+    .single()
+  if (error) return { ok: false, message: explain(error) }
+  return { ok: true, vendorId: vendor.id, cree: parsed.data.name }
+}
+
 export async function createVendor(
   _previous: FormState | null,
   formData: FormData,
@@ -223,6 +294,9 @@ export async function createAsset(
   const tenantId = await tenantOf(input.organizationId)
   if (!tenantId) return { ok: false, message: 'Organisation introuvable.' }
 
+  const fournisseur = await resolveVendor(formData, input.organizationId, tenantId)
+  if (!fournisseur.ok) return { ok: false, message: fournisseur.message, fieldErrors: { vendorId: fournisseur.message } }
+
   const supabase = await createClient()
   const { error } = await supabase.from('ai_asset').insert({
     tenant_id: tenantId,
@@ -230,7 +304,7 @@ export async function createAsset(
     kind: input.kind,
     name: input.name,
     description: input.description || null,
-    vendor_id: input.vendorId || null,
+    vendor_id: fournisseur.vendorId,
     version: input.version || null,
     owner_user_id: input.ownerUserId || null,
     contains_personal_data: input.containsPersonalData,
@@ -242,7 +316,12 @@ export async function createAsset(
   revalidatePath(`/admin/organizations/${input.organizationId}`)
   revalidatePath(`/admin/organizations/${input.organizationId}/actifs`)
   revalidatePath('/admin/actifs-fournisseurs')
-  return { ok: true, message: `${input.name} inscrit au registre des actifs.` }
+  return {
+    ok: true,
+    message: fournisseur.cree
+      ? `${input.name} inscrit au registre, et le tiers ${fournisseur.cree} créé — sa revue est à ouvrir.`
+      : `${input.name} inscrit au registre des actifs.`,
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -354,6 +433,9 @@ export async function declareAssetForUseCase(
   const tenantId = await tenantOf(d.organizationId)
   if (!tenantId) return { ok: false, message: 'Organisation introuvable.' }
 
+  const fournisseur = await resolveVendor(formData, d.organizationId, tenantId)
+  if (!fournisseur.ok) return { ok: false, message: fournisseur.message, fieldErrors: { vendorId: fournisseur.message } }
+
   const supabase = await createClient()
   const { data: asset, error } = await supabase
     .from('ai_asset')
@@ -363,7 +445,7 @@ export async function declareAssetForUseCase(
       kind: d.kind,
       name: d.name,
       description: d.description || null,
-      vendor_id: d.vendorId || null,
+      vendor_id: fournisseur.vendorId,
       version: d.version || null,
       owner_user_id: d.ownerUserId || null,
       contains_personal_data: d.containsPersonalData,
@@ -390,7 +472,12 @@ export async function declareAssetForUseCase(
       message: `${d.name} est inscrit au registre, mais son rattachement a échoué : ${explain(linkError)}`,
     }
   }
-  return { ok: true, message: `${d.name} inscrit au registre et rattaché au cas d’usage.` }
+  return {
+    ok: true,
+    message: fournisseur.cree
+      ? `${d.name} inscrit et rattaché ; le tiers ${fournisseur.cree} est créé, sa revue reste à ouvrir — elle conditionne la mise en production.`
+      : `${d.name} inscrit au registre et rattaché au cas d’usage.`,
+  }
 }
 
 export async function linkVendorToUseCase(

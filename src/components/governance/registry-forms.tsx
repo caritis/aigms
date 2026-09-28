@@ -195,6 +195,92 @@ export function VendorReviewForm({
  * `idPrefix` evite la collision d'identifiants quand les deux vivent dans la
  * meme page.
  */
+/**
+ * Choisir un fournisseur, ou le nommer sur place.
+ *
+ * Un actif arrive avec son fournisseur, et le fournisseur arrive avec sa revue
+ * non close — donc avec une precondition de mise en production. Sortir vers le
+ * registre des tiers au milieu de la saisie fait perdre le fil au moment
+ * precis ou la chaine se noue.
+ *
+ * Ce qu'on demande ici est pauvre a dessein : un nom, un pays. Le reste — la
+ * criticite, le DPA, la revue de securite, la reversibilite — se renseigne sur
+ * la fiche du tiers, qui reste le lieu de la revue.
+ */
+export function VendorPicker({
+  idPrefix,
+  vendors,
+  error,
+  optional = true,
+  defaultValue = '',
+}: {
+  idPrefix: string
+  vendors: { id: string; name: string }[]
+  error?: string
+  optional?: boolean
+  /** Le tiers deja rattache, quand on corrige une fiche. */
+  defaultValue?: string
+}) {
+  const [nouveau, setNouveau] = useState(false)
+
+  return (
+    <div className="flex flex-col gap-3">
+      <Field label="Fournisseur" htmlFor={`${idPrefix}-vendor`} optional={optional} error={error}>
+        <select
+          id={`${idPrefix}-vendor`}
+          name="vendorId"
+          defaultValue={defaultValue}
+          onChange={(event) => setNouveau(event.target.value === '__nouveau__')}
+          className={FIELD}
+        >
+          <option value="">— Interne ou sans fournisseur</option>
+          {vendors.map((vendor) => (
+            <option key={vendor.id} value={vendor.id}>
+              {vendor.name}
+            </option>
+          ))}
+          <option value="__nouveau__">+ Nouveau fournisseur…</option>
+        </select>
+      </Field>
+
+      {nouveau ? (
+        <div className="grid gap-3 rounded-md border border-ink-200 bg-ink-50 p-3.5 sm:grid-cols-[1fr_120px]">
+          <Field label="Nom du fournisseur" htmlFor={`${idPrefix}-new-vendor`}>
+            <input
+              id={`${idPrefix}-new-vendor`}
+              name="newVendorName"
+              type="text"
+              required
+              className={FIELD}
+              placeholder="Open.AI"
+            />
+          </Field>
+          <Field
+            label="Pays"
+            htmlFor={`${idPrefix}-new-country`}
+            optional
+            hint="Deux lettres."
+          >
+            <input
+              id={`${idPrefix}-new-country`}
+              name="newVendorCountry"
+              type="text"
+              maxLength={2}
+              className={`${FIELD} uppercase`}
+              placeholder="US"
+            />
+          </Field>
+          <p className="text-xs leading-relaxed text-ink-500 sm:col-span-2">
+            Il sera créé <strong className="font-medium text-ink-700">revue non commencée</strong> :
+            une revue tiers non close retient la mise en production. La criticité, le DPA et la
+            revue de sécurité se renseignent sur sa fiche, au registre des tiers.
+          </p>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 export function AssetFields({
   idPrefix = 'asset',
   vendors,
@@ -232,16 +318,7 @@ export function AssetFields({
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Fournisseur" htmlFor={`${idPrefix}-vendor`} optional>
-          <select id={`${idPrefix}-vendor`} name="vendorId" defaultValue="" className={FIELD}>
-            <option value="">— Interne ou sans fournisseur</option>
-            {vendors.map((vendor) => (
-              <option key={vendor.id} value={vendor.id}>
-                {vendor.name}
-              </option>
-            ))}
-          </select>
-        </Field>
+        <VendorPicker idPrefix={idPrefix} vendors={vendors} error={errors.vendorId} />
         <Field label="Responsable" htmlFor={`${idPrefix}-owner`} optional>
           <select id={`${idPrefix}-owner`} name="ownerUserId" defaultValue="" className={FIELD}>
             <option value="">— À désigner</option>

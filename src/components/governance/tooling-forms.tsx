@@ -2,6 +2,7 @@
 
 import { useActionState, useState, useTransition } from 'react'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
+import { VendorPicker } from '@/components/governance/registry-forms'
 import { Modal } from '@/components/modal'
 import { removeTooling, retainTooling, saveTooling, type FormState } from '@/lib/actions/tooling'
 
@@ -179,14 +180,12 @@ export function ToolingFields({
             fournisseur ouvrira son API pour tirer les preuves reste a poser.
             La colonne existe en base, l'ecran ne la propose pas encore.
           */}
-          <Field label="Fournisseur" htmlFor={`vendor-${idSuffix}`} optional hint="S’il figure au registre des tiers : sa revue conditionne la production.">
-            <select id={`vendor-${idSuffix}`} name="vendorId" defaultValue={declared?.vendor?.id ?? ''} className={FIELD}>
-              <option value="">—</option>
-              {vendors.map((v) => (
-                <option key={v.id} value={v.id}>{v.name}</option>
-              ))}
-            </select>
-          </Field>
+          <VendorPicker
+            idPrefix={`tool-${idSuffix}`}
+            vendors={vendors}
+            error={errors.vendorId}
+            defaultValue={declared?.vendor?.id ?? ''}
+          />
 
           {/*
             Deux natures, deux textes. Un outil qui ne sert qu'a tenir un
