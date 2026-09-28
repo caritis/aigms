@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Modal } from '@/components/modal'
+import { InfoTip } from '@/components/info-tip'
 import { TransitionPanel } from '@/components/transition-panel'
 import { DecisionForm } from '@/components/governance/decision-forms'
 import { ChangeRequestFields } from '@/components/governance/operations-forms'
@@ -83,6 +84,51 @@ export function TransitionModal({
       title="Faire évoluer le cas d’usage"
       description={`Statut courant : ${USE_CASE_STATUS_LABELS[status]}. Trois intentions, une porte.`}
       closeOnSuccess={intent === 'change' || intent === 'decide'}
+      headerAside={
+        <InfoTip sign="!" label="Ce que font les trois évolutions" title="Trois évolutions, et ce qu’elles engagent">
+          <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+            <p>
+              Les trois ne se valent pas : l’une avance le dossier, l’autre engage
+              l’organisation, la troisième décrit un fait sur le système. Les confondre fait
+              franchir un jalon sans l’avoir décidé.
+            </p>
+            <div>
+              <p className="font-medium text-ink-800">Franchir un jalon</p>
+              <p>
+                Pour les étapes <em>non engageantes</em> — triage, évaluation, revue,
+                surveillance, retours. Le statut change <strong className="font-medium text-ink-800">tout
+                de suite</strong>, avec un motif. Les passerelles restent juges : si l’une n’est pas
+                satisfaite, le passage est refusé et l’écran dit laquelle.
+              </p>
+            </div>
+            <div>
+              <p className="font-medium text-ink-800">Décider</p>
+              <p>
+                Pour les jalons <em>engageants</em> — approuvé, pilote, production, suspension,
+                retrait. Le statut ne bouge pas maintenant : on enregistre une{' '}
+                <strong className="font-medium text-ink-800">décision</strong>, qui doit être
+                approuvée par quelqu’un d’autre que son auteur, et qui franchira le jalon à sa date
+                d’effet. C’est ce qui laisse une trace nominative, et ce qu’un auditeur vient lire.
+              </p>
+            </div>
+            <div>
+              <p className="font-medium text-ink-800">Prévoir un changement du système</p>
+              <p>
+                Modèle, données, finalité, fournisseur, autonomie, population… à une date prévue.{' '}
+                <strong className="font-medium text-ink-800">Le statut ne bouge pas</strong> : ce
+                n’est pas un jalon, c’est un fait. Le moteur de réévaluation le lit, dit ce qu’il
+                rouvre — qualification, risques, contrôles, étude d’impact — et si une décision
+                s’impose, il l’ouvre.
+              </p>
+            </div>
+            <p className="text-ink-500">
+              Ce que vous posez ici se relit ensuite dans l’onglet{' '}
+              <strong className="font-medium text-ink-700">Décisions et changements</strong>, sur un
+              seul fil, chacun disant à quoi il est lié.
+            </p>
+          </div>
+        </InfoTip>
+      }
     >
       {() => (
         <div className="flex flex-col gap-4">
