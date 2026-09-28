@@ -54,6 +54,28 @@ Mot de passe commun : `Demo!Passw0rd`
 > remarque, c'est une occasion : ouvrez le **Pilotage**, il verra le portefeuille
 > entier sur un écran.
 
+### Ce que BATIVAL emploie déjà
+
+Deux **actifs d'IA** sont inscrits au registre avant la démonstration. Ils n'y
+sont pas par commodité : un actif se décrit une fois et se lit ensuite depuis
+tous ses cas d'usage — on ne le crée pas au milieu d'une présentation.
+
+| Actif | Nature | Ce qu'il porte |
+|---|---|---|
+| Assistant conversationnel grand public — comptes personnels | Système d'IA | Souscrit à titre individuel par les commerciaux. Aucune console d'entreprise, aucun réglage de rétention. **Données personnelles.** |
+| Devis émis et grilles de prix fournisseurs | Jeu de données | L'historique des devis, marges et coordonnées clients — ce qui est versé dans l'assistant. **Données personnelles.** |
+
+Le fournisseur qui les porte est inscrit lui aussi, **revue non close, sans
+DPA, hors Union européenne**. C'est ce qui rendra la ligne « Tiers non revu »
+visible dès l'étape 1.
+
+> **Ne confondez pas les deux mots, le prospect le fera.** Un **actif d'IA**
+> est ce que le cas d'usage *emploie*. Un **outillage** est ce *avec quoi* on
+> tient un contrôle — passerelle, DLP, journalisation. Le premier est l'objet
+> gouverné ; le second est l'instrument, et c'est de lui que la preuve se
+> prend. Un même produit peut être les deux : une passerelle d'appels IA est
+> un instrument de contrôle *et* une ressource du système.
+
 ### À vérifier dix minutes avant
 
 - Les deux organisations apparaissent dans le menu utilisateur.
@@ -95,6 +117,14 @@ Cas d'usage → Déclarer un cas d'usage**
 | Personnes concernées | Les clients, dont les devis portent les coordonnées |
 | Données traitées | Anciens devis, grilles de prix fournisseurs, marges, coordonnées clients |
 | Niveau d'autonomie | **L1 — il propose, un humain valide** |
+
+Puis, sur l'onglet *Avancement*, **Rattacher un actif** : l'assistant
+conversationnel, et le jeu de devis. Deux gestes, dix secondes.
+
+> **Ce que le rattachement déclenche.** Le fournisseur arrive avec l'actif, et
+> avec lui sa revue non close : la fiche affiche **« Tiers non revu »** sans
+> qu'on ait rien saisi de plus. Une revue tiers ouverte retiendra la mise en
+> production — le prospect le verra à l'étape 8.
 
 > **Insistez ici.** « Je déclare un usage que personne n'a autorisé, qui tourne
 > déjà, et dont la direction ignore l'existence. Le registre ne l'interdit pas :
@@ -174,19 +204,31 @@ Vous n'en retenez que quatre — celles qui répondent à la fiche du prospect.
 > abandonner au bout de trois. Ici, c'est l'officer qui retient, et le
 > référentiel n'est jamais modifié. »
 
-#### Les trois à cocher dans la liste des propositions
+**Comment s'y retrouver dans les quarante-quatre.** La fenêtre porte en haut
+une barre qui reste visible :
+
+- une **recherche libre** — un code, un mot du titre, un motif, un nom d'outil ;
+- des **pastilles de domaine** avec leur compte — GOV, SEC, SUP, DAT… ;
+- un bouton **« ★ Les plus appropriés »** : les propositions déclenchées par un
+  fait de la fiche, et celles que le référentiel rend obligatoires.
+
+Chaque ligne concernée porte sa marque, `★ déclenché` ou `★ obligatoire`.
+Cliquez **★ Les plus appropriés** : la liste tombe de quarante-quatre à une
+poignée, et les quatre du tableau ci-dessous sont dedans.
+
+> **À dire en cliquant.** « Le filtre ne devine rien. *Déclenché* veut dire
+> qu'un fait que j'ai saisi l'a fait apparaître ; *obligatoire* veut dire que
+> le référentiel l'attend de tout cas d'usage. Dans les deux cas, la raison est
+> écrite à côté. »
+
+#### Les quatre à cocher dans la liste des propositions
 
 | Code | Intitulé | Groupe | Pourquoi l'assistant le propose |
 |---|---|---|---|
 | **AIGMS-SUP-005** | Utilisation des données par le fournisseur | **déclenchée** | *« Des données personnelles transitent chez un fournisseur : leur usage se borne. »* |
 | **AIGMS-SEC-008** | Prévention de l'exfiltration de données | **déclenchée** | *« Des données personnelles sont mobilisées : le système ne doit pas les laisser sortir. »* |
 | **AIGMS-SEC-006** | Journalisation de sécurité des systèmes d'IA | socle, **obligatoire** | *« Attendu de tout cas d'usage. »* |
-
-Un quatrième est déjà dans le socle et se coche au passage :
-
-| Code | Intitulé | Groupe |
-|---|---|---|
-| **AIGMS-HUM-001** | Niveau de supervision humaine | socle, **obligatoire** |
+| **AIGMS-HUM-001** | Niveau de supervision humaine | socle, **obligatoire** | *« Attendu de tout cas d'usage. »* |
 
 > **Le geste qui porte.** Les deux premières lignes sont marquées
 > **« déclenchée »** avec leur motif écrit en clair. « Personne n'a coché une
@@ -210,29 +252,40 @@ AIGMS-CF v0.4, dont 12 dans ce domaine.
 > pas. Ce qui relève de la politique d'entreprise ne se déduit pas d'un cas
 > d'usage — c'est l'officer qui l'inscrit. »
 
-#### Statuer l'applicabilité
+#### Statuer, poser, outiller — au même endroit
 
 De retour sur la fiche, onglet *Contrôles affectés* : chaque ligne porte un
-**crayon** à gauche du code. Statuez **Applicable** sur les quatre, sans
-justification — elle n'est obligatoire que pour une exclusion.
+**crayon** à gauche du code. Il n'ouvre pas un champ, il ouvre **la fiche du
+contrôle sur ce cas d'usage**, en trois sections.
 
-#### Puis l'outillage
+| Section | Ce qu'on y fait | Sur quels contrôles |
+|---|---|---|
+| **Applicabilité** | Statuer **Applicable** — sans justification, elle n'est obligatoire que pour une exclusion | les quatre |
+| **Actifs d'IA qui la portent** | Poser la mesure sur l'assistant conversationnel, état *Prévue* | AIGMS-SEC-008, AIGMS-SEC-006 *(mesures techniques)* |
+| **Avec quoi il se tient** | Déclarer le produit sur la famille que le référentiel attend | voir le tableau ci-dessous |
 
-**Registres → Contrôles et outillages**
-
-| Famille | Produit à déclarer | Le contrôle qui la retient |
+| Famille suggérée | Produit à déclarer | Sur quel contrôle |
 |---|---|---|
 | Passerelle d'appels IA *(AI Gateway)* | ChatGPT Enterprise | AIGMS-SUP-005 |
 | Prévention des fuites *(DLP)* | Netskope | AIGMS-SEC-008 |
-| Journalisation *(SIEM)* | Splunk | AIGMS-SEC-006 |
+| Journalisation *(Logs / SIEM)* | Splunk | AIGMS-SEC-006 |
 
-AIGMS-SEC-008 affiche déjà les familles attendues — **AI Gateway** et **DLP** —
-avant même que vous ayez rien déclaré.
+La famille est **déjà proposée dans la liste déroulante** : c'est celle que le
+contrôle appelle. Vous ne tapez que le nom du produit. Rien à chercher, aucun
+aller-retour vers le registre.
 
-> **Insistez ici.** « Votre référentiel dit *“ce contrôle se tient avec un outil
-> de prévention des fuites”*. C'est une typologie : elle dit où chercher, pas ce
-> que vous employez. Ici, le contrôle dit **“se tient avec Netskope, chez
-> nous”** — et l'auditeur sait où aller prendre la preuve. »
+> **Le geste qui porte.** Ouvrez **AIGMS-SEC-008** en premier. Avant que vous
+> n'ayez rien déclaré, la fenêtre dit deux choses : *« Contrôle de nature
+> technique, sans outillage retenu — il énonce un moyen sans le nommer : en
+> l'état, il ne se prouve pas »*, et elle suggère **AI Gateway** et **DLP**.
+> « Votre référentiel dit *“ce contrôle se tient avec un outil de prévention
+> des fuites”*. C'est une typologie : elle dit où chercher, pas ce que vous
+> employez. Ici, le contrôle dira **“se tient avec Netskope, chez nous”** — et
+> l'auditeur saura où aller prendre la preuve. »
+
+> **Confirmation visuelle à faire remarquer.** Sous la ligne d'une mesure
+> technique que rien ne porte, l'écran affiche en orange **« Aucun actif ne la
+> porte »**. Après le geste, la pastille verte de l'actif prend sa place.
 
 ### Étape 6 — Produire une preuve
 
