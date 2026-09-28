@@ -112,15 +112,62 @@ export function ToolingForm({
             </p>
           ) : null}
 
-          <Field label="Produit employé" htmlFor={`product-${family.code}`} error={errors.product}>
+          <ToolingFields
+            idSuffix={family.code}
+            vendors={vendors}
+            assets={assets}
+            errors={errors}
+            declared={declared}
+            placeholder={family.examples[0]}
+          />
+          {family.expected_evidence.length ? (
+            <p className="text-xs leading-relaxed text-ink-500">
+              Ce que cette famille produit d’ordinaire comme preuve : {family.expected_evidence.join(', ')}.
+            </p>
+          ) : null}
+
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle={declared ? 'Enregistrer' : 'Déclarer'} />
+        </form>
+      )}
+    </Modal>
+  )
+}
+
+/**
+ * Ce qui decrit un produit d'outillage, et rien d'autre.
+ *
+ * Les memes champs servent a la carte d'outillage et a la fiche d'un controle,
+ * ou l'on declare le produit sans quitter l'ecran. Deux formulaires jumeaux
+ * divergent au premier ajout — et l'on demande le fournisseur d'un cote, pas
+ * de l'autre, sans que personne ne l'ait decide.
+ */
+export function ToolingFields({
+  idSuffix,
+  vendors,
+  assets,
+  errors,
+  declared = null,
+  placeholder,
+}: {
+  idSuffix: string
+  vendors: { id: string; name: string }[]
+  assets: { id: string; name: string; business_ref: string }[]
+  errors: Record<string, string>
+  declared?: DeclaredTool | null
+  placeholder?: string
+}) {
+  return (
+    <>
+      <Field label="Produit employé" htmlFor={`product-${idSuffix}`} error={errors.product}>
             <input
-              id={`product-${family.code}`}
+              id={`product-${idSuffix}`}
               name="product"
               type="text"
               required
               defaultValue={declared?.product ?? ''}
               className={FIELD}
-              placeholder={family.examples[0] ?? 'Nom du produit'}
+              placeholder={placeholder ?? 'Nom du produit'}
             />
           </Field>
 
@@ -130,8 +177,8 @@ export function ToolingForm({
             fournisseur ouvrira son API pour tirer les preuves reste a poser.
             La colonne existe en base, l'ecran ne la propose pas encore.
           */}
-          <Field label="Fournisseur" htmlFor={`vendor-${family.code}`} optional hint="S’il figure au registre des tiers : sa revue conditionne la production.">
-            <select id={`vendor-${family.code}`} name="vendorId" defaultValue={declared?.vendor?.id ?? ''} className={FIELD}>
+          <Field label="Fournisseur" htmlFor={`vendor-${idSuffix}`} optional hint="S’il figure au registre des tiers : sa revue conditionne la production.">
+            <select id={`vendor-${idSuffix}`} name="vendorId" defaultValue={declared?.vendor?.id ?? ''} className={FIELD}>
               <option value="">—</option>
               {vendors.map((v) => (
                 <option key={v.id} value={v.id}>{v.name}</option>
@@ -147,11 +194,11 @@ export function ToolingForm({
           */}
           <Field
             label="Déclaré à quel titre"
-            htmlFor={`role-${family.code}`}
+            htmlFor={`role-${idSuffix}`}
             hint="Instrument du contrôle, ressource du système d’IA, ou les deux."
           >
             <select
-              id={`role-${family.code}`}
+              id={`role-${idSuffix}`}
               name="role"
               defaultValue={declared?.role ?? 'control_instrument'}
               className={FIELD}
@@ -171,11 +218,11 @@ export function ToolingForm({
 
           <Field
             label="Cet outil est lui-même un actif d’IA"
-            htmlFor={`asset-${family.code}`}
+            htmlFor={`asset-${idSuffix}`}
             optional
             hint="Le registre et la carte d’outillage cessent alors de s’ignorer."
           >
-            <select id={`asset-${family.code}`} name="assetId" defaultValue={declared?.asset?.id ?? ''} className={FIELD}>
+            <select id={`asset-${idSuffix}`} name="assetId" defaultValue={declared?.asset?.id ?? ''} className={FIELD}>
               <option value="">—</option>
               {assets.map((a) => (
                 <option key={a.id} value={a.id}>{a.business_ref} — {a.name}</option>
@@ -183,21 +230,10 @@ export function ToolingForm({
             </select>
           </Field>
 
-          <Field label="Note" htmlFor={`note-${family.code}`} optional hint="Version, périmètre, ce qu’il couvre et ce qu’il ne couvre pas.">
-            <textarea id={`note-${family.code}`} name="note" rows={2} defaultValue={declared?.note ?? ''} className={FIELD} />
+          <Field label="Note" htmlFor={`note-${idSuffix}`} optional hint="Version, périmètre, ce qu’il couvre et ce qu’il ne couvre pas.">
+            <textarea id={`note-${idSuffix}`} name="note" rows={2} defaultValue={declared?.note ?? ''} className={FIELD} />
           </Field>
-
-          {family.expected_evidence.length ? (
-            <p className="text-xs leading-relaxed text-ink-500">
-              Ce que cette famille produit d’ordinaire comme preuve : {family.expected_evidence.join(', ')}.
-            </p>
-          ) : null}
-
-          <FormFeedback state={state} />
-          <Submit pending={pending} idle={declared ? 'Enregistrer' : 'Déclarer'} />
-        </form>
-      )}
-    </Modal>
+    </>
   )
 }
 

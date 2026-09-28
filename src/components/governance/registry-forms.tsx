@@ -184,24 +184,32 @@ export function VendorReviewForm({
   )
 }
 
-export function AssetForm({
-  organizationId,
+/**
+ * Ce qui decrit un actif d'IA, et rien d'autre.
+ *
+ * Les memes champs servent au registre et a la fiche d'un controle, ou l'on
+ * inscrit l'actif sur lequel poser une mesure. Deux formulaires jumeaux
+ * divergent au premier ajout — et l'on se retrouve a demander l'hebergement
+ * d'un cote et pas de l'autre, sans que personne ne l'ait decide.
+ *
+ * `idPrefix` evite la collision d'identifiants quand les deux vivent dans la
+ * meme page.
+ */
+export function AssetFields({
+  idPrefix = 'asset',
   vendors,
   people,
+  errors,
 }: {
-  organizationId: string
+  idPrefix?: string
   vendors: { id: string; name: string }[]
   people: { id: string; label: string }[]
+  errors: Record<string, string>
 }) {
-  const [state, formAction, pending] = useActionState<FormState | null, FormData>(createAsset, null)
-  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
-
   return (
-    <form action={formAction} className="flex flex-col gap-4">
-      <input type="hidden" name="organizationId" value={organizationId} />
-
-      <Field label="Nature" htmlFor="asset-kind">
-        <select id="asset-kind" name="kind" defaultValue="ai_system" className={FIELD}>
+    <>
+      <Field label="Nature" htmlFor={`${idPrefix}-kind`}>
+        <select id={`${idPrefix}-kind`} name="kind" defaultValue="ai_system" className={FIELD}>
           {ASSET_KINDS.map(([value, label]) => (
             <option key={value} value={value}>
               {label}
@@ -211,21 +219,21 @@ export function AssetForm({
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
-        <Field label="Nom" htmlFor="asset-name" error={errors.name}>
-          <input id="asset-name" name="name" type="text" required className={FIELD} />
+        <Field label="Nom" htmlFor={`${idPrefix}-name`} error={errors.name}>
+          <input id={`${idPrefix}-name`} name="name" type="text" required className={FIELD} />
         </Field>
-        <Field label="Version" htmlFor="asset-version" optional>
-          <input id="asset-version" name="version" type="text" className={FIELD} />
+        <Field label="Version" htmlFor={`${idPrefix}-version`} optional>
+          <input id={`${idPrefix}-version`} name="version" type="text" className={FIELD} />
         </Field>
       </div>
 
-      <Field label="Description" htmlFor="asset-description" optional>
-        <textarea id="asset-description" name="description" rows={2} className={FIELD} />
+      <Field label="Description" htmlFor={`${idPrefix}-description`} optional>
+        <textarea id={`${idPrefix}-description`} name="description" rows={2} className={FIELD} />
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Fournisseur" htmlFor="asset-vendor" optional>
-          <select id="asset-vendor" name="vendorId" defaultValue="" className={FIELD}>
+        <Field label="Fournisseur" htmlFor={`${idPrefix}-vendor`} optional>
+          <select id={`${idPrefix}-vendor`} name="vendorId" defaultValue="" className={FIELD}>
             <option value="">— Interne ou sans fournisseur</option>
             {vendors.map((vendor) => (
               <option key={vendor.id} value={vendor.id}>
@@ -234,8 +242,8 @@ export function AssetForm({
             ))}
           </select>
         </Field>
-        <Field label="Responsable" htmlFor="asset-owner" optional>
-          <select id="asset-owner" name="ownerUserId" defaultValue="" className={FIELD}>
+        <Field label="Responsable" htmlFor={`${idPrefix}-owner`} optional>
+          <select id={`${idPrefix}-owner`} name="ownerUserId" defaultValue="" className={FIELD}>
             <option value="">— À désigner</option>
             {people.map((person) => (
               <option key={person.id} value={person.id}>
@@ -248,11 +256,11 @@ export function AssetForm({
 
       <Field
         label="Localisation d’hébergement"
-        htmlFor="asset-hosting"
+        htmlFor={`${idPrefix}-hosting`}
         optional
         hint="Où le traitement a lieu. Un transfert hors UE se documente."
       >
-        <input id="asset-hosting" name="hostingLocation" type="text" className={FIELD} />
+        <input id={`${idPrefix}-hosting`} name="hostingLocation" type="text" className={FIELD} />
       </Field>
 
       <label className="flex items-start gap-2.5 text-sm">
@@ -268,7 +276,26 @@ export function AssetForm({
           </span>
         </span>
       </label>
+    </>
+  )
+}
 
+export function AssetForm({
+  organizationId,
+  vendors,
+  people,
+}: {
+  organizationId: string
+  vendors: { id: string; name: string }[]
+  people: { id: string; label: string }[]
+}) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(createAsset, null)
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+
+  return (
+    <form action={formAction} className="flex flex-col gap-4">
+      <input type="hidden" name="organizationId" value={organizationId} />
+      <AssetFields vendors={vendors} people={people} errors={errors} />
       <FormFeedback state={state} />
       <Submit pending={pending} idle="Inscrire l’actif" />
     </form>

@@ -312,7 +312,7 @@ export default async function UseCasePage({
       .select('id, code, name, status, organization_id')
       .order('code'),
     supabase.from('vendor').select('id, name, organization_id').order('name'),
-    supabase.from('ai_asset').select('id, name, kind, organization_id').order('name'),
+    supabase.from('ai_asset').select('id, name, kind, business_ref, organization_id').order('name'),
   ])
 
   const [
@@ -597,6 +597,10 @@ export default async function UseCasePage({
   const attachableAssets = assetChoices.filter(
     (a) => !useCaseAssets.some((u) => u.asset_id === a.id),
   )
+  /* Pour « cet outil est lui-meme un actif d'IA », sur la carte d'outillage. */
+  const orgAssetOptions = (orgAssets ?? [])
+    .filter((a) => a.organization_id === useCase.organization_id)
+    .map((a) => ({ id: a.id, name: a.name, business_ref: a.business_ref }))
 
   // Les personnes qui peuvent se prononcer sur une decision.
   const reviewers = (await organizationPeople(useCase.organization_id, true)).map((p) => ({
@@ -1290,6 +1294,9 @@ export default async function UseCasePage({
                                       kind: a.kind,
                                     }))}
                                     attachableAssets={attachableAssets}
+                                    vendors={vendorChoices}
+                                    people={people}
+                                    orgAssets={orgAssetOptions}
                                     carriers={carriers.map((a) => {
                                       const m = a.measures.find((x) => x.control_id === control.id)!
                                       return { asset_id: a.asset_id, name: a.name, status: m.status, note: m.note }

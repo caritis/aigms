@@ -326,19 +326,11 @@ export async function linkAssetToUseCase(
  * n'est pas encore au registre, l'ecran renvoyait au registre — on quittait la
  * fiche du controle, on remplissait, on revenait, et l'on avait perdu le fil.
  *
- * Ce qu'on demande ici est le minimum qui fasse un actif identifiable : sa
- * nature, son nom, s'il porte des donnees personnelles, ou il est heberge. Le
- * reste — version, fournisseur, responsable, description — se complete depuis
- * sa fiche, qui reste le lieu de l'inventaire.
+ * Les champs sont EXACTEMENT ceux du registre : le meme formulaire, au meme
+ * endroit, avec les memes mots. Un ecran de saisie qui varie selon la porte
+ * par laquelle on est entre fait douter de ce qu'il enregistre.
  */
-const declareAssetSchema = z.object({
-  useCaseId: z.string().uuid(),
-  organizationId: z.string().uuid(),
-  kind: z.enum(['ai_system', 'ai_model', 'ai_agent', 'dataset']),
-  name: z.string().trim().min(2, 'Nommez l’actif.').max(160),
-  containsPersonalData: z.coerce.boolean(),
-  hostingLocation: z.string().trim().max(160).optional().or(z.literal('')),
-})
+const declareAssetSchema = assetSchema.extend({ useCaseId: z.string().uuid() })
 
 export async function declareAssetForUseCase(
   _previous: FormState | null,
@@ -349,6 +341,10 @@ export async function declareAssetForUseCase(
     organizationId: formData.get('organizationId'),
     kind: formData.get('kind') ?? 'ai_system',
     name: formData.get('name'),
+    description: formData.get('description') ?? '',
+    vendorId: formData.get('vendorId') ?? '',
+    version: formData.get('version') ?? '',
+    ownerUserId: formData.get('ownerUserId') ?? '',
     containsPersonalData: formData.get('containsPersonalData') === 'on',
     hostingLocation: formData.get('hostingLocation') ?? '',
   })
@@ -366,6 +362,10 @@ export async function declareAssetForUseCase(
       organization_id: d.organizationId,
       kind: d.kind,
       name: d.name,
+      description: d.description || null,
+      vendor_id: d.vendorId || null,
+      version: d.version || null,
+      owner_user_id: d.ownerUserId || null,
       contains_personal_data: d.containsPersonalData,
       hosting_location: d.hostingLocation || null,
     })
@@ -390,10 +390,7 @@ export async function declareAssetForUseCase(
       message: `${d.name} est inscrit au registre, mais son rattachement a échoué : ${explain(linkError)}`,
     }
   }
-  return {
-    ok: true,
-    message: `${d.name} inscrit au registre et rattaché au cas d’usage. Complétez sa fiche depuis le registre des actifs.`,
-  }
+  return { ok: true, message: `${d.name} inscrit au registre et rattaché au cas d’usage.` }
 }
 
 export async function linkVendorToUseCase(

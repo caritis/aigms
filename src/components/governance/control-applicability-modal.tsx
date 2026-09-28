@@ -4,6 +4,8 @@ import { useActionState, useEffect, useState } from 'react'
 import { placeMeasureOnAsset, setControlApplicability, type FormState } from '@/lib/actions/controls'
 import { retainTooling, saveTooling } from '@/lib/actions/tooling'
 import { declareAssetForUseCase, linkAssetToUseCase } from '@/lib/actions/registry'
+import { AssetFields } from '@/components/governance/registry-forms'
+import { TOOLING_ROLES, ToolingFields } from '@/components/governance/tooling-forms'
 import { createClient } from '@/lib/supabase/client'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
@@ -42,13 +44,6 @@ const ROLE_HINTS: Record<string, string> = {
   both: 'instrument et ressource',
 }
 
-const ASSET_KINDS = [
-  ['ai_system', 'Système d’IA'],
-  ['ai_model', 'Modèle'],
-  ['ai_agent', 'Agent'],
-  ['dataset', 'Jeu de données'],
-] as const
-
 type Onglet = 'applicabilite' | 'actifs' | 'outillage'
 
 const ONGLETS: { key: Onglet; label: string }[] = [
@@ -66,6 +61,9 @@ export function ControlApplicabilityModal({
   assets,
   carriers,
   attachableAssets,
+  vendors,
+  people,
+  orgAssets,
 }: {
   organizationId: string
   useCaseId: string
@@ -78,6 +76,12 @@ export function ControlApplicabilityModal({
   carriers: { asset_id: string; name: string; status: string; note: string | null }[]
   /** Les actifs du registre que ce cas d'usage n'emploie pas encore. */
   attachableAssets: { id: string; name: string; kind: string }[]
+  /** Le registre des tiers, pour inscrire un actif ou nommer un outil. */
+  vendors: { id: string; name: string }[]
+  /** Les personnes du tenant, pour designer un responsable d'actif. */
+  people: { id: string; label: string }[]
+  /** Tous les actifs de l'organisation : un outil peut en etre un. */
+  orgAssets: { id: string; name: string; business_ref: string }[]
 }) {
   const [onglet, setOnglet] = useState<Onglet>('applicabilite')
   const technical = (control.measure_kind ?? 'organizational') === 'technical'
@@ -119,8 +123,21 @@ export function ControlApplicabilityModal({
               c’est l’instrument, et c’est de lui que la preuve se prend.
             </p>
             <p>
-              Un même produit peut être les deux. Une passerelle d’appels d’IA est un instrument de
-              contrôle <em>et</em> une ressource du système : elle se déclare alors « les deux ».
+              C’est pourquoi l’onglet Outillage demande <strong className="font-medium text-ink-800">à
+              quel titre</strong> un produit est déclaré. Trois réponses, et chacune s’adosse à un
+              texte :
+            </p>
+            <dl className="flex flex-col gap-2 rounded-md bg-ink-100 px-3.5 py-3">
+              {TOOLING_ROLES.map((r) => (
+                <div key={r.value}>
+                  <dt className="font-medium text-ink-800">{r.label}</dt>
+                  <dd className="text-ink-600">{r.hint}</dd>
+                </div>
+              ))}
+            </dl>
+            <p>
+              Le choix n’est pas cosmétique : un outil déclaré « ressource d’un système d’IA »
+              entre dans le périmètre gouverné, et cesse d’être un simple instrument de contrôle.
             </p>
             <p className="text-ink-500">
               Les deux derniers onglets savent aussi <em>créer</em> : rien ne se rattache quand le
@@ -177,9 +194,16 @@ export function ControlApplicabilityModal({
                 assets={assets}
                 carriers={carriers}
                 attachableAssets={attachableAssets}
+                vendors={vendors}
+                people={people}
               />
             ) : (
-              <ToolingPanel organizationId={organizationId} control={control} />
+              <ToolingPanel
+                organizationId={organizationId}
+                control={control}
+                vendors={vendors}
+                orgAssets={orgAssets}
+              />
             )}
           </div>
         </div>
@@ -260,6 +284,8 @@ function AssetPanel({
   assets,
   carriers,
   attachableAssets,
+  vendors,
+  people,
 }: {
   organizationId: string
   useCaseId: string
@@ -268,6 +294,8 @@ function AssetPanel({
   assets: { asset_id: string; name: string; kind: string }[]
   carriers: { asset_id: string; name: string; status: string; note: string | null }[]
   attachableAssets: { id: string; name: string; kind: string }[]
+  vendors: { id: string; name: string }[]
+  people: { id: string; label: string }[]
 }) {
   const [poser, poserAction, poserPending] = useActionState<FormState | null, FormData>(
     placeMeasureOnAsset,
@@ -402,45 +430,18 @@ function AssetPanel({
       <section className="border-t border-ink-100 pt-5">
         <h3 className="mb-1 text-sm font-semibold text-ink-900">Inscrire un actif, et le rattacher</h3>
         <p className="mb-3 text-xs leading-relaxed text-ink-500">
-          Le minimum qui fasse un actif identifiable. Le reste — version, fournisseur, responsable,
-          description — se complète depuis sa fiche, au registre des actifs.
+          Exactement le formulaire du registre des actifs : les mêmes champs, les mêmes mots. Ce qui
+          est inscrit ici est rattaché au cas d’usage dans le même geste.
         </p>
-        <form action={creerAction} className="flex flex-col gap-3 rounded-md border border-ink-200 p-3.5">
+        <form action={creerAction} className="flex flex-col gap-4 rounded-md border border-ink-200 p-3.5">
           <input type="hidden" name="useCaseId" value={useCaseId} />
           <input type="hidden" name="organizationId" value={organizationId} />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Nature" htmlFor={`new-kind-${control.id}`}>
-              <select id={`new-kind-${control.id}`} name="kind" defaultValue="ai_system" className={FIELD}>
-                {ASSET_KINDS.map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Nom" htmlFor={`new-name-${control.id}`}>
-              <input id={`new-name-${control.id}`} name="name" type="text" required className={FIELD} />
-            </Field>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field
-              label="Hébergement"
-              htmlFor={`new-host-${control.id}`}
-              optional
-              hint="Où il tourne. Un hébergement hors Union européenne se lit ici."
-            >
-              <input id={`new-host-${control.id}`} name="hostingLocation" type="text" className={FIELD} />
-            </Field>
-            <label className="flex items-start gap-2.5 self-end pb-2 text-sm">
-              <input type="checkbox" name="containsPersonalData" className="mt-0.5 size-4 rounded border-ink-300" />
-              <span className="min-w-0">
-                Contient des données personnelles
-                <span className="block text-xs text-ink-400">
-                  Ce fait remonte au cas d’usage et déclenche des contrôles.
-                </span>
-              </span>
-            </label>
-          </div>
+          <AssetFields
+            idPrefix={`new-asset-${control.id}`}
+            vendors={vendors}
+            people={people}
+            errors={creer && !creer.ok ? (creer.fieldErrors ?? {}) : {}}
+          />
           <FormFeedback state={creer} />
           <Submit pending={creerPending} idle="Inscrire et rattacher" />
         </form>
@@ -458,9 +459,13 @@ function AssetPanel({
 function ToolingPanel({
   organizationId,
   control,
+  vendors,
+  orgAssets,
 }: {
   organizationId: string
   control: { id: string; code: string }
+  vendors: { id: string; name: string }[]
+  orgAssets: { id: string; name: string; business_ref: string }[]
 }) {
   const [view, setView] = useState<ControlToolingView | null>(null)
   const [familles, setFamilles] = useState<
@@ -639,10 +644,11 @@ function ToolingPanel({
       <section className="mt-5 border-t border-ink-100 pt-5">
         <h3 className="mb-1 text-sm font-semibold text-ink-900">Déclarer un produit</h3>
         <p className="mb-3 text-xs leading-relaxed text-ink-500">
-          Une famille du référentiel, le produit employé chez vous. Ce n’est pas un inventaire du
-          système d’information : pas d’instances, pas de versions, pas de dépendances.
+          Exactement le formulaire de la carte d’outillage : les mêmes champs, les mêmes mots. Une
+          famille du référentiel, le produit employé chez vous. Ce n’est pas un inventaire du
+          système d’information : pas d’instances, pas de dépendances.
         </p>
-        <form action={declareAction} className="flex flex-col gap-3 rounded-md border border-ink-200 p-3.5">
+        <form action={declareAction} className="flex flex-col gap-4 rounded-md border border-ink-200 p-3.5">
           <input type="hidden" name="organizationId" value={organizationId} />
           <Field
             label="Famille du référentiel"
@@ -684,18 +690,13 @@ function ToolingPanel({
               ) : null}
             </select>
           </Field>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Produit employé" htmlFor={`prod-${control.id}`}>
-              <input id={`prod-${control.id}`} name="product" type="text" required className={FIELD} />
-            </Field>
-            <Field label="À quel titre" htmlFor={`role-${control.id}`}>
-              <select id={`role-${control.id}`} name="role" defaultValue="control_instrument" className={FIELD}>
-                <option value="control_instrument">Instrument d’un contrôle</option>
-                <option value="system_resource">Ressource d’un système d’IA</option>
-                <option value="both">Les deux</option>
-              </select>
-            </Field>
-          </div>
+          <ToolingFields
+            idSuffix={`ctl-${control.id}`}
+            vendors={vendors}
+            assets={orgAssets}
+            errors={declareState && !declareState.ok ? (declareState.fieldErrors ?? {}) : {}}
+            placeholder={familleChoisie?.examples[0]}
+          />
           <FormFeedback state={declareState} />
           <Submit pending={declaring} idle="Déclarer le produit" />
         </form>
