@@ -59,6 +59,7 @@ import { DECISION_TYPES_BY_STATUS, UI_TRANSITIONS } from '@/lib/domain/transitio
 import {
   AcceptRiskForm,
   ClassificationPanel,
+  RiskEditForm,
   RiskPanel,
   CriticalityPanel,
 } from '@/components/governance/use-case-panels'
@@ -98,6 +99,7 @@ import {
   type RiskLevel,
   type UseCaseStatus,
 } from '@/lib/domain/governance'
+import { RISK_CATEGORY_LABELS } from '@/lib/domain/risk'
 
 /** « Camille Rousset », ou l'adresse, ou rien. */
 function personLabel(value: unknown): string | null {
@@ -1398,10 +1400,27 @@ export default async function UseCasePage({
                   <li key={risk.id} className="py-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-ink-900">{risk.title}</p>
+                        {/*
+                          Une cotation se corrige, un scenario se precise. Le
+                          crayon evite qu'on ouvre un SECOND risque pour dire
+                          autrement le premier — et la fenetre annonce ce que
+                          la correction entraine.
+                        */}
+                        <p className="flex items-start gap-2 text-sm font-medium text-ink-900">
+                          {risk.status !== 'closed' ? (
+                            <RiskEditForm
+                              useCaseId={id}
+                              risk={risk}
+                              people={people}
+                              defaultOwnerUserId={useCase.accountable_user_id ?? useCase.owner_user_id}
+                              criticality={useCase.criticality}
+                            />
+                          ) : null}
+                          <span className="min-w-0">{risk.title}</span>
+                        </p>
                         <p className="text-xs text-ink-600">{risk.scenario}</p>
                         <p className="mt-1 text-xs text-ink-400">
-                          {risk.business_ref} · {risk.category} ·{' '}
+                          {risk.business_ref} · {RISK_CATEGORY_LABELS[risk.category] ?? risk.category} ·{' '}
                           {RISK_STATUS_LABELS[risk.status] ?? risk.status}
                           {risk.accepted_at
                             ? ` · accepté, revue le ${formatDate(risk.acceptance_review_at)}`
