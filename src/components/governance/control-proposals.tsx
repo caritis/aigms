@@ -82,11 +82,14 @@ export function ControlProposals({
   organizationId,
   useCaseId,
   suggestions,
+  triggerClassName,
 }: {
   organizationId: string
   /** Absent : portee organisation — les controles du systeme de management. */
   useCaseId?: string
   suggestions: Suggestions
+  /** Pour en faire le geste principal d'un ecran, quand il l'est. */
+  triggerClassName?: string
 }) {
   const organizationMode = !useCaseId
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
@@ -202,6 +205,7 @@ export function ControlProposals({
     <Modal
       closeOnSuccess={false}
       trigger={organizationMode ? 'Proposer les contrôles d’organisation' : 'Proposer des contrôles'}
+      triggerClassName={triggerClassName}
       title={organizationMode ? 'Contrôles du système de management' : 'Propositions de contrôles'}
       description={
         organizationMode

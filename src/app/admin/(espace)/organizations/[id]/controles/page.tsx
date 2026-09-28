@@ -55,10 +55,10 @@ export default async function ControlsPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ etat?: string; outillage?: string }>
+  searchParams: Promise<{ etat?: string; outillage?: string; domaine?: string }>
 }) {
   const { id } = await params
-  const { etat, outillage } = await searchParams
+  const { etat, outillage, domaine } = await searchParams
   const supabase = await createClient()
 
   const [{ data: organization }, { data: controlRows }, { data: requirementRows }, { data: links }, { data: orgSuggestions }] =
@@ -67,7 +67,9 @@ export default async function ControlsPage({
       supabase
         .from('control')
         .select(
-          'id, business_ref, code, name, objective, status, is_mandatory, measure_kind, frequency, last_tested_at, next_test_at, expected_evidence, assessment_questions, owner:owner_user_id (full_name, email), catalog:catalog_control_id (control_code, version:version_id (version, framework:framework_id (code)))',
+          // Le domaine vient du contrôle-type : « GOV », « Gouvernance ». Un
+          // contrôle libre n'en a pas — il se range à part, et c'est juste.
+          'id, business_ref, code, name, objective, status, is_mandatory, measure_kind, frequency, last_tested_at, next_test_at, expected_evidence, assessment_questions, owner:owner_user_id (full_name, email), catalog:catalog_control_id (control_code, domain:domain_id (code, name), version:version_id (version, framework:framework_id (code)))',
         )
         .eq('organization_id', id)
         .order('code'),
@@ -122,8 +124,40 @@ export default async function ControlsPage({
   const needsTooling = (c: Control) => c.measure_kind === 'technical' && !toolingBy.has(c.id)
   const missingTooling = controls.filter(needsTooling)
 
+  /*
+    Le domaine du controle-type — GOV, DAT, SEC… — comme sur la fenetre des
+    propositions. Un registre de cent-vingt controles ne se parcourt pas ; il
+    se filtre, et par les memes mots des deux cotes.
+  */
+  const domaineDe = (c: Control) => {
+    const cc = c.catalog as unknown as { domain: { code: string; name: string } | null } | null
+    return cc?.domain ?? null
+  }
+  const domaines = [
+    ...new Map(
+      controls
+        .map(domaineDe)
+        .filter((d): d is { code: string; name: string } => Boolean(d))
+        .map((d) => [d.code, d]),
+    ).values(),
+  ].sort((a, b) => a.code.localeCompare(b.code))
+  const libres = controls.filter((c) => !domaineDe(c)).length
+
+  /* Les comptes d'un filtre tiennent compte de l'autre : sinon ils annoncent
+     des lignes que le second filtre ne montrera pas. */
+  const byDomain2 = !domaine
+    ? controls
+    : domaine === 'libre'
+      ? controls.filter((c) => !domaineDe(c))
+      : controls.filter((c) => domaineDe(c)?.code === domaine)
+
   const byState = etat ? controls.filter((c) => c.status === etat) : controls
-  const shown = outillage === 'manquant' ? byState.filter(needsTooling) : byState
+  const byDomain = !domaine
+    ? byState
+    : domaine === 'libre'
+      ? byState.filter((c) => !domaineDe(c))
+      : byState.filter((c) => domaineDe(c)?.code === domaine)
+  const shown = outillage === 'manquant' ? byDomain.filter(needsTooling) : byDomain
   const operating = controls.filter((c) => c.status === 'operating').length
   const mandatory = controls.filter((c) => c.is_mandatory).length
   const unmapped = controls.filter((c) => !mappedBy.has(c.id)).length
@@ -138,20 +172,29 @@ export default async function ControlsPage({
       title="Liste des contrôles opérationnels"
       subtitle="Le dispositif de maîtrise de l’organisation, et ce qu’il couvre."
       actions={
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/admin/organizations/${id}/controles/nouveau`}
-            className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
-          >
-            Ajouter un contrôle
-          </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          {/*
+            L'ordre dit le geste attendu. Retenir ce que l'assistant propose
+            est la voie normale — le referentiel le calcule, l'officer
+            choisit. Ecrire un controle a la main reste possible, mais c'est
+            l'exception : un controle libre n'est rattache a aucun
+            controle-type, ne porte ni preuves attendues ni questions
+            d'evaluation, et n'apparait dans aucune proposition.
+          */}
           <ControlProposals
             organizationId={id}
             suggestions={(orgSuggestions ?? { available: false }) as Suggestions}
+            triggerClassName="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
           />
           <Link
+            href={`/admin/organizations/${id}/controles/nouveau`}
+            className="rounded-md border border-ink-200 px-3 py-1.5 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            Écrire un contrôle
+          </Link>
+          <Link
             href={`/admin/organizations/${id}/outillage`}
-            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+            className="rounded-md border border-ink-200 px-3 py-1.5 text-sm text-ink-700 hover:bg-ink-100"
           >
             Outillage
           </Link>
@@ -199,17 +242,48 @@ export default async function ControlsPage({
           label="Filtrer par état"
           param="etat"
           basePath={`/admin/organizations/${id}/controles`}
-          current={{ outillage: outillage ?? '' }}
+          current={{ outillage: outillage ?? '', domaine: domaine ?? '' }}
           selected={etat}
           options={STATE_FILTERS.map((option) => ({
             key: option.key,
             label: option.label,
             count: option.key
-              ? controls.filter((c) => c.status === option.key).length
-              : controls.length,
+              ? byDomain2.filter((c) => c.status === option.key).length
+              : byDomain2.length,
           }))}
         />
       </div>
+
+      {domaines.length > 1 ? (
+        <div className="mb-5">
+          <SegmentedFilter
+            label="Filtrer par domaine"
+            param="domaine"
+            basePath={`/admin/organizations/${id}/controles`}
+            current={{ etat: etat ?? '', outillage: outillage ?? '' }}
+            selected={domaine ?? ''}
+            options={[
+              { key: '', label: 'Tous les domaines', count: controls.length },
+              ...domaines.map((d) => ({
+                key: d.code,
+                label: d.code,
+                count: controls.filter((c) => domaineDe(c)?.code === d.code).length,
+                hint: d.name,
+              })),
+              ...(libres
+                ? [
+                    {
+                      key: 'libre',
+                      label: 'Libres',
+                      count: libres,
+                      hint: 'Écrits à la main : rattachés à aucun contrôle-type, donc absents des propositions et sans preuves attendues.',
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        </div>
+      ) : null}
 
       {missingTooling.length ? (
         <div className="mb-5">
@@ -217,7 +291,7 @@ export default async function ControlsPage({
             label="Outillage"
             param="outillage"
             basePath={`/admin/organizations/${id}/controles`}
-            current={{ etat: etat ?? '' }}
+            current={{ etat: etat ?? '', domaine: domaine ?? '' }}
             selected={outillage === 'manquant' ? 'manquant' : ''}
             options={[
               { key: '', label: 'Tous les contrôles', count: byState.length },

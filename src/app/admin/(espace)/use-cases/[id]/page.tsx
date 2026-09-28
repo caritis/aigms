@@ -1117,9 +1117,15 @@ export default async function UseCasePage({
       */}
       {tab === 'controles' ? (
         <div>
+          {/*
+            Le compte ne se compare plus au registre entier : il annoncait
+            « 4 sur 5 » alors que le cinquieme est un controle de portee
+            ORGANISATION, qui ne s'affecte a aucun cas d'usage. L'ecran
+            promettait un geste que le modele interdit.
+          */}
           <Card
             title="Contrôles affectés"
-            subtitle={`${controls?.length ?? 0} contrôle(s) statué(s) sur ${controlChoices.length} au référentiel · ${applicableControls.length} applicable(s), dont ${applicableControls.filter((c) => (c.control as unknown as { status: string } | null)?.status === 'operating').length} opérant(s)`}
+            subtitle={`${controls?.length ?? 0} contrôle(s) statué(s) sur ce cas d’usage · ${applicableControls.length} applicable(s), dont ${applicableControls.filter((c) => (c.control as unknown as { status: string } | null)?.status === 'operating').length} opérant(s)`}
             action={<ControlNote />}
           >
             {/*
@@ -1134,6 +1140,21 @@ export default async function UseCasePage({
                 useCaseId={id}
                 suggestions={(suggestionsData ?? { available: false }) as Suggestions}
               />
+              {/*
+                Ou sont passes les autres. Un controle de portee organisation —
+                la politique d'usage, le comite, l'audit interne — se tient une
+                fois pour toute l'organisation : il ne s'affecte pas ici, et ne
+                figure donc dans aucune proposition. Le dire evite de le
+                chercher.
+              */}
+              {organization ? (
+                <Link
+                  href={`/admin/organizations/${organization.id}/controles`}
+                  className="text-xs text-ink-500 hover:text-ink-900 hover:underline"
+                >
+                  Les contrôles du système de management se tiennent une fois, au registre →
+                </Link>
+              ) : null}
             </div>
 
             {/*
