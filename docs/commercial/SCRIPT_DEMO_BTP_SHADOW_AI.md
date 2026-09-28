@@ -659,8 +659,27 @@ n'affiche aucun usage d'IA.
 | **Graphe** | L'outil nomme l'endroit exact où la chaîne rompt |
 | **La case vide** | Ce qu'on ne sait pas encore est une information, pas un trou |
 
-## Après cette annexe
+## Après cette annexe — remettre BATIVAL à blanc
 
-Les deux processus, les trois activités et le second cas d'usage restent dans
-BATIVAL Construction. Pour repartir d'une carte vierge, supprimez les activités
-puis les processus depuis leur fiche. **Ne touchez jamais à IzarLink Demo.**
+Tout ce que la démonstration et son annexe ont créé reste dans BATIVAL
+Construction. Ne le retirez pas écran par écran : un script le fait, et il
+compte avant d'écrire.
+
+```
+npm run demo:purger -- --org BATIVAL              # compte, n'écrit rien
+npm run demo:purger -- --org BATIVAL --oui        # efface
+```
+
+Il conserve l'organisation, ses huit comptes et leurs rôles, ainsi que les deux
+actifs d'IA et le fournisseur du décor : le scénario se rejoue dès l'étape 1
+sans rien recréer. Ajoutez `--complet` pour retirer aussi le décor.
+
+Sur la base d'une Preview ou de la préproduction, ajoutez `--ref <projectRef>`.
+
+> **Il refuse IzarLink Demo**, en dur, quoi qu'on lui demande : cette
+> organisation porte le jeu de données complet dont dépendent les autres
+> démonstrations et les tests automatisés.
+
+**Une organisation ne se supprime jamais** — la base le refuse, et c'est
+voulu : ses décisions et ses preuves doivent rester lisibles, et le journal
+d'audit ne porte aucune clé étrangère vers elle. On vide, on ne supprime pas.

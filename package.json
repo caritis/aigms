@@ -26,7 +26,8 @@
     "db:diff": "supabase db diff",
     "db:types": "supabase gen types typescript --linked > src/lib/supabase/database.types.ts",
     "db:types:local": "supabase gen types typescript --local > src/lib/supabase/database.types.ts",
-    "db:seed": "tsx scripts/seed.ts"
+    "db:seed": "tsx scripts/seed.ts",
+    "demo:purger": "node --env-file-if-exists=.env.local scripts/purger-organisation.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",
