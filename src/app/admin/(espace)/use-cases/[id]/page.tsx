@@ -59,7 +59,9 @@ import { DECISION_TYPES_BY_STATUS, UI_TRANSITIONS } from '@/lib/domain/transitio
 import {
   AcceptRiskForm,
   ClassificationPanel,
+  RiskCloseForm,
   RiskEditForm,
+  RiskEraseForm,
   RiskPanel,
   CriticalityPanel,
 } from '@/components/governance/use-case-panels'
@@ -239,7 +241,9 @@ export default async function UseCasePage({
     supabase
       .from('risk')
       .select(
-        'id, business_ref, title, scenario, category, inherent_level, residual_level, inherent_likelihood, inherent_impact, residual_likelihood, residual_impact, status, accepted_at, acceptance_review_at, next_review_at, owner_user_id',
+                // Les traitements sont embarques, pas relus : l'ecran doit savoir si
+        // un risque a produit quelque chose avant d'offrir de l'effacer.
+        'id, business_ref, title, scenario, category, inherent_level, residual_level, inherent_likelihood, inherent_impact, residual_likelihood, residual_impact, status, accepted_at, acceptance_review_at, next_review_at, owner_user_id, closed_at, closure_reason, risk_treatment(id)',
       )
       .eq('use_case_id', id)
       .order('business_ref'),
@@ -550,6 +554,15 @@ export default async function UseCasePage({
   // Un risque se traite par un controle qui S'APPLIQUE a ce cas d'usage : la
   // liste ne propose pas les cent vingt controles du referentiel.
   const treatmentChoices = controlChoices.filter((c) => applicableControlIds.includes(c.id))
+
+  /*
+    Qui voit le bouton « Effacer ». Le responsable du risque en est exclu : il
+    en repond, il ne l'efface pas — c'est la raison meme qui lui ouvre la
+    cloture. L'ecran n'ouvre aucun droit : `guard_risk_delete` (0109) tient la
+    meme liste, et c'est elle qui tranche.
+  */
+  const effaceurDeRisque =
+    viewer?.role === 'governance_officer' || viewer?.role === 'client_admin'
 
   const vendorChoices = (orgVendors ?? [])
     .filter((v) => v.organization_id === useCase.organization_id)
@@ -1480,6 +1493,40 @@ export default async function UseCasePage({
                           </p>
                         )}
                       </div>
+                    ) : null}
+
+                    {/*
+                      Retirer un risque du registre : deux portes, et elles ne
+                      servent pas la meme chose. On CLOT ce qui a vecu — rien
+                      ne disparait. On EFFACE l'erratum, et la base n'admet
+                      que ce qui n'a rien laisse derriere lui.
+                    */}
+                    {risk.status !== 'closed' ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <RiskCloseForm riskId={risk.id} riskRef={risk.business_ref} useCaseId={id} />
+                        {/*
+                          Effacer est ferme au responsable du risque, pour la
+                          raison meme qui lui ouvre la cloture : il en repond.
+                          L'ecran n'ouvre aucun droit — la base tient les
+                          memes conditions, et refuse en le disant.
+                        */}
+                        {effaceurDeRisque &&
+                        risk.status === 'identified' &&
+                        !risk.accepted_at &&
+                        !(risk.risk_treatment ?? []).length ? (
+                          <RiskEraseForm
+                            riskId={risk.id}
+                            riskRef={risk.business_ref}
+                            riskTitle={risk.title}
+                            useCaseId={id}
+                          />
+                        ) : null}
+                      </div>
+                    ) : risk.closure_reason ? (
+                      <p className="mt-2 text-xs leading-relaxed text-ink-500">
+                        <strong className="font-medium text-ink-700">Clos</strong>
+                        {risk.closed_at ? ` le ${formatDate(risk.closed_at)}` : ''} — {risk.closure_reason}
+                      </p>
                     ) : null}
                   </li>
                 ))}

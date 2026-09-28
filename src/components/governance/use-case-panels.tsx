@@ -3,7 +3,9 @@
 import { useActionState, useState } from 'react'
 import {
   acceptRisk,
+  closeRisk,
   createRisk,
+  eraseRisk,
   saveClassification,
   saveTriage,
   updateRisk,
@@ -877,6 +879,115 @@ export function RiskEditForm({
 
           <FormFeedback state={state} />
           <Submit pending={pending} idle="Enregistrer la correction" />
+        </form>
+      )}
+    </Modal>
+  )
+}
+
+/**
+ * Retirer un risque du registre — deux gestes, et ils ne servent pas la meme
+ * chose.
+ *
+ * CLORE : un risque qui a vecu et n'a plus lieu d'etre. Rien ne disparait ;
+ * le motif est obligatoire parce qu'un risque clos sort de la passerelle de
+ * production. Ouvert au responsable du risque : il en repond, il peut dire
+ * qu'il est eteint.
+ *
+ * EFFACER : l'erratum, et rien d'autre. Ferme au responsable du risque, pour
+ * la meme raison qui lui ouvre la cloture — il en repond, il ne l'efface pas.
+ */
+export function RiskCloseForm({
+  riskId,
+  riskRef,
+  useCaseId,
+}: {
+  riskId: string
+  riskRef: string
+  useCaseId: string
+}) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(closeRisk, null)
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+
+  return (
+    <Modal
+      trigger="Clore"
+      triggerClassName="rounded-md border border-ink-200 px-2.5 py-1 text-xs font-medium text-ink-700 hover:bg-ink-100"
+      title={`Clore ${riskRef}`}
+      description="Pour un risque qui n’a plus lieu d’être. Rien n’est effacé."
+    >
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="riskId" value={riskId} />
+          <input type="hidden" name="useCaseId" value={useCaseId} />
+          <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+            Les traitements, les constats d’étude d’impact et les décisions qui désignent ce risque
+            restent lisibles. Un risque clos <strong className="font-medium text-ink-800">ne retient
+            plus la mise en production</strong> : c’est pourquoi le motif n’est pas facultatif, et
+            pourquoi votre nom y reste attaché.
+          </p>
+          <Field
+            label="Pourquoi ce risque n’a plus lieu d’être"
+            htmlFor={`close-${riskId}`}
+            error={errors.reason}
+            hint="Périmètre modifié, cas d’usage abandonné, risque absorbé par un autre — dites lequel."
+          >
+            <textarea id={`close-${riskId}`} name="reason" rows={3} required className={FIELD} />
+          </Field>
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Clore le risque" />
+        </form>
+      )}
+    </Modal>
+  )
+}
+
+export function RiskEraseForm({
+  riskId,
+  riskRef,
+  riskTitle,
+  useCaseId,
+}: {
+  riskId: string
+  riskRef: string
+  riskTitle: string
+  useCaseId: string
+}) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(eraseRisk, null)
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+
+  return (
+    <Modal
+      trigger="Effacer"
+      triggerClassName="rounded-md border border-stop-600/30 px-2.5 py-1 text-xs font-medium text-stop-600 hover:bg-stop-600/10"
+      title={`Effacer ${riskRef}`}
+      description="Pour une ligne saisie par erreur, et rien d’autre."
+    >
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="riskId" value={riskId} />
+          <input type="hidden" name="useCaseId" value={useCaseId} />
+          <p className="rounded-md border border-stop-600/25 bg-stop-600/5 px-3.5 py-2.5 text-xs leading-relaxed text-ink-700">
+            <strong className="font-medium text-ink-900">« {riskTitle} » disparaîtra du
+            registre.</strong> La base ne l’admet que si ce risque n’a rien laissé derrière lui :
+            encore « identifié », jamais accepté, sans traitement, sans décision qui le désigne,
+            sans constat d’étude d’impact qui y renvoie. Autrement, elle refuse et vous le dit —
+            ce risque se clôt.
+          </p>
+          <p className="text-xs leading-relaxed text-ink-500">
+            Le journal en conserve l’instantané complet, votre nom, la date et le motif ci-dessous.
+            Un effacement est tracé, pas silencieux.
+          </p>
+          <Field
+            label="En quoi cette ligne est une erreur de saisie"
+            htmlFor={`erase-${riskId}`}
+            error={errors.reason}
+            hint="Un doublon, un essai, un risque saisi sur le mauvais cas d’usage."
+          >
+            <input id={`erase-${riskId}`} name="reason" type="text" required className={FIELD} />
+          </Field>
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Effacer définitivement" />
         </form>
       )}
     </Modal>
