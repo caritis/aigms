@@ -518,6 +518,76 @@ export async function createRisk(_previous: FormState | null, formData: FormData
   }
 }
 
+/**
+ * Corriger un risque deja enregistre.
+ *
+ * Une cotation se corrige, un scenario se precise, une categorie se reclasse :
+ * un registre qu'on ne peut pas amender se contourne par un second risque, et
+ * l'on perd le fil. Le niveau reste calcule par la base.
+ *
+ * Ce qui change vraiment se passe en base : `risk_compute_levels` recote,
+ * `risk_audit` garde trace, `risk_check_criticality` reveille le signal de
+ * criticite, et — depuis 0108 — recoter A LA HAUSSE un risque accepte retire
+ * l'acceptation, ramene le risque a « identifie » et en avertit la personne
+ * qui l'avait assumee.
+ */
+const updateRiskSchema = riskSchema
+  .omit({ controlId: true })
+  .extend({ riskId: z.string().uuid() })
+
+export async function updateRisk(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const parsed = updateRiskSchema.safeParse({
+    riskId: formData.get('riskId'),
+    useCaseId: formData.get('useCaseId'),
+    title: formData.get('title'),
+    scenario: formData.get('scenario'),
+    category: formData.get('category'),
+    inherentLikelihood: formData.get('inherentLikelihood'),
+    inherentImpact: formData.get('inherentImpact'),
+    ownerUserId: formData.get('ownerUserId'),
+    nextReviewAt: formData.get('nextReviewAt') ?? '',
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+  const d = parsed.data
+
+  const supabase = await createClient()
+  const { data: before } = await supabase
+    .from('risk')
+    .select('status, inherent_level, residual_level')
+    .eq('id', d.riskId)
+    .maybeSingle()
+  if (!before) return { ok: false, message: 'Risque introuvable.' }
+
+  const { data: after, error } = await supabase
+    .from('risk')
+    .update({
+      title: d.title,
+      scenario: d.scenario,
+      category: d.category,
+      inherent_likelihood: d.inherentLikelihood,
+      inherent_impact: d.inherentImpact,
+      owner_user_id: d.ownerUserId,
+      next_review_at: d.nextReviewAt || null,
+    })
+    .eq('id', d.riskId)
+    .select('status, inherent_level, residual_level')
+    .maybeSingle()
+  if (error) return { ok: false, message: explain(error) }
+
+  revalidatePath(`/admin/use-cases/${d.useCaseId}`)
+
+  // La base a pu retirer l'acceptation : le dire, plutot que de laisser
+  // decouvrir le changement de statut sur la ligne.
+  if (before.status === 'accepted' && after?.status !== 'accepted') {
+    return {
+      ok: true,
+      message:
+        'Risque recoté. Il était accepté à un niveau inférieur : l’acceptation ne le couvre plus, elle a été retirée et son auteur averti. Le risque revient à « identifié ».',
+    }
+  }
+  return { ok: true, message: 'Risque mis à jour ; le niveau a été recalculé.' }
+}
+
 const acceptRiskSchema = z.object({
   riskId: z.string().uuid(),
   useCaseId: z.string().uuid(),
