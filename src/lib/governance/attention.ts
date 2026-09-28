@@ -68,6 +68,21 @@ export function isLate(kind: AttentionKind): boolean {
   return LATE.includes(kind)
 }
 
+/**
+ * Ce que chaque section du menu compte.
+ *
+ * La table vivait dans la barre de navigation, sous forme d'un `switch` : le
+ * chiffre s'affichait sans jamais dire ce qu'il comptait. « 38 » ne veut rien
+ * dire ; « 38 exigences sans decision » dit ou aller et pourquoi. Elle est ici
+ * pour que le compte et son intitule viennent du meme endroit.
+ */
+export const SECTION_ATTENTION: Record<string, AttentionKind[]> = {
+  preuves: ['stale_evidence', 'evidence_to_review'],
+  soa: ['soa_undecided'],
+  processus: ['high_risks_open'],
+  suivi: ['overdue_actions', 'open_incidents', 'reviews_due'],
+}
+
 /** Rend la liste lisible : « 2 preuves à renouveler, 1 incident ouvert ». */
 export function describeAttention(attention: Attention, kinds = ATTENTION_ORDER): string[] {
   return kinds

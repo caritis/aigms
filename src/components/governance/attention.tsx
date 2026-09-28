@@ -43,8 +43,14 @@ export function AttentionDot({
       : 'bg-warn-600/10 text-warn-600'
 
   return (
+    /*
+      Le chiffre se survole. « 38 » ne dit rien ; « 38 exigences sans
+      décision » dit ou aller et pourquoi — et fait comprendre qu'il s'agit de
+      la Declaration d'Applicabilite, non d'un retard.
+    */
     <span
       aria-label={label ? `${count} ${label}` : undefined}
+      title={label ? `${count} ${label}` : undefined}
       className={`ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${tone}`}
     >
       {count > 99 ? '99+' : count}
