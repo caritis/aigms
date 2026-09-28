@@ -370,6 +370,40 @@ values
    'cccccccc-0000-4000-8000-000000000001', 'ai_agent', 'Agent de planification tournées',
    'Agent optimisant les tournées de livraison.', null, '0.9', false, 'France');
 
+-- --- BATIVAL Construction : le decor du scenario BTP ---------------------------
+-- Le scenario declare l'usage devant le prospect, mais il ne peut pas inventer
+-- ce que l'entreprise emploie deja : un actif d'IA se rattache, il ne se cree
+-- pas au milieu d'une demonstration. Les deux actifs ci-dessous sont ce que
+-- les commerciaux utilisent SANS AUTORISATION — c'est tout le sujet — et le
+-- fournisseur qui les porte n'a ni DPA signe ni revue close.
+--
+-- Rappel de la distinction que l'ecran doit tenir : ces lignes sont des
+-- ACTIFS D'IA — ce que le cas d'usage emploie. L'OUTILLAGE — passerelle, DLP,
+-- journalisation — se declare pendant la demonstration, depuis le controle
+-- qui l'appelle : c'est l'un des gestes que le prospect doit voir.
+insert into public.vendor (id, tenant_id, organization_id, name, is_model_provider, criticality,
+                           country_code, dpa_signed, security_assessed, reversibility_documented,
+                           review_status, reviewed_at, next_review_at, notes)
+values
+  ('a1000000-0000-4000-8000-000000000010', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000002', 'Fournisseur de LLM grand public', true, 'critical', 'US',
+   false, false, false, 'in_progress', null, current_date + interval '1 month',
+   'Comptes personnels souscrits par les commerciaux. Aucun contrat d''entreprise, aucun DPA, transfert hors UE non encadré.')
+on conflict (id) do nothing;
+
+insert into public.ai_asset (id, tenant_id, organization_id, kind, name, description, vendor_id, version,
+                             contains_personal_data, hosting_location)
+values
+  ('a2000000-0000-4000-8000-000000000010', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000002', 'ai_system', 'Assistant conversationnel grand public — comptes personnels',
+   'Service public de génération de texte, souscrit à titre individuel par les commerciaux. Aucune console d''entreprise, aucun réglage de rétention.',
+   'a1000000-0000-4000-8000-000000000010', null, true, 'États-Unis'),
+  ('a2000000-0000-4000-8000-000000000011', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000002', 'dataset', 'Devis émis et grilles de prix fournisseurs',
+   'Historique des devis, marges pratiquées et coordonnées clients — ce que les commerciaux versent dans l''assistant.',
+   null, '2026.1', true, 'France')
+on conflict (id) do nothing;
+
 -- --- Contrôles (8) ------------------------------------------------------------
 insert into public.control (id, tenant_id, organization_id, code, name, objective, owner_user_id, status, is_mandatory, frequency, last_tested_at, next_test_at)
 values
