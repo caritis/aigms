@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from 'react'
 import { commitCatalog, publishCatalog, uploadCatalog, type CatalogState } from '@/lib/actions/catalog'
+import { importerOutillages, verifierOutillages } from '@/lib/actions/tooling-catalog'
 
 function Feedback({ state }: { state: CatalogState | null }) {
   if (!state) return null
@@ -211,6 +212,102 @@ export function CatalogPublishForm({ versionId }: { versionId: string }) {
           {state.message}
         </p>
       ) : null}
+    </div>
+  )
+}
+
+/**
+ * Import de la typologie d'outillage.
+ *
+ * Meme motif que le referentiel de controles — deposer, LIRE ce que le fichier
+ * ferait, confirmer — parce que la regle vaut pour tout ce qui touche au
+ * referentiel livre : rien n'entre en base avant qu'on ait vu l'effet.
+ *
+ * Deux formulaires FRERES, jamais imbriques : un `<form>` dans un `<form>` est
+ * ignore par le navigateur.
+ */
+export function ToolingCatalogUploadForm() {
+  const [verif, verifAction, verifying] = useActionState<CatalogState | null, FormData>(
+    verifierOutillages,
+    null,
+  )
+  const [impo, impoAction, importing] = useActionState<CatalogState | null, FormData>(
+    importerOutillages,
+    null,
+  )
+  const pret = verif?.ok === true && Boolean(verif.jobId) && !impo?.ok
+
+  return (
+    <div className="flex flex-col gap-4">
+      <form action={verifAction} className="flex flex-col gap-4">
+        <div className="rounded-md border border-dashed border-ink-200 bg-ink-50 px-4 py-3 text-[13px] leading-relaxed text-ink-600">
+          <p>
+            <a
+              href="/modeles/referentiel-outillages.csv"
+              download
+              className="font-medium text-brand-600 hover:underline"
+            >
+              Modèle CSV
+            </a>{' '}
+            — ce n’est pas un squelette vide : c’est l’état réel de la typologie livrée. On part de
+            ce qui existe, on ajoute ou on corrige une ligne, on redépose.
+          </p>
+          <p className="mt-1 text-xs text-ink-500">
+            Colonnes obligatoires : <span className="font-mono">code</span>,{' '}
+            <span className="font-mono">tool_service</span>. La colonne{' '}
+            <span className="font-mono">scope</span> vaut{' '}
+            <span className="font-mono">ai_core</span> — proposé en premier à la saisie — ou{' '}
+            <span className="font-mono">it_support</span>, replié. Les listes tiennent dans une
+            cellule, séparées par «&nbsp;|&nbsp;».
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="tooling-file" className="mb-1.5 block text-sm font-medium">
+            Fichier de la typologie
+          </label>
+          <input
+            id="tooling-file"
+            name="file"
+            type="file"
+            accept="text/csv,.csv"
+            required
+            className="w-full rounded-md border border-ink-200 bg-white px-3 py-2 text-sm file:mr-3 file:rounded file:border-0 file:bg-ink-100 file:px-3 file:py-1.5 file:text-sm"
+          />
+          <p className="mt-1.5 text-xs leading-relaxed text-ink-500">
+            Le fichier est relu et validé au dépôt — codes en double, rang inconnu, phase inconnue,
+            nom manquant. Rien n’entre en base avant votre confirmation.
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          disabled={verifying}
+          className="self-start rounded-md bg-night-900 px-4 py-2 text-sm font-medium text-white hover:bg-night-800 disabled:opacity-60"
+        >
+          {verifying ? 'Lecture…' : 'Déposer et vérifier'}
+        </button>
+        <Feedback state={verif} />
+      </form>
+
+      {pret ? (
+        <form action={impoAction} className="flex flex-col gap-3 rounded-md border border-ink-200 p-4">
+          <input type="hidden" name="paquet" value={verif.jobId} />
+          <p className="text-sm text-ink-700">
+            Le fichier est lisible et cohérent. L’import ajoute et met à jour ; il ne supprime
+            aucune famille, parce qu’un produit peut y être déclaré et un contrôle-type s’y
+            rattacher.
+          </p>
+          <button
+            type="submit"
+            disabled={importing}
+            className="self-start rounded-md bg-night-900 px-4 py-2 text-sm font-medium text-white hover:bg-night-800 disabled:opacity-60"
+          >
+            {importing ? 'Import…' : 'Confirmer l’import'}
+          </button>
+        </form>
+      ) : null}
+      <Feedback state={impo} />
     </div>
   )
 }

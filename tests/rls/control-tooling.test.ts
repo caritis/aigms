@@ -74,8 +74,8 @@ describe('Outillage des contrôles', () => {
     expect(r.view.retained[0]!.product).toBe('Datadog')
     expect(r.view.retained[0]!.rationale).toMatch(/journaux/)
     expect(r.view.available.length).toBeGreaterThan(0)
-    // La typologie de l'éditeur est intacte : 121 correspondances au départ.
-    expect(r.catalog).toBe(121)
+    // La typologie de l'éditeur est intacte : 133 correspondances au départ.
+    expect(r.catalog).toBe(133)
     expect(r.used).toBe(1)
   })
 

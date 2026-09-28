@@ -39,6 +39,8 @@ export type ToolFamily = {
   domain: string | null
   phase: string | null
   definition: string | null
+  /** Ce qui tient un controle d'IA, ou l'outillage informatique qui y concourt (0110). */
+  scope: 'ai_core' | 'it_support'
   examples: string[]
   expected_evidence: string[]
   controls: number

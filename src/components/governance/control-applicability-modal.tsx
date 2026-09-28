@@ -469,8 +469,10 @@ function ToolingPanel({
 }) {
   const [view, setView] = useState<ControlToolingView | null>(null)
   const [familles, setFamilles] = useState<
-    { code: string; acronym: string | null; name: string; examples: string[] }[]
+    { code: string; acronym: string | null; name: string; examples: string[]; scope: string }[]
   >([])
+  /** Le rang « support informatique » se deplie, il ne s'impose pas. */
+  const [avecInformatique, setAvecInformatique] = useState(false)
   const [failed, setFailed] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(retainTooling, null)
@@ -510,12 +512,16 @@ function ToolingPanel({
     Toutes les familles du referentiel, pas seulement celles que ce controle
     appelle : l'outil qu'on emploie n'est pas toujours celui que la typologie
     attendait, et s'en tenir aux suggestions obligeait a repartir au registre.
+
+    Elles arrivent sur deux rangs (0110). Le coeur IA se propose ; l'outillage
+    informatique se deplie — on ne demande pas a un officer de recenser le
+    systeme d'information de son client.
   */
   useEffect(() => {
     let cancelled = false
     void createClient()
       .from('catalog_tool')
-      .select('code, acronym, tool_service, tool_examples')
+      .select('code, acronym, tool_service, tool_examples, scope')
       .order('tool_service')
       .then(({ data }) => {
         if (cancelled || !data) return
@@ -525,6 +531,7 @@ function ToolingPanel({
             acronym: (f.acronym as string | null) ?? null,
             name: (f.tool_service as string) ?? (f.code as string),
             examples: ((f.tool_examples as unknown as string[]) ?? []).filter(Boolean),
+            scope: (f.scope as string) ?? 'it_support',
           })),
         )
       })
@@ -550,7 +557,9 @@ function ToolingPanel({
 
   const suggestedIds = new Set(view.suggested.flatMap((s) => s.declared.map((d) => d.id)))
   const codesSuggeres = new Set(view.suggested.map((s) => s.code))
-  const autres = familles.filter((f) => !codesSuggeres.has(f.code))
+  const restantes = familles.filter((f) => !codesSuggeres.has(f.code))
+  const coeur = restantes.filter((f) => f.scope === 'ai_core')
+  const informatique = restantes.filter((f) => f.scope !== 'ai_core')
   const familleChoisie = familles.find((f) => f.code === famille)
 
   return (
@@ -679,9 +688,18 @@ function ToolingPanel({
                   ))}
                 </optgroup>
               ) : null}
-              {autres.length ? (
-                <optgroup label={`Toutes les familles du référentiel · ${familles.length}`}>
-                  {autres.map((f) => (
+              {coeur.length ? (
+                <optgroup label={`Gouvernance de l’IA · ${coeur.length}`}>
+                  {coeur.map((f) => (
+                    <option key={f.code} value={f.code}>
+                      {f.acronym ? `${f.acronym} — ${f.name}` : f.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              {avecInformatique && informatique.length ? (
+                <optgroup label={`Outillage informatique · ${informatique.length}`}>
+                  {informatique.map((f) => (
                     <option key={f.code} value={f.code}>
                       {f.acronym ? `${f.acronym} — ${f.name}` : f.name}
                     </option>
@@ -690,6 +708,29 @@ function ToolingPanel({
               ) : null}
             </select>
           </Field>
+          {/*
+            L'outillage informatique ne s'impose pas dans la liste : AIGMS ne
+            construit pas de CMDB, et l'on ne demande pas de recenser un
+            systeme d'information pour tenir un controle d'IA. Il reste a un
+            clic pour qui en a besoin.
+          */}
+          {informatique.length ? (
+            <label className="-mt-1 flex items-start gap-2.5 text-xs text-ink-600">
+              <input
+                type="checkbox"
+                checked={avecInformatique}
+                onChange={(event) => setAvecInformatique(event.target.checked)}
+                className="mt-0.5 size-4 accent-[oklch(0.45_0.11_245)]"
+              />
+              <span>
+                Proposer aussi l’outillage informatique · {informatique.length}
+                <span className="block text-ink-400">
+                  Infrastructure, exploitation, sécurité du SI. Utile quand un contrôle d’IA
+                  s’appuie dessus ; ce n’est pas un inventaire à tenir.
+                </span>
+              </span>
+            </label>
+          ) : null}
           <ToolingFields
             idSuffix={`ctl-${control.id}`}
             vendors={vendors}

@@ -51,10 +51,26 @@ export default async function ToolingPage({
   const declared = families.filter((f) => f.declared.length)
   const expected = families.filter((f) => f.controls > 0)
   const missing = expected.filter((f) => !f.declared)
+  /*
+    Les deux rangs du referentiel (0110). Le coeur IA se lit ; l'outillage
+    informatique se demande. AIGMS ne construit pas de CMDB : on ne fait pas
+    recenser un systeme d'information pour tenir un controle d'IA.
+  */
+  const coeur = families.filter((f) => f.scope === 'ai_core')
+  const informatique = families.filter((f) => f.scope !== 'ai_core')
 
-  const view = vue === 'toutes' ? 'toutes' : vue === 'declarees' ? 'declarees' : 'attendues'
+  const view =
+    vue === 'coeur' ? 'coeur' : vue === 'informatique' ? 'informatique' : vue === 'declarees' ? 'declarees' : 'attendues'
   const shown =
-    view === 'toutes' ? families : view === 'declarees' ? declared : expected.length ? expected : families
+    view === 'coeur'
+      ? coeur
+      : view === 'informatique'
+        ? informatique
+        : view === 'declarees'
+          ? declared
+          : expected.length
+            ? expected
+            : families
   const base = `/admin/organizations/${id}/outillage`
 
   return (
@@ -190,8 +206,9 @@ export default async function ToolingPage({
           selected={view === 'attendues' ? '' : view}
           options={[
             { key: '', label: 'Attendues par mes contrôles', count: expected.length, hint: 'Les familles que le référentiel rattache aux contrôles de cette organisation.' },
-            { key: 'declarees', label: 'Déclarées', count: declared.length },
-            { key: 'toutes', label: 'Toutes les familles', count: families.length, hint: 'La typologie complète du référentiel.' },
+            { key: 'declarees', label: 'Déclarées', count: declared.length, hint: 'Celles où un produit est nommé.' },
+            { key: 'coeur', label: 'Gouvernance de l’IA', count: coeur.length, hint: 'Ce qui tient ou prouve un contrôle d’IA. C’est ce que la saisie propose en premier.' },
+            { key: 'informatique', label: 'Outillage informatique', count: informatique.length, hint: 'Infrastructure, exploitation, sécurité du SI. Utile quand un contrôle d’IA s’appuie dessus ; ce n’est pas un inventaire à tenir — AIGMS ne construit pas de CMDB.' },
           ]}
         />
         <Link href={`/admin/organizations/${id}/controles`} className="text-sm text-brand-600 hover:underline">

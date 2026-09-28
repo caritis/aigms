@@ -1725,6 +1725,7 @@ export type Database = {
           phase: "DISCOVERY" | "GOVERN" | "BUILD" | "CONNECT" | "OPERATE" | null
           priority: string | null
           risk_addressed: string | null
+          scope: string
           tenant_id: string | null
           tool_examples: Json
           tool_service: string
@@ -1758,6 +1759,7 @@ export type Database = {
             | null
           priority?: string | null
           risk_addressed?: string | null
+          scope?: string
           tenant_id?: string | null
           tool_examples?: Json
           tool_service: string
@@ -1791,6 +1793,7 @@ export type Database = {
             | null
           priority?: string | null
           risk_addressed?: string | null
+          scope?: string
           tenant_id?: string | null
           tool_examples?: Json
           tool_service?: string
@@ -6540,6 +6543,7 @@ export type Database = {
         Args: { p_organization_id: string; p_rows: Json }
         Returns: Json
       }
+      import_catalog_tools: { Args: { p_rows: Json }; Returns: Json }
       import_use_cases: {
         Args: { p_organization_id: string; p_rows: Json }
         Returns: Json
