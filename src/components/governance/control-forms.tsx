@@ -5,7 +5,6 @@ import {
   createControl,
   createRiskTreatment,
   mapControlToRequirement,
-  setControlApplicability,
   setControlState,
   type FormState,
 } from '@/lib/actions/controls'
@@ -13,7 +12,6 @@ import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
 import { MEASURE_KIND_LABELS } from '@/lib/domain/governance'
 import { ControlFinder } from '@/components/governance/control-finder'
-import { CONTROL_STATUS_LABELS } from '@/lib/domain/governance'
 
 /**
  * Saisie du dispositif de maitrise.
@@ -359,145 +357,16 @@ export function RequirementMappingForm({
 // Applicabilité à un cas d'usage
 // -----------------------------------------------------------------------------
 
-/**
- * Statuer CE controle-la, depuis sa ligne.
+/*
+ * L'applicabilite ne se statue plus ici.
  *
- * La modale generale oblige a rechoisir le controle dans une liste de cent
- * vingt, alors qu'on vient de cliquer dessus. Ici le controle est connu : il
- * ne reste que la reponse et sa justification.
+ * Elle vivait sur deux formulaires : un crayon par ligne, et une fenetre
+ * generale qui obligeait a rechoisir le controle dans une liste de cent vingt
+ * alors qu'on venait de le lire. Les deux ont fusionne avec « poser sur un
+ * actif » et « avec quoi il se tient » dans une seule fiche —
+ * `ControlApplicabilityModal` — parce que les trois questions se repondent
+ * ensemble.
  */
-export function ApplicabilityPencil({
-  useCaseId,
-  control,
-  current,
-  justification,
-}: {
-  useCaseId: string
-  control: { id: string; code: string; name: string }
-  current: string
-  justification: string | null
-}) {
-  const [state, formAction, pending] = useActionState<FormState | null, FormData>(
-    setControlApplicability,
-    null,
-  )
-  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
-
-  return (
-    <Modal
-      trigger={
-        <span aria-hidden className="text-sm leading-none">
-          ✎
-        </span>
-      }
-      triggerLabel={`Statuer l’applicabilité de ${control.code}`}
-      triggerClassName="inline-flex size-6 items-center justify-center rounded-md border border-ink-200 text-ink-500 hover:border-ink-400 hover:text-ink-800"
-      title={`${control.code} — applicabilité`}
-      description={control.name}
-    >
-      {() => (
-        <form action={formAction} className="flex flex-col gap-4">
-          <input type="hidden" name="useCaseId" value={useCaseId} />
-          <input type="hidden" name="controlId" value={control.id} />
-
-          <Field label="Applicabilité" htmlFor={`app-status-${control.id}`}>
-            <select
-              id={`app-status-${control.id}`}
-              name="status"
-              defaultValue={current}
-              className={FIELD}
-            >
-              <option value="applicable">Applicable</option>
-              <option value="not_applicable">Non applicable</option>
-              <option value="to_determine">À déterminer</option>
-            </select>
-          </Field>
-
-          <Field
-            label="Justification"
-            htmlFor={`app-justification-${control.id}`}
-            error={errors.justification}
-            hint="Obligatoire pour une exclusion : un « non applicable » silencieux est ce qu’un auditeur relève en premier."
-          >
-            <textarea
-              id={`app-justification-${control.id}`}
-              name="justification"
-              rows={3}
-              defaultValue={justification ?? ''}
-              className={FIELD}
-            />
-          </Field>
-
-          <FormFeedback state={state} />
-          <Submit pending={pending} idle="Statuer" />
-        </form>
-      )}
-    </Modal>
-  )
-}
-export function ApplicabilityForm({
-  useCaseId,
-  controls,
-}: {
-  useCaseId: string
-  controls: { id: string; code: string; name: string; status: string }[]
-}) {
-  const [state, formAction, pending] = useActionState<FormState | null, FormData>(
-    setControlApplicability,
-    null,
-  )
-  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
-
-  if (!controls.length) return null
-
-  return (
-    <Modal
-      trigger="Statuer un contrôle du référentiel"
-      title="Applicabilité d’un contrôle"
-      description="Pour un contrôle qui n’est pas encore affecté. Ceux qui le sont se statuent depuis leur ligne, au crayon."
-    >
-      {() => (
-        <form action={formAction} className="flex flex-col gap-4">
-          <input type="hidden" name="useCaseId" value={useCaseId} />
-
-          <Field label="Contrôle" htmlFor="app-control" error={errors.controlId}>
-            <select id="app-control" name="controlId" defaultValue="" required className={FIELD}>
-              <option value="" disabled>
-                — Choisir un contrôle
-              </option>
-              {controls.map((control) => (
-                <option key={control.id} value={control.id}>
-                  {control.code} — {control.name} (
-                  {CONTROL_STATUS_LABELS[control.status] ?? control.status})
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Applicabilité" htmlFor="app-status">
-            <select id="app-status" name="status" defaultValue="applicable" className={FIELD}>
-              <option value="applicable">Applicable</option>
-              <option value="not_applicable">Non applicable</option>
-              <option value="to_determine">À déterminer</option>
-            </select>
-          </Field>
-
-          <Field
-            label="Justification"
-            htmlFor="app-justification"
-            error={errors.justification}
-            hint="Obligatoire pour une exclusion : un « non applicable » silencieux est ce qu’un auditeur relève en premier."
-          >
-            <textarea id="app-justification" name="justification" rows={3} className={FIELD} />
-          </Field>
-
-          <FormFeedback state={state} />
-          <Submit pending={pending} idle="Statuer" />
-        </form>
-      )}
-    </Modal>
-  )
-}
 
 // -----------------------------------------------------------------------------
 // Traitement d'un risque

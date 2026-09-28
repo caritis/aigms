@@ -11,7 +11,6 @@ import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { TransitionModal } from '@/components/governance/transition-modal'
-import { AssetMeasureForm } from '@/components/governance/asset-measure-form'
 import { DecisionModal } from '@/components/governance/decision-modal'
 import { IncidentTicket } from '@/components/governance/incident-ticket'
 import { EvidenceDepositModal } from '@/components/governance/evidence-deposit-modal'
@@ -27,7 +26,8 @@ import {
 } from '@/lib/domain/classification'
 import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
-import { ApplicabilityForm, ApplicabilityPencil, RiskTreatmentForm } from '@/components/governance/control-forms'
+import { RiskTreatmentForm } from '@/components/governance/control-forms'
+import { ControlApplicabilityModal } from '@/components/governance/control-applicability-modal'
 import { ControlProposals, type Suggestions } from '@/components/governance/control-proposals'
 import { ActionProposals, type ActionSuggestions } from '@/components/governance/action-proposals'
 import {
@@ -751,8 +751,16 @@ export default async function UseCasePage({
                   mise en production.
                 */}
                 <span className="ml-auto flex flex-wrap gap-2">
-                  <LinkAssetForm useCaseId={id} assets={assetChoices} />
-                  <LinkVendorForm useCaseId={id} vendors={vendorChoices} />
+                  <LinkAssetForm
+                    organizationId={useCase.organization_id}
+                    useCaseId={id}
+                    assets={assetChoices}
+                  />
+                  <LinkVendorForm
+                    organizationId={useCase.organization_id}
+                    useCaseId={id}
+                    vendors={vendorChoices}
+                  />
                 </span>
               </div>
 
@@ -1036,8 +1044,10 @@ export default async function UseCasePage({
             action={<ControlNote />}
           >
             {/*
-              Deux gestes : laisser l'assistant proposer — regles, faits, role —
-              et retenir ; ou statuer soi-meme sur un controle de la liste.
+              Un seul geste ici : laisser l'assistant proposer — regles, faits,
+              role — et retenir. Statuer se fait sur la ligne du controle, au
+              crayon : la modale generale obligeait a le rechoisir dans une
+              liste de cent vingt alors qu'on venait de le lire.
             */}
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <ControlProposals
@@ -1045,7 +1055,6 @@ export default async function UseCasePage({
                 useCaseId={id}
                 suggestions={(suggestionsData ?? { available: false }) as Suggestions}
               />
-              <ApplicabilityForm useCaseId={id} controls={controlChoices} />
             </div>
 
             {/*
@@ -1189,11 +1198,26 @@ export default async function UseCasePage({
                                     modale generale obligeait a le rechoisir
                                     dans une liste de cent vingt.
                                   */}
-                                  <ApplicabilityPencil
+                                  <ControlApplicabilityModal
+                                    organizationId={useCase.organization_id}
                                     useCaseId={id}
-                                    control={{ id: control.id, code: control.code, name: control.name }}
+                                    control={{
+                                      id: control.id,
+                                      code: control.code,
+                                      name: control.name,
+                                      measure_kind: control.measure_kind ?? 'organizational',
+                                    }}
                                     current={ca.status}
                                     justification={ca.justification}
+                                    assets={useCaseAssets.map((a) => ({
+                                      asset_id: a.asset_id,
+                                      name: a.name,
+                                      kind: a.kind,
+                                    }))}
+                                    carriers={carriers.map((a) => {
+                                      const m = a.measures.find((x) => x.control_id === control.id)!
+                                      return { asset_id: a.asset_id, name: a.name, status: m.status, note: m.note }
+                                    })}
                                   />
                                   <span className="min-w-0">
                                     {control.code} — {control.name}
@@ -1302,8 +1326,18 @@ export default async function UseCasePage({
                                   ) : null}
                                 </span>
                               </div>
+                              {/*
+                                Sur quoi la mesure est posee, sans ouvrir la
+                                fiche. Quand rien ne la porte, le dire : une
+                                mesure technique sans actif est une phrase.
+                              */}
                               {kind === 'technical' && applicable ? (
                                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                                  {carriers.length ? null : (
+                                    <span className="text-[11px] text-warn-600">
+                                      Aucun actif ne la porte — au crayon, « Actifs d’IA qui la portent ».
+                                    </span>
+                                  )}
                                   {carriers.map((a) => {
                                     const m = a.measures.find((x) => x.control_id === control.id)!
                                     return (
@@ -1320,12 +1354,6 @@ export default async function UseCasePage({
                                       </span>
                                     )
                                   })}
-                                  <AssetMeasureForm
-                                    useCaseId={id}
-                                    control={{ id: control.id, code: control.code, name: control.name }}
-                                    assets={useCaseAssets.map((a) => ({ asset_id: a.asset_id, name: a.name, kind: a.kind }))}
-                                    placed={carriers.map((a) => a.asset_id)}
-                                  />
                                 </div>
                               ) : null}
                             </li>
