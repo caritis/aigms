@@ -237,13 +237,16 @@ const doc = new Document({
       insister('L’assistant propose ; il ne décide pas. Ce qui relève de la politique d’entreprise ne se déduit pas d’un cas d’usage — c’est l’officer qui l’inscrit.'),
 
       h('Statuer, poser, outiller — au même endroit', HeadingLevel.HEADING_3),
-      p('De retour sur la fiche, onglet Contrôles affectés : chaque ligne porte un crayon à gauche du code. Il n’ouvre pas un champ, il ouvre la fiche du contrôle sur ce cas d’usage, en trois sections.'),
+      p('De retour sur la fiche, onglet Contrôles affectés : chaque ligne porte un crayon à gauche du code. Il n’ouvre pas un champ, il ouvre la fiche du contrôle sur ce cas d’usage, en trois onglets.'),
       table([
-        ligne(['Section', 'Ce qu’on y fait', 'Sur quels contrôles'], { header: true }),
+        ligne(['Onglet', 'Ce qu’on y fait', 'Sur quels contrôles'], { header: true }),
         ligne(['Applicabilité', 'Statuer Applicable — la justification n’est obligatoire que pour une exclusion', 'les quatre'], { saisie: true }),
-        ligne(['Actifs d’IA qui la portent', 'Poser la mesure sur l’assistant conversationnel, état Prévue', 'AIGMS-SEC-008, AIGMS-SEC-006 (mesures techniques)'], { saisie: true }),
-        ligne(['Avec quoi il se tient', 'Déclarer le produit sur la famille que le référentiel attend', 'voir le tableau ci-dessous'], { saisie: true }),
+        ligne(['Actifs d’IA', 'Poser la mesure sur l’assistant conversationnel, état Prévue', 'AIGMS-SEC-008, AIGMS-SEC-006 (mesures techniques)'], { saisie: true }),
+        ligne(['Outillage', 'Déclarer le produit sur la famille que le référentiel attend', 'voir le tableau ci-dessous'], { saisie: true }),
       ]),
+      p(''),
+      insister('Avant de cliquer, montrez le point ambre. Sur AIGMS-SEC-006 et AIGMS-SEC-008, l’onglet « Actifs d’IA » porte une pastille orange : la mesure est technique, applicable, et ne repose sur aucun actif. L’outil ne me demande pas d’ouvrir trois onglets pour savoir où est le travail : il me le montre.'),
+      p('Sur chaque onglet, le geste courant est en haut et son bouton reste visible en bas pendant qu’on fait défiler. Les gestes rares — rattacher un actif déjà inscrit, inscrire un actif, déclarer un produit — sont repliés, sauf quand le registre est vide : ils s’ouvrent alors d’eux-mêmes, parce qu’ils sont les seuls gestes possibles.'),
       p(''),
       table([
         ligne(['Famille suggérée', 'Produit à déclarer', 'Sur quel contrôle'], { header: true }),
@@ -255,6 +258,16 @@ const doc = new Document({
       p('La famille est déjà proposée dans la liste déroulante : c’est celle que le contrôle appelle. Vous ne tapez que le nom du produit. Rien à chercher, aucun aller-retour vers le registre de l’outillage.'),
       insister('Ouvrez AIGMS-SEC-008 en premier. Avant que vous n’ayez rien déclaré, la fenêtre dit deux choses : « Contrôle de nature technique, sans outillage retenu — il énonce un moyen sans le nommer : en l’état, il ne se prouve pas », et elle suggère AI Gateway et DLP. Votre référentiel dit « ce contrôle se tient avec un outil de prévention des fuites » : c’est une typologie, elle dit où chercher, pas ce que vous employez. Ici, le contrôle dira « se tient avec Netskope, chez nous » — et l’auditeur saura où aller prendre la preuve.'),
       p('Confirmation visuelle à faire remarquer : sous la ligne d’une mesure technique que rien ne porte, l’écran affiche en orange « Aucun actif ne la porte ». Après le geste, la pastille verte de l’actif prend sa place.'),
+
+      h('Le fournisseur se crée sans quitter l’écran', HeadingLevel.HEADING_3),
+      p('Sur AIGMS-SUP-005, au moment de déclarer ChatGPT Enterprise, le champ Fournisseur porte une entrée « + Nouveau fournisseur… ». Choisissez-la : deux champs apparaissent, nom et pays.'),
+      table([
+        ligne(['Nom du fournisseur', 'Open.AI'], { saisie: true }),
+        ligne(['Pays', 'US'], { saisie: true }),
+      ]),
+      p(''),
+      insister('Je viens de créer un tiers au milieu de ma saisie, sans perdre le fil. Et regardez ce que l’outil me répond : « le tiers Open.AI est créé, sa revue reste à ouvrir — elle conditionne la mise en production ». Je n’ai rien demandé de plus, et il vient de m’ouvrir une obligation.'),
+      p('C’est le moment d’ouvrir Registres → Actifs d’IA et fournisseurs → Fournisseurs : le tiers y est, en ambre, « revue non commencée », avec l’actif qu’il fournit. La chaîne s’est nouée toute seule.'),
 
       ...etape('6', 'Produire une preuve', '1 min 30',
         'Retour sur le cas d’usage → onglet Contrôles affectés',

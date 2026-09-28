@@ -285,13 +285,25 @@ AIGMS-CF v0.4, dont 12 dans ce domaine.
 
 De retour sur la fiche, onglet *Contrôles affectés* : chaque ligne porte un
 **crayon** à gauche du code. Il n'ouvre pas un champ, il ouvre **la fiche du
-contrôle sur ce cas d'usage**, en trois sections.
+contrôle sur ce cas d'usage**, en trois onglets.
 
-| Section | Ce qu'on y fait | Sur quels contrôles |
+| Onglet | Ce qu'on y fait | Sur quels contrôles |
 |---|---|---|
-| **Applicabilité** | Statuer **Applicable** — sans justification, elle n'est obligatoire que pour une exclusion | les quatre |
-| **Actifs d'IA qui la portent** | Poser la mesure sur l'assistant conversationnel, état *Prévue* | AIGMS-SEC-008, AIGMS-SEC-006 *(mesures techniques)* |
-| **Avec quoi il se tient** | Déclarer le produit sur la famille que le référentiel attend | voir le tableau ci-dessous |
+| **Applicabilité** | Statuer **Applicable** — la justification n'est obligatoire que pour une exclusion | les quatre |
+| **Actifs d'IA** | Poser la mesure sur l'assistant conversationnel, état *Prévue* | AIGMS-SEC-008, AIGMS-SEC-006 *(mesures techniques)* |
+| **Outillage** | Déclarer le produit sur la famille que le référentiel attend | voir le tableau ci-dessous |
+
+> **Avant de cliquer, montrez le point ambre.** Sur AIGMS-SEC-006 et
+> AIGMS-SEC-008, l'onglet *Actifs d'IA* porte une pastille orange : la mesure
+> est technique, applicable, et ne repose sur aucun actif. « L'outil ne me
+> demande pas d'ouvrir trois onglets pour savoir où est le travail. Il me le
+> montre. »
+
+Sur chaque onglet, le geste courant est en haut et son bouton reste visible en
+bas pendant qu'on fait défiler. Les gestes rares — *rattacher un actif déjà
+inscrit*, *inscrire un actif*, *déclarer un produit* — sont repliés… **sauf
+quand le registre est vide**, où ils s'ouvrent d'eux-mêmes : ce sont alors les
+seuls gestes possibles.
 
 | Famille suggérée | Produit à déclarer | Sur quel contrôle |
 |---|---|---|
@@ -302,6 +314,21 @@ contrôle sur ce cas d'usage**, en trois sections.
 La famille est **déjà proposée dans la liste déroulante** : c'est celle que le
 contrôle appelle. Vous ne tapez que le nom du produit. Rien à chercher, aucun
 aller-retour vers le registre.
+
+#### Le fournisseur se crée sans quitter l'écran
+
+Sur **AIGMS-SUP-005**, au moment de déclarer *ChatGPT Enterprise*, le champ
+*Fournisseur* porte une entrée **« + Nouveau fournisseur… »**. Choisissez-la :
+deux champs apparaissent, *nom* et *pays*. Saisissez `Open.AI` et `US`.
+
+> **Le geste qui porte.** « Je viens de créer un tiers au milieu de ma saisie,
+> sans perdre le fil. Et regardez ce que l'outil me répond : *le tiers Open.AI
+> est créé, sa revue reste à ouvrir — elle conditionne la mise en production*.
+> Je n'ai rien demandé de plus, et il vient de m'ouvrir une obligation. »
+
+C'est le moment d'ouvrir **Registres → Actifs d'IA et fournisseurs →
+Fournisseurs** : le tiers y est, en ambre, *revue non commencée*, avec l'actif
+qu'il fournit. La chaîne s'est nouée toute seule.
 
 > **Le geste qui porte.** Ouvrez **AIGMS-SEC-008** en premier. Avant que vous
 > n'ayez rien déclaré, la fenêtre dit deux choses : *« Contrôle de nature
