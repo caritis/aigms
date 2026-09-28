@@ -20,8 +20,8 @@ import { describeAttention, SECTION_ATTENTION, type Attention } from '@/lib/gove
 import type { Branding } from '@/lib/branding'
 import {
   ORGANIZATION_SECTIONS,
-  PRIMARY_SECTIONS,
-  REGISTER_SECTIONS,
+  menuProfile,
+  registerSections,
   type OrganizationSection,
 } from '@/lib/domain/sections'
 
@@ -118,15 +118,23 @@ function SectionDot({
   organizationId,
   keys,
   late = false,
+  muted = false,
   label,
 }: {
   attention: Promise<Attention[]>
   organizationId: string | null
   keys: readonly OrganizationSection[]
   late?: boolean
+  /**
+   * Ce role est INFORME de cette section, pas saisi : le chiffre se tait.
+   * Compter a quelqu'un des retards qu'il ne peut pas solder, c'est l'inviter
+   * a sortir de son role.
+   */
+  muted?: boolean
   label: string
 }) {
   const row = use(attention).find((a) => a.organization_id === organizationId)
+  if (muted) return null
   const total = keys.reduce((n, k) => n + compter(row, k), 0)
   // Le libelle donne passe si le detail est vide : il reste la reponse par defaut.
   return <AttentionDot count={total} late={late} inverted label={detailler(row, keys) || label} />
@@ -137,12 +145,15 @@ function SectionDotLight({
   attention,
   organizationId,
   section,
+  muted = false,
 }: {
   attention: Promise<Attention[]>
   organizationId: string | null
   section: OrganizationSection
+  muted?: boolean
 }) {
   const row = use(attention).find((a) => a.organization_id === organizationId)
+  if (muted) return null
   return <AttentionDot count={compter(row, section)} late={false} label={detailler(row, [section])} />
 }
 
@@ -203,6 +214,7 @@ export function Chrome({
   viewer,
   branding,
   roleLabel,
+  role,
   administrating,
   unread,
   attention,
@@ -214,6 +226,8 @@ export function Chrome({
   viewer: { fullName: string | null; email: string; tenantName: string | null } | null
   branding: Branding
   roleLabel: string
+  /** Le rôle attribué : il commande ce que la barre met en avant (sections.ts). */
+  role: string | null
   administrating: boolean
   unread: Promise<number>
   attention: Promise<Attention[]>
@@ -231,6 +245,29 @@ export function Chrome({
   const activePilotage = pathname.startsWith('/admin/pilotage')
 
   const nav = administrating ? adminNav : governanceNav
+  /*
+    Ce que ce role voit en premier, et ce qui ne le sollicite pas. La barre
+    n'ouvre ni ne ferme aucun droit : elle range. Toute section reste
+    atteignable par son adresse, et la RLS reste seule juge.
+  */
+  const profile = menuProfile(role)
+  const registres = registerSections(profile)
+
+  const pilotage = nav.map((link) => (
+    <Link
+      key={link.href}
+      href={link.href}
+      aria-current={activePilotage ? 'page' : undefined}
+      className={`inline-flex items-baseline rounded-md px-3 py-1.5 transition-colors hover:bg-white/10 hover:text-white ${
+        activePilotage ? 'bg-white/10 text-white' : 'text-white/75'
+      }`}
+    >
+      {link.label}
+      <Suspense fallback={null}>
+        <TotalDot attention={attention} />
+      </Suspense>
+    </Link>
+  ))
   const orgBase = organizationId ? `/admin/organizations/${organizationId}` : null
 
   const announceValue = useMemo(() => setAnnounced, [])
@@ -276,11 +313,17 @@ export function Chrome({
               ) : (
                 <>
                   {/*
+                    Le pilotage passe devant pour qui lit un portefeuille et non
+                    un dossier — la direction, l'auditeur. Ce qu'on ouvre en
+                    premier dit ce qu'on attend de vous.
+                  */}
+                  {profile.pilotageFirst ? pilotage : null}
+                  {/*
                     Les sections de l'organisation courante — celle de la page,
                     sinon celle du profil. Sans organisation, les liens conduisent
                     a la liste : il faut en choisir une.
                   */}
-                  {PRIMARY_SECTIONS.map((key) => {
+                  {profile.primary.map((key) => {
                     const section = ORGANIZATION_SECTIONS.find((s) => s.key === key)!
                     const active = activeSection === key
                     return (
@@ -299,6 +342,7 @@ export function Chrome({
                             organizationId={organizationId}
                             keys={[key]}
                             late={key === 'processus'}
+                            muted={profile.muted.includes(key)}
                             label="élément(s) appelant une action"
                           />
                         </Suspense>
@@ -307,18 +351,18 @@ export function Chrome({
                   })}
                   <NavDropdown
                     label="Registres"
-                    active={REGISTER_SECTIONS.some((key) => activeSection === key)}
+                    active={registres.some((key) => activeSection === key)}
                     badge={
                       <Suspense fallback={null}>
                         <SectionDot
                           attention={attention}
                           organizationId={organizationId}
-                          keys={REGISTER_SECTIONS}
+                          keys={registres.filter((key) => !profile.muted.includes(key))}
                           label="élément(s) appelant une action dans les registres"
                         />
                       </Suspense>
                     }
-                    items={REGISTER_SECTIONS.map((key) => {
+                    items={registres.map((key) => {
                       const section = ORGANIZATION_SECTIONS.find((s) => s.key === key)!
                       return {
                         href: orgBase ? `${orgBase}${section.href}` : '/admin/organizations',
@@ -330,27 +374,14 @@ export function Chrome({
                               attention={attention}
                               organizationId={organizationId}
                               section={key}
+                              muted={profile.muted.includes(key)}
                             />
                           </Suspense>
                         ),
                       }
                     })}
                   />
-                  {nav.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      aria-current={activePilotage ? 'page' : undefined}
-                      className={`inline-flex items-baseline rounded-md px-3 py-1.5 transition-colors hover:bg-white/10 hover:text-white ${
-                        activePilotage ? 'bg-white/10 text-white' : 'text-white/75'
-                      }`}
-                    >
-                      {link.label}
-                      <Suspense fallback={null}>
-                        <TotalDot attention={attention} />
-                      </Suspense>
-                    </Link>
-                  ))}
+                  {profile.pilotageFirst ? null : pilotage}
                 </>
               )}
             </nav>

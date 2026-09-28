@@ -78,6 +78,7 @@ export default async function EspaceLayout({ children }: { children: ReactNode }
       }
       branding={branding}
       roleLabel={viewer?.role ? ROLE_LABELS[viewer.role] : 'Rôle non attribué'}
+      role={viewer?.role ?? null}
       administrating={administrating}
       unread={unread}
       attention={attention}
