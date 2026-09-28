@@ -319,6 +319,83 @@ export async function linkAssetToUseCase(
   }
 }
 
+/**
+ * Inscrire un actif d'IA et le rattacher au cas d'usage, d'un seul geste.
+ *
+ * Poser une mesure technique suppose un actif sur quoi la poser. Quand il
+ * n'est pas encore au registre, l'ecran renvoyait au registre — on quittait la
+ * fiche du controle, on remplissait, on revenait, et l'on avait perdu le fil.
+ *
+ * Ce qu'on demande ici est le minimum qui fasse un actif identifiable : sa
+ * nature, son nom, s'il porte des donnees personnelles, ou il est heberge. Le
+ * reste — version, fournisseur, responsable, description — se complete depuis
+ * sa fiche, qui reste le lieu de l'inventaire.
+ */
+const declareAssetSchema = z.object({
+  useCaseId: z.string().uuid(),
+  organizationId: z.string().uuid(),
+  kind: z.enum(['ai_system', 'ai_model', 'ai_agent', 'dataset']),
+  name: z.string().trim().min(2, 'Nommez l’actif.').max(160),
+  containsPersonalData: z.coerce.boolean(),
+  hostingLocation: z.string().trim().max(160).optional().or(z.literal('')),
+})
+
+export async function declareAssetForUseCase(
+  _previous: FormState | null,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = declareAssetSchema.safeParse({
+    useCaseId: formData.get('useCaseId'),
+    organizationId: formData.get('organizationId'),
+    kind: formData.get('kind') ?? 'ai_system',
+    name: formData.get('name'),
+    containsPersonalData: formData.get('containsPersonalData') === 'on',
+    hostingLocation: formData.get('hostingLocation') ?? '',
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+  const d = parsed.data
+
+  const tenantId = await tenantOf(d.organizationId)
+  if (!tenantId) return { ok: false, message: 'Organisation introuvable.' }
+
+  const supabase = await createClient()
+  const { data: asset, error } = await supabase
+    .from('ai_asset')
+    .insert({
+      tenant_id: tenantId,
+      organization_id: d.organizationId,
+      kind: d.kind,
+      name: d.name,
+      contains_personal_data: d.containsPersonalData,
+      hosting_location: d.hostingLocation || null,
+    })
+    .select('id')
+    .single()
+  if (error) return { ok: false, message: explain(error) }
+
+  const { error: linkError } = await supabase.from('use_case_asset_link').insert({
+    tenant_id: tenantId,
+    use_case_id: d.useCaseId,
+    asset_id: asset.id,
+  })
+
+  revalidatePath(`/admin/organizations/${d.organizationId}/actifs`)
+  revalidatePath(`/admin/use-cases/${d.useCaseId}`)
+  revalidatePath('/admin/actifs-fournisseurs')
+
+  if (linkError) {
+    // L'actif existe : le dire, plutot que de laisser croire a un echec total.
+    return {
+      ok: false,
+      message: `${d.name} est inscrit au registre, mais son rattachement a échoué : ${explain(linkError)}`,
+    }
+  }
+  return {
+    ok: true,
+    message: `${d.name} inscrit au registre et rattaché au cas d’usage. Complétez sa fiche depuis le registre des actifs.`,
+  }
+}
+
 export async function linkVendorToUseCase(
   _previous: FormState | null,
   formData: FormData,

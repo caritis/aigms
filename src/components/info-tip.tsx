@@ -19,6 +19,7 @@ export function InfoTip({
   title,
   tone = 'neutral',
   align = 'right',
+  sign = 'i',
   children,
 }: {
   /** Nom accessible du bouton. Decrit ce qu'on va lire, pas l'icone. */
@@ -28,6 +29,12 @@ export function InfoTip({
   tone?: 'neutral' | 'ok' | 'todo'
   /** Ou s'ouvre le panneau par rapport au bouton. */
   align?: 'right' | 'left'
+  /**
+   * Le signe porte par le bouton. « i » renseigne ; « ! » previent qu'il y a
+   * quelque chose a comprendre AVANT d'agir — le mode d'emploi d'un ecran, et
+   * non un complement qu'on peut ignorer.
+   */
+  sign?: 'i' | '!'
   children: ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -68,7 +75,7 @@ export function InfoTip({
                 : 'border-ink-300 text-ink-500 hover:border-ink-400 hover:text-ink-700'
         }`}
       >
-        <span aria-hidden>i</span>
+        <span aria-hidden>{sign}</span>
       </button>
 
       {open ? (

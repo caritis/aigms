@@ -48,7 +48,7 @@ export function CheckboxFilter({
       role="checkbox"
       aria-checked={checked}
       title={hint}
-      className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm transition-colors ${
+      className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-md border px-3 py-1.5 text-sm transition-colors ${
         checked
           ? 'border-brand-600 bg-brand-600/10 text-brand-700'
           : 'border-ink-200 text-ink-600 hover:border-ink-400 hover:text-ink-800'

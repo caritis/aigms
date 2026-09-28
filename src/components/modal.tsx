@@ -22,6 +22,7 @@ export function Modal({
   title,
   description,
   hideTrigger = false,
+  headerAside,
   triggerLabel,
   triggerClassName,
   closeOnSuccess = true,
@@ -41,6 +42,11 @@ export function Modal({
   triggerClassName?: string
   title: string
   description?: string
+  /**
+   * Ce qui s'ajoute a droite du titre : un mode d'emploi, un etat. Reserve a
+   * ce qui se lit AVANT d'agir — le reste appartient au corps de la fenetre.
+   */
+  headerAside?: ReactNode
   /**
    * Masque le bouton sans demonter la fenetre. Sert au cas ou l'acte qu'elle
    * porte vient d'etre accompli : la revalidation retire le declencheur, et
@@ -131,6 +137,8 @@ export function Modal({
                   <p className="mt-0.5 text-xs text-ink-500">{description}</p>
                 ) : null}
               </div>
+              <span className="flex shrink-0 items-center gap-1">
+              {headerAside}
               <button
                 type="button"
                 aria-label="Fermer"
@@ -146,6 +154,7 @@ export function Modal({
                   />
                 </svg>
               </button>
+              </span>
             </header>
 
             <div className="px-5 py-5">{children(() => setOpen(false))}</div>

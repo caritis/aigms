@@ -586,9 +586,17 @@ export default async function UseCasePage({
   const vendorChoices = (orgVendors ?? [])
     .filter((v) => v.organization_id === useCase.organization_id)
     .map((v) => ({ id: v.id, name: v.name }))
+  /*
+    Les actifs du registre que ce cas d'usage n'emploie pas encore : ce qu'on
+    peut lui rattacher, depuis la fiche d'un controle comme depuis l'onglet
+    Avancement.
+  */
   const assetChoices = (orgAssets ?? [])
     .filter((a) => a.organization_id === useCase.organization_id)
     .map((a) => ({ id: a.id, name: a.name, kind: a.kind }))
+  const attachableAssets = assetChoices.filter(
+    (a) => !useCaseAssets.some((u) => u.asset_id === a.id),
+  )
 
   // Les personnes qui peuvent se prononcer sur une decision.
   const reviewers = (await organizationPeople(useCase.organization_id, true)).map((p) => ({
@@ -1097,8 +1105,14 @@ export default async function UseCasePage({
         </div>
       ) : null}
 
+      {/*
+        Les controles prennent toute la largeur : les lignes portent un code, un
+        intitule, une justification, des pastilles d'etat et des actifs. A
+        quatre-vingt-seize caracteres, tout cela se replie sur trois lignes et
+        la liste devient illisible.
+      */}
       {tab === 'controles' ? (
-        <div className="max-w-4xl">
+        <div>
           <Card
             title="Contrôles affectés"
             subtitle={`${controls?.length ?? 0} contrôle(s) statué(s) sur ${controlChoices.length} au référentiel · ${applicableControls.length} applicable(s), dont ${applicableControls.filter((c) => (c.control as unknown as { status: string } | null)?.status === 'operating').length} opérant(s)`}
@@ -1275,6 +1289,7 @@ export default async function UseCasePage({
                                       name: a.name,
                                       kind: a.kind,
                                     }))}
+                                    attachableAssets={attachableAssets}
                                     carriers={carriers.map((a) => {
                                       const m = a.measures.find((x) => x.control_id === control.id)!
                                       return { asset_id: a.asset_id, name: a.name, status: m.status, note: m.note }
