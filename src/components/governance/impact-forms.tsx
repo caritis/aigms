@@ -279,10 +279,28 @@ export function FindingForm({
                       ))}
                     </select>
                   </Field>
-                  <Field label="Échéance" htmlFor="f-due" optional>
+                  {/*
+                    Les deux champs passaient pour decoratifs parce que rien ne
+                    disait ce qu'ils commandent. L'echeance EST la date de
+                    l'action ; laissee vide, l'outil en pose une a soixante
+                    jours sans le dire. La gravite residuelle est ce que le
+                    Porteur devra assumer — et l'omettre lui presente la
+                    gravite initiale, celle d'avant la mesure.
+                  */}
+                  <Field
+                    label="Échéance"
+                    htmlFor="f-due"
+                    optional
+                    hint="Elle devient la date de l’action. À défaut : soixante jours."
+                  >
                     <input id="f-due" name="mitigationDueDate" type="date" defaultValue={current?.mitigation_due_date ?? ''} className={FIELD} />
                   </Field>
-                  <Field label="Gravité résiduelle" htmlFor="f-res" optional>
+                  <Field
+                    label="Gravité résiduelle"
+                    htmlFor="f-res"
+                    optional
+                    hint="Ce qui demeure après la mesure : c’est elle que le Porteur assume. L’action, elle, reste commandée par la gravité initiale."
+                  >
                     <select id="f-res" name="residualSeverity" defaultValue={current?.residual_severity ?? ''} className={FIELD}>
                       <option value="">—</option>
                       {Object.entries(IMPACT_SEVERITY_LABELS).map(([k, v]) => (

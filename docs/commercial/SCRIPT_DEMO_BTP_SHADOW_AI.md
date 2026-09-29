@@ -639,7 +639,7 @@ en quatre familles** — *Droits fondamentaux et éthique*, *Vie privée et donn
 | **Mesure** | `Relecture humaine obligatoire avant envoi, et double validation au-delà de 50 000 €.` |
 | Responsable | Sacha Belarbi |
 | Échéance | à trente jours |
-| Gravité résiduelle | Limitée |
+| Gravité résiduelle | **Limitée** — ce que Dominique Etchart aura à assumer |
 | **Risque du registre** | **le risque coté à l'étape 4** — *Fuite de données commerciales vers un tiers* |
 
 **③ Le préjudice significatif** — une action, mais qui ne bloque pas.
@@ -681,6 +681,56 @@ en quatre familles** — *Droits fondamentaux et éthique*, *Vie privée et donn
 > qui décide, pas un réglage d'administrateur. Et tant qu'un préjudice grave
 > n'a pas de mesure, l'écran l'écrit en orange sous la ligne : *sans mesure de
 > réduction — un préjudice grave en porte une*. »
+
+#### Deux champs marqués *facultatif* qui ne le sont qu'en apparence
+
+Dans le cadre **Mesure de réduction**, à droite du responsable, deux champs
+portent la mention *(facultatif)*. Ils le sont au sens où l'on peut enregistrer
+sans eux — **pas au sens où ils ne feraient rien**.
+
+**L'échéance *devient* la date de l'action.**
+
+| Ce que vous faites | Ce qui se passe |
+|---|---|
+| Vous saisissez une date | L'action ouverte porte **cette** date |
+| Vous laissez vide | L'action est datée **à soixante jours**, sans que rien ne vous le dise |
+| Vous corrigez la date plus tard | L'action **suit** — tant qu'elle n'est ni close ni annulée |
+| Vous effacez la date après coup | L'action **garde** celle qu'elle avait : on ne dédate pas un engagement pris |
+
+Et cette date n'est pas décorative non plus : c'est elle qui rend l'action **en
+retard**. Une action dépassée est comptée dans la pastille d'attention de
+l'organisation, remonte dans la revue de gouvernance, et **part dans le courriel
+récapitulatif de son responsable**, qui la lit en tête de liste.
+
+> **Le geste qui porte.** Saisissez l'échéance du constat ② à trente jours, puis
+> allez au **Suivi d'actions**. « La date que je viens de taper dans une étude
+> d'impact est maintenant la date d'une action qui a un nom en face. Dans trente
+> et un jours, Sacha Belarbi recevra un courriel qui la lui rappellera — sans
+> que personne n'ait rien programmé. »
+
+**La gravité résiduelle est ce que le Porteur devra assumer.**
+
+C'est le seul endroit de l'outil où l'on dit **ce qui reste une fois la mesure
+en place**. Et c'est exactement la liste que Dominique Etchart verra à l'étape
+suivante, dans le pavé ambre : *« ce qui demeure de significatif ou grave après
+mesures »*.
+
+| Vous renseignez | Ce que le Porteur doit assumer | Effet |
+|---|---|---|
+| **Limitée** *(cas ② et ③)* | rien pour ce constat | Le constat **disparaît** de la liste à assumer : la mesure a fait son travail |
+| **Rien** | la gravité **initiale** | Il lui est présenté un préjudice **grave**, comme si la relecture humaine n'existait pas |
+| **Significative** ou **Grave** | ce niveau-là | Le constat reste dans la liste, et il signe en sachant quoi |
+
+> **Ce qu'il faut dire, et ne pas éluder.** « Renseigner *résiduel : limité* ne
+> débloque rien. L'action reste **bloquante** parce que le préjudice, lui, était
+> grave — ce qui compte pour la production, c'est ce qui aurait lieu **sans** la
+> mesure, tant qu'elle n'est pas faite. La gravité résiduelle ne lève pas
+> l'obstacle : elle dit à celui qui signe **ce qu'il signe.** »
+
+Les deux valeurs suivent la pièce : la ligne du constat affiche *« résiduel
+limitée »*, et l'**export `.docx`** comme l'**impression** les portent dans la
+phrase du constat. L'auditeur lit *gravité grave, probable ; résiduel limitée* —
+il voit d'un trait la cotation avant et après.
 
 ---
 
