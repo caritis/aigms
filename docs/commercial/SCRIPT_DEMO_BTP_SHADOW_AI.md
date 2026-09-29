@@ -384,7 +384,8 @@ ou non pour ce contrôle-ci.
 #### Le cas qui fait comprendre la différence
 
 Sur la passerelle, l'écran demande : **« Est-ce aussi un actif d'IA que vous
-employez ? »** Répondez **oui** et rattachez-la.
+employez ? »** Choisissez **« + L'inscrire au registre des actifs d'IA… »**,
+nature **système d'IA**.
 
 > **Le geste qui porte.** « Une passerelle d'appels IA **applique mes règles** —
 > c'est un instrument de contrôle. Et elle **traite mes données** — c'est donc
@@ -460,21 +461,71 @@ qu'il fournit. La chaîne s'est nouée toute seule.
 
 **Retour sur le cas d'usage → onglet *Contrôles affectés***
 
-1. Montrez l'en-tête du groupe replié : **« 4 applicables · 4 sans preuve »**.
+1. Montrez l'en-tête du groupe replié : **« 5 applicables · 5 sans preuve »**.
 2. Cochez le filtre **Sans preuve**. La liste se réduit.
-3. Sur le contrôle d'encadrement de l'usage, cliquez l'**icône de pièce** — elle
-   est rouge. Puis *Déposer une preuve*.
+3. **Sur la ligne d'AIGMS-GOV-008 — Politique d'usage acceptable de l'IA**,
+   celui que vous êtes allé chercher au référentiel à l'étape 5, cliquez
+   l'**icône de pièce** — elle est rouge. Puis *Déposer une preuve*.
 
-| Champ | À saisir |
-|---|---|
-| Titre | Charte d'utilisation de l'IA générative — version 1 |
-| Typologie | Politique / charte |
-| Valide jusqu'au | dans douze mois |
+> **Pourquoi celui-là.** Le référentiel énonce, pour AIGMS-GOV-008, les pièces
+> qu'il attend : *politique d'usage acceptable*, *attestations de prise de
+> connaissance*, *canal de signalement documenté*. La charte est la première
+> des trois. C'est le contrôle que la fiche du prospect appelle quand elle
+> exige « une charte d'usage signée ».
+
+**Les champs, dans l'ordre de l'écran**
+
+| Champ | À saisir | Pourquoi |
+|---|---|---|
+| **Typologie de preuve** *(facultatif)* | **— Aucune typologie technique** | Une charte n'est pas une preuve technique d'IA. Voir l'encadré ci-dessous. |
+| **Ce que la preuve démontre** | `Charte d'utilisation de l'IA générative — version 1` | Le titre dit ce qui est démontré, pas le nom du fichier. |
+| **Nature** | **Document** | La forme matérielle de la pièce. |
+| **Fichier** | la charte en PDF | Son empreinte SHA-256 est calculée au dépôt. |
+| **Valable jusqu'au** | dans douze mois | Le référentiel révise ce contrôle **chaque année**. |
+| **Contrôle démontré** | **AIGMS-GOV-008** — déjà prérempli | Vous êtes parti de sa ligne : il n'y a rien à rechercher. |
+| **Version** *(facultatif)* | `1.0` | |
+
+#### Les deux listes ne disent pas la même chose — ne pas les confondre
+
+C'est la question que le prospect posera, parce que les deux s'appellent presque
+pareil.
+
+**« Typologie de preuve »** ne propose **pas** des catégories documentaires. Elle
+porte les **huit typologies techniques de la matrice des preuves AIGMS**,
+adossées à ISO/IEC 42001 : *isolation et souveraineté*, *intégrité des données*,
+*éthique et équité*, *explicabilité (XAI)*, *alignement et garde-fous*,
+*cybersécurité spécifique à l'IA*, *surveillance et dérive*, *empreinte
+environnementale*. Chacune dit **ce qu'il faut consigner** et **quels livrables
+font preuve** — l'écran l'affiche dès que vous en choisissez une.
+
+**Le préfixe de criticité n'est pas décoratif.** BATIVAL est déclarée
+**utilisateur métier** : l'écran classe donc *Surveillance continue et dérive*
+en **critique**, *explicabilité* et *cybersécurité IA* en **modéré**, et le
+reste en **faible**. Un développeur de modèles verrait un tout autre classement
+— *équité*, *alignement*, *XAI* passeraient en critique.
+
+> **Le geste qui porte.** « Regardez l'ordre de cette liste. Il n'est pas
+> alphabétique : il est trié par ce que **votre rôle vis-à-vis de l'IA** rend
+> exigeant. Vous exploitez des systèmes achetés — on ne vous demandera pas de
+> prouver l'équité d'un modèle que vous n'entraînez pas ; on vous demandera de
+> prouver que vous surveillez sa dérive. »
+
+**« Nature »**, juste en dessous, est la **forme matérielle** de la pièce :
+document, capture d'écran, extrait de journal, attestation, résultat de test,
+configuration, ou *déclarative — aucune pièce jointe*.
+
+Pour une charte : **aucune typologie technique**, nature **Document**. Les deux
+champs se remplissent alors sans hésitation — et vous venez de montrer que
+l'outil sait distinguer une preuve d'organisation d'une preuve d'ingénierie.
 
 > **Confirmation visuelle à faire remarquer.** L'icône passe au **vert**, et le
-> compte de l'en-tête descend à **3 sans preuve**. « Le contrôle n'est pas tenu
+> compte de l'en-tête descend à **4 sans preuve**. « Le contrôle n'est pas tenu
 > parce qu'on l'a déclaré opérant. Il est tenu parce qu'une pièce validée et
 > non échue le démontre. C'est la même règle partout dans l'outil. »
+
+> **Un dépôt n'est pas une validation.** Le bandeau de la fenêtre le dit, et la
+> pièce arrive **« à valider »**. Celui qui fournit la pièce n'atteste pas
+> lui-même de sa recevabilité.
 
 ---
 
@@ -566,7 +617,7 @@ J-30 est déjà dû : il se lit tout de suite dans *Mes alertes*.
 
 | Preuve exigée | Criticité | Référence | Dans AIGMS |
 |---|---|---|---|
-| Charte d'usage signée | Critique | ISO 42001 A.5 | Contrôle d'encadrement + pièce rattachée |
+| Charte d'usage signée | Critique | ISO 42001 A.5 | **AIGMS-GOV-008** + pièce rattachée |
 | Console Enterprise, rétention désactivée | Critique | A.7.2 · ISO 27001 A.18 | Contrôle de sécurité des données + revue du fournisseur |
 | Journaux de la passerelle DLP | Élevé | A.10.6 · AI Act art. 12 | **AIGMS-SEC-008** + **AIGMS-SEC-006** |
 | Rapport d'AIIA signé | Critique | ISO 42001 6.1.2 | Étude d'impact, double signature |
