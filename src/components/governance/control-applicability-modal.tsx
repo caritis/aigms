@@ -86,7 +86,7 @@ export function ControlApplicabilityModal({
   current: string
   justification: string | null
   /** Les actifs d'IA rattaches au cas d'usage — ce sur quoi une mesure se pose. */
-  assets: { asset_id: string; name: string; kind: string }[]
+  assets: { asset_id: string; name: string; kind: string; vendor: string | null }[]
   /** Ceux qui portent deja cette mesure, avec son etat sur chacun. */
   carriers: { asset_id: string; name: string; status: string; note: string | null }[]
   /** Les actifs du registre que ce cas d'usage n'emploie pas encore. */
@@ -99,12 +99,27 @@ export function ControlApplicabilityModal({
   orgAssets: { id: string; name: string; business_ref: string }[]
 }) {
   const [onglet, setOnglet] = useState<Onglet>('applicabilite')
-  const technical = (control.measure_kind ?? 'organizational') === 'technical'
+  const nature = control.measure_kind ?? 'organizational'
+  /*
+    Trois natures, trois comportements — et la base n'en impose aucun : elle
+    accepte n'importe quelle mesure sur n'importe quel actif, elle verifie
+    seulement qu'ils appartiennent a la meme organisation. C'est donc ici que
+    le sens se tient.
+
+    TECHNIQUE     — se pose sur l'actif, et c'est la qu'elle se prouve.
+    CONTRACTUELLE — s'etablit chez un fournisseur, et un actif porte le sien :
+                    « la clause est signee pour ChatGPT Enterprise, pas encore
+                    pour l'autre » est un ecart que l'ecran doit montrer.
+    ORGANISATIONNELLE — se tient sur l'organisation ou un processus. Elle ne se
+                    pose sur AUCUN actif, et l'offrir inviterait a cocher au
+                    hasard : la couverture compterait des liens vides.
+  */
+  const posable = nature === 'technical' || nature === 'contractual'
   /*
     Ce que l'ecran sait sans rien lire de plus. L'outillage, lui, ne se connait
     qu'apres la requete de son onglet : le signal s'y affiche, pas ici.
   */
-  const actifManquant = technical && current === 'applicable' && !carriers.length
+  const actifManquant = posable && current === 'applicable' && !carriers.length
 
   return (
     <Modal
@@ -203,7 +218,13 @@ export function ControlApplicabilityModal({
                 >
                   {o.label}
                   {o.key === 'actifs' && actifManquant ? (
-                    <Ecart titre="Cette mesure technique ne repose sur aucun actif." />
+                    <Ecart
+                      titre={
+                        nature === 'contractual'
+                          ? 'La clause n’est établie pour aucun actif.'
+                          : 'Cette mesure technique ne repose sur aucun actif.'
+                      }
+                    />
                   ) : null}
                 </button>
               )
@@ -228,7 +249,8 @@ export function ControlApplicabilityModal({
                 organizationId={organizationId}
                 useCaseId={useCaseId}
                 control={control}
-                technical={technical}
+                nature={nature}
+                posable={posable}
                 assets={assets}
                 carriers={carriers}
                 attachableAssets={attachableAssets}
@@ -357,7 +379,8 @@ function AssetPanel({
   organizationId,
   useCaseId,
   control,
-  technical,
+  nature,
+  posable,
   assets,
   carriers,
   attachableAssets,
@@ -367,8 +390,10 @@ function AssetPanel({
   organizationId: string
   useCaseId: string
   control: { id: string; code: string; name: string }
-  technical: boolean
-  assets: { asset_id: string; name: string; kind: string }[]
+  nature: string
+  /** La mesure se pose-t-elle sur un actif ? Faux pour l'organisationnelle. */
+  posable: boolean
+  assets: { asset_id: string; name: string; kind: string; vendor: string | null }[]
   carriers: { asset_id: string; name: string; status: string; note: string | null }[]
   attachableAssets: { id: string; name: string; kind: string }[]
   vendors: { id: string; name: string }[]
@@ -401,21 +426,25 @@ function AssetPanel({
     aucun actif, ou il n'y a rien sur quoi poser : un bouton qui ne mene nulle
     part fait douter du reste de l'ecran.
   */
-  const posable = technical && assets.length > 0
+  const gestePossible = posable && assets.length > 0
 
   return (
     <Panneau
       formId={idPoser}
       pending={poserPending}
-      idle={posable ? 'Poser la mesure' : null}
+      idle={
+        gestePossible ? (nature === 'contractual' ? 'Établir sur cet actif' : 'Poser la mesure') : null
+      }
       intro={
         <>
           Un actif d’IA est ce que le cas d’usage{' '}
           <strong className="font-medium text-ink-700">emploie</strong> — un modèle, un agent, un
           système, un jeu de données. C’est l’objet gouverné.{' '}
-          {technical
+          {nature === 'technical'
             ? 'Cette mesure est technique : elle se pose dessus, et c’est là qu’elle se prouve.'
-            : 'Cette mesure n’est pas technique : elle se tient sur l’organisation ou chez un fournisseur, pas sur un actif. Ce qui suit reste utile pour savoir ce que le cas d’usage emploie.'}
+            : nature === 'contractual'
+              ? 'Cette mesure est contractuelle : elle s’établit chez un fournisseur, et chaque actif porte le sien. Dire pour lequel la clause est obtenue, et pour lequel elle ne l’est pas encore, est un écart qui compte.'
+              : 'Cette mesure est organisationnelle : elle se tient sur l’organisation ou sur un processus — une politique, une formation, une revue — et ne se pose sur aucun actif. Ce qui suit dit seulement ce que le cas d’usage emploie.'}
         </>
       }
       feedback={<FormFeedback state={poser} />}
@@ -436,7 +465,15 @@ function AssetPanel({
               return (
                 <li key={a.asset_id} className="flex flex-wrap items-center gap-2 text-sm text-ink-800">
                   <span>{a.name}</span>
-                  <span className="text-xs text-ink-400">{ASSET_KIND_LABELS[a.kind] ?? a.kind}</span>
+                  <span className="text-xs text-ink-400">
+                    {ASSET_KIND_LABELS[a.kind] ?? a.kind}
+                    {/* Une clause s'etablit chez un tiers : le nommer evite de chercher. */}
+                    {nature === 'contractual'
+                      ? a.vendor
+                        ? ` · fourni par ${a.vendor}`
+                        : ' · sans fournisseur déclaré'
+                      : ''}
+                  </span>
                   {porte ? (
                     <>
                       <span
@@ -446,7 +483,8 @@ function AssetPanel({
                             : 'bg-ink-100 text-ink-600'
                         }`}
                       >
-                        porte la mesure · {ASSET_MEASURE_STATUS_LABELS[porte.status] ?? porte.status}
+                        {nature === 'contractual' ? 'établie' : 'porte la mesure'} ·{' '}
+                        {ASSET_MEASURE_STATUS_LABELS[porte.status] ?? porte.status}
                       </span>
                       {porte.note ? <span className="text-xs text-ink-500">{porte.note}</span> : null}
                       {/*
@@ -467,8 +505,10 @@ function AssetPanel({
                         </button>
                       </form>
                     </>
-                  ) : technical ? (
-                    <span className="text-xs text-warn-600">ne porte pas cette mesure</span>
+                  ) : posable ? (
+                    <span className="text-xs text-warn-600">
+                      {nature === 'contractual' ? 'clause non établie' : 'ne porte pas cette mesure'}
+                    </span>
                   ) : null}
                 </li>
               )
@@ -482,11 +522,13 @@ function AssetPanel({
         <FormFeedback state={retirer} />
       </section>
 
-      {technical ? (
+      {posable ? (
         <section className="mb-4">
           {!carriers.length && assets.length ? (
             <p className="mb-3 rounded-md border border-warn-600/25 bg-warn-600/5 px-3.5 py-2.5 text-xs leading-relaxed text-ink-700">
-              Aucun actif ne porte encore cette mesure : en l’état, elle est énoncée sans être posée.
+              {nature === 'contractual'
+                ? 'La clause n’est établie pour aucun actif : en l’état, rien ne dit chez quel fournisseur elle vaut.'
+                : 'Aucun actif ne porte encore cette mesure : en l’état, elle est énoncée sans être posée.'}
             </p>
           ) : null}
 
@@ -494,7 +536,20 @@ function AssetPanel({
             <form id={idPoser} action={poserAction} className="flex flex-col gap-4">
               <input type="hidden" name="useCaseId" value={useCaseId} />
               <input type="hidden" name="controlId" value={control.id} />
-              <Field label="Poser sur l’actif" htmlFor={`am-asset-${control.id}`} error={errors.assetId}>
+              <Field
+                label={
+                  nature === 'contractual'
+                    ? 'Pour quel actif la clause est-elle établie ?'
+                    : 'Poser sur l’actif'
+                }
+                htmlFor={`am-asset-${control.id}`}
+                error={errors.assetId}
+                hint={
+                  nature === 'contractual'
+                    ? 'La clause se signe chez le fournisseur de cet actif. Un actif sans fournisseur déclaré ne dit pas avec qui elle a été conclue.'
+                    : undefined
+                }
+              >
                 <select id={`am-asset-${control.id}`} name="assetId" required defaultValue="" className={FIELD}>
                   <option value="" disabled>
                     Choisir…
@@ -502,12 +557,16 @@ function AssetPanel({
                   {(remaining.length ? remaining : assets).map((a) => (
                     <option key={a.asset_id} value={a.asset_id}>
                       {a.name} — {ASSET_KIND_LABELS[a.kind] ?? a.kind}
+                      {nature === 'contractual' && a.vendor ? ` · ${a.vendor}` : ''}
                     </option>
                   ))}
                 </select>
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="État sur cet actif" htmlFor={`am-status-${control.id}`}>
+                <Field
+                  label={nature === 'contractual' ? 'Où en est la clause' : 'État sur cet actif'}
+                  htmlFor={`am-status-${control.id}`}
+                >
                   <select id={`am-status-${control.id}`} name="status" defaultValue="planned" className={FIELD}>
                     {Object.entries(ASSET_MEASURE_STATUS_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
@@ -516,7 +575,16 @@ function AssetPanel({
                     ))}
                   </select>
                 </Field>
-                <Field label="Note" htmlFor={`am-note-${control.id}`} optional hint="Comment elle est mise en œuvre ici.">
+                <Field
+                  label="Note"
+                  htmlFor={`am-note-${control.id}`}
+                  optional
+                  hint={
+                    nature === 'contractual'
+                      ? 'La référence du contrat, la clause, sa date.'
+                      : 'Comment elle est mise en œuvre ici.'
+                  }
+                >
                   <input id={`am-note-${control.id}`} name="note" type="text" className={FIELD} />
                 </Field>
               </div>

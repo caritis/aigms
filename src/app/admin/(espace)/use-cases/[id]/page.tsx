@@ -1318,6 +1318,8 @@ export default async function UseCasePage({
                                       asset_id: a.asset_id,
                                       name: a.name,
                                       kind: a.kind,
+                                      // Une clause se signe chez un tiers : l'actif porte le sien.
+                                      vendor: a.vendor ?? null,
                                     }))}
                                     attachableAssets={attachableAssets}
                                     vendors={vendorChoices}
