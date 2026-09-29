@@ -37,7 +37,6 @@ import {
 } from '@/components/governance/registry-forms'
 import {
   ActionNote,
-  ChangeNote,
   ClassificationNote,
   ControlNote,
   DecisionNote,
@@ -1820,12 +1819,7 @@ export default async function UseCasePage({
           <Card
             title="Décisions et changements"
             subtitle="Un seul fil : ce qui a été décidé, ce qui a changé, et comment l’un a appelé l’autre."
-            action={
-              <span className="flex items-center gap-2">
-                <DecisionNote />
-                <ChangeNote />
-              </span>
-            }
+            action={<DecisionNote />}
           >
             {/*
               Une decision est un acte ; un changement est un fait sur le

@@ -208,35 +208,46 @@ export function OversightNote() {
   )
 }
 
+/**
+ * Decisions et changements : une seule note.
+ *
+ * L'en-tete portait deux ronds « i » cote a cote, et deux ronds identiques ne
+ * se distinguent pas — on les ouvre l'un apres l'autre pour savoir lequel
+ * parle de quoi. Or les deux notions se lisent ENSEMBLE, c'est tout le sens
+ * du fil unique : un changement qui appelle une reevaluation ouvre une
+ * decision, une decision de changement cree le changement.
+ */
 export function DecisionNote() {
   return (
-    <Note label="À quoi sert le registre de décisions" title="Qui a décidé quoi, et sous quelles conditions">
+    <Note
+      label="À quoi servent les décisions et les changements"
+      title="Ce qui a été décidé, ce qui a changé"
+    >
       <p>
-        C’est la pièce qu’un auditeur ouvre en premier : autorisation d’usage, mise en production,
-        acceptation de risque, exception, suspension, retrait. Chaque décision porte un approbateur
-        humain, une justification, une date d’effet et — pour les plus engageantes — une date de
-        revue.
+        Une <strong className="font-medium text-ink-800">décision</strong> est un acte ; un{' '}
+        <strong className="font-medium text-ink-800">changement</strong> est un fait sur le système.
+        Ils se répondent, et c’est pourquoi ce fil les mêle dans l’ordre : un changement qui appelle
+        une réévaluation ouvre une décision, une décision de changement crée le changement.
       </p>
       <p>
+        <strong className="font-medium text-ink-800">Les décisions.</strong> C’est la pièce qu’un
+        auditeur ouvre en premier : autorisation d’usage, mise en production, acceptation de risque,
+        exception, suspension, retrait. Chacune porte un approbateur humain, une justification, une
+        date d’effet et — pour les plus engageantes — une date de revue.{' '}
         <strong className="font-medium text-ink-800">Aucune approbation automatique</strong>, et
         l’auteur d’une décision de mise en production ou d’acceptation de risque ne peut pas
         l’approuver lui-même. La base le refuse, pas l’écran.
       </p>
-    </Note>
-  )
-}
-
-export function ChangeNote() {
-  return (
-    <Note label="À quoi servent les changements" title="Ce qui rouvre l’évaluation">
       <p>
-        Un modèle change, l’autonomie augmente, la finalité évolue : le moteur qualifie le
-        changement et rouvre ce qui doit l’être. Une gouvernance qui ne réévalue pas devient une
-        photographie datée.
+        <strong className="font-medium text-ink-800">Les changements.</strong> Un modèle change,
+        l’autonomie augmente, la finalité évolue : le moteur qualifie le changement et rouvre ce qui
+        doit l’être. Une gouvernance qui ne réévalue pas devient une photographie datée. Le verdict
+        du moteur est une proposition ; le verdict final reste humain, et l’écart entre les deux se
+        lit ici.
       </p>
-      <p>
-        Le verdict du moteur est une proposition ; le verdict final reste humain, et l’écart entre
-        les deux se lit ici.
+      <p className="text-ink-500">
+        Ce fil se lit ; il ne se saisit pas. Les deux gestes se posent par{' '}
+        <strong className="font-medium text-ink-700">Faire évoluer</strong>, en tête de fiche.
       </p>
     </Note>
   )

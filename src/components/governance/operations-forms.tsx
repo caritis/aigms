@@ -833,26 +833,8 @@ export function ChangeRequestFields({
   )
 }
 
-export function ChangeRequestForm({
-  organizationId,
-  useCaseId,
-  currentAutonomy,
-  trigger = 'Prévoir un changement',
-}: {
-  organizationId: string
-  useCaseId: string
-  currentAutonomy: string
-  trigger?: string
-}) {
-  return (
-    <Modal
-      trigger={trigger}
-      title="Prévoir un changement du système"
-      description="Ce qui va changer, à quelle date. Les faits déclarés sont ce que le moteur de réévaluation lit ; il dit ce qui doit être réévalué, et si une décision s’impose."
-    >
-      {() => (
-        <ChangeRequestFields organizationId={organizationId} useCaseId={useCaseId} currentAutonomy={currentAutonomy} />
-      )}
-    </Modal>
-  )
-}
+/*
+ * `ChangeRequestForm` — la fenetre qui enveloppait ces champs — a ete retiree
+ * avec le bouton qui l'ouvrait : prevoir un changement se fait par « Faire
+ * évoluer », qui monte `ChangeRequestFields` directement. Une seule porte.
+ */
