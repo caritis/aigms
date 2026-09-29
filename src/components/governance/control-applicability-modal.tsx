@@ -688,11 +688,33 @@ function ToolingPanel({
           </p>
         ) : null}
 
+        {/*
+          Le silence se lisait comme un oubli.
+          Quand le referentiel ne suggere aucune famille, l'ecran ne disait
+          rien — et le formulaire de declaration s'ouvrait juste en dessous.
+          On croyait a un manque a combler, et l'on inventait un produit pour
+          remplir une case. Or un controle contractuel se tient par un CONTRAT,
+          un controle organisationnel par une PROCEDURE : l'absence de famille
+          est une reponse, pas un trou.
+        */}
         {view.suggested.length ? (
           <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
             Le référentiel AIGMS suggère : {view.suggested.map((s) => s.acronym ?? s.name).join(', ')}.
           </p>
-        ) : null}
+        ) : (
+          <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+            <strong className="font-medium text-ink-800">
+              Le référentiel AIGMS ne suggère aucune famille pour ce contrôle.
+            </strong>{' '}
+            {view.signal?.measure_kind === 'contractual'
+              ? 'C’est une mesure contractuelle : ce qui la tient est un contrat, une clause, un engagement du fournisseur — pas un produit. Sa preuve est le document signé.'
+              : view.signal?.measure_kind === 'organizational'
+                ? 'C’est une mesure organisationnelle : ce qui la tient est une procédure, une décision, une revue — pas un produit. Sa preuve est un document ou un compte rendu.'
+                : 'Il est peut-être écrit librement, sans lien vers un contrôle-type.'}{' '}
+            Vous pouvez tout de même nommer un outil s’il vous sert à le tenir chez vous — mais
+            aucun n’est attendu.
+          </p>
+        )}
 
         {view.available.length ? (
           <fieldset className="flex flex-col gap-2">
@@ -722,7 +744,9 @@ function ToolingPanel({
           </fieldset>
         ) : (
           <p className="rounded-md border border-dashed border-ink-200 px-3.5 py-2.5 text-sm text-ink-600">
-            Aucun outil n’est encore déclaré pour cette organisation. Nommez-en un ci-dessous.
+            {view.suggested.length
+              ? 'Aucun outil n’est encore déclaré pour cette organisation. Nommez-en un ci-dessous.'
+              : 'Aucun outil déclaré pour cette organisation — et ce contrôle n’en appelle pas.'}
           </p>
         )}
 
@@ -753,8 +777,13 @@ function ToolingPanel({
         <Disclosure
           title="Déclarer un produit"
           summary="Le formulaire de la carte d’outillage, ici — une famille du référentiel, le produit employé chez vous"
-          defaultOpen={!view.available.length}
-          tone={!view.available.length ? 'todo' : 'neutral'}
+          /*
+            Le volet s'ouvrait des qu'aucun outil n'etait declare — y compris
+            sur un controle ou le referentiel n'en attend aucun. Ouvrir, c'est
+            suggerer. Il ne s'ouvre plus que la ou une famille est attendue.
+          */
+          defaultOpen={!view.available.length && view.suggested.length > 0}
+          tone={!view.available.length && view.suggested.length > 0 ? 'todo' : 'neutral'}
         >
         <form action={declareAction} className="flex flex-col gap-4">
           <input type="hidden" name="organizationId" value={organizationId} />
