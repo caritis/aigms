@@ -695,3 +695,47 @@ export async function placeMeasureOnAsset(
   revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
   return { ok: true, message: 'Mesure posée sur l’actif, avec son état.' }
 }
+
+/**
+ * Retirer une mesure d'un actif.
+ *
+ * On se trompe d'actif — deux systemes voisins, un nom qui se ressemble — et
+ * rien ne permettait de revenir : la mesure restait posee sur le mauvais, et
+ * la couverture comptait juste a tort. Poser sans pouvoir retirer fait mentir
+ * l'ecran.
+ *
+ * Ce n'est pas une decision de gouvernance : la mesure reste applicable au cas
+ * d'usage, seul son rattachement a CET actif disparait. Le journal en garde
+ * trace comme de toute ecriture.
+ */
+export async function removeMeasureFromAsset(
+  _previous: FormState | null,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = z
+    .object({
+      useCaseId: z.string().uuid(),
+      assetId: z.string().uuid(),
+      controlId: z.string().uuid(),
+    })
+    .safeParse({
+      useCaseId: formData.get('useCaseId'),
+      assetId: formData.get('assetId'),
+      controlId: formData.get('controlId'),
+    })
+  if (!parsed.success) return firstIssues(parsed.error)
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('asset_control')
+    .delete()
+    .eq('asset_id', parsed.data.assetId)
+    .eq('control_id', parsed.data.controlId)
+  if (error) return { ok: false, message: explain(error) }
+
+  revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
+  return {
+    ok: true,
+    message: 'Mesure retirée de cet actif. Elle reste applicable au cas d’usage.',
+  }
+}

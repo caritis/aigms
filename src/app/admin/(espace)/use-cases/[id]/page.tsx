@@ -81,6 +81,7 @@ import {
   controlStatusTone,
   MEASURE_KIND_HINTS,
   MEASURE_KIND_LABELS,
+  MEASURE_KIND_PLURALS,
   APPLICABILITY_LABELS,
   evidenceFreshness,
   type EvidenceGap,
@@ -1259,7 +1260,7 @@ export default async function UseCasePage({
                           <span aria-hidden className="mr-1.5 inline-block text-ink-400 transition-transform group-open:rotate-90">
                             ›
                           </span>
-                          {MEASURE_KIND_LABELS[kind]}s
+                          {MEASURE_KIND_PLURALS[kind] ?? MEASURE_KIND_LABELS[kind]}
                           <span className="ml-2 text-xs font-normal text-ink-400">
                             {applicableRows.length} applicable{applicableRows.length > 1 ? 's' : ''} sur {rows.length}
                           </span>

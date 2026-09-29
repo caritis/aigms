@@ -1,7 +1,12 @@
 'use client'
 
 import { useActionState, useEffect, useState } from 'react'
-import { placeMeasureOnAsset, setControlApplicability, type FormState } from '@/lib/actions/controls'
+import {
+  placeMeasureOnAsset,
+  removeMeasureFromAsset,
+  setControlApplicability,
+  type FormState,
+} from '@/lib/actions/controls'
 import { retainTooling, saveTooling } from '@/lib/actions/tooling'
 import { declareAssetForUseCase, linkAssetToUseCase } from '@/lib/actions/registry'
 import { AssetFields } from '@/components/governance/registry-forms'
@@ -321,7 +326,8 @@ function Panneau({
 }: {
   formId: string
   pending: boolean
-  idle: string
+  /** Nul : cet onglet n'a pas de geste principal, et le pied ne ment pas. */
+  idle: string | null
   intro: React.ReactNode
   feedback?: React.ReactNode
   children: React.ReactNode
@@ -334,7 +340,7 @@ function Panneau({
       </div>
       <div className="-mx-5 -mb-5 mt-4 flex flex-col gap-3 border-t border-ink-100 bg-white px-5 py-3.5">
         {feedback}
-        <Submit form={formId} pending={pending} idle={idle} />
+        {idle ? <Submit form={formId} pending={pending} idle={idle} /> : null}
       </div>
     </div>
   )
@@ -384,13 +390,24 @@ function AssetPanel({
   const placed = carriers.map((c) => c.asset_id)
   const remaining = assets.filter((a) => !placed.includes(a.asset_id))
 
+  const [retirer, retirerAction, retirerPending] = useActionState<FormState | null, FormData>(
+    removeMeasureFromAsset,
+    null,
+  )
   const idPoser = `poser-${control.id}`
+  /*
+    Le pied n'annonce un geste que s'il existe. « Poser la mesure » s'affichait
+    sur une mesure contractuelle, ou rien ne se pose, et sur un cas d'usage sans
+    aucun actif, ou il n'y a rien sur quoi poser : un bouton qui ne mene nulle
+    part fait douter du reste de l'ecran.
+  */
+  const posable = technical && assets.length > 0
 
   return (
     <Panneau
       formId={idPoser}
       pending={poserPending}
-      idle="Poser la mesure"
+      idle={posable ? 'Poser la mesure' : null}
       intro={
         <>
           Un actif d’IA est ce que le cas d’usage{' '}
@@ -403,32 +420,75 @@ function AssetPanel({
       }
       feedback={<FormFeedback state={poser} />}
     >
+      {/*
+        Ce que le cas d'usage emploie, TOUJOURS.
+        La liste ne s'affichait que pour une mesure technique : on rattachait un
+        actif, on rouvrait la fiche d'un controle contractuel, et rien ne le
+        montrait — au point de douter que le rattachement ait eu lieu. Ce que le
+        cas d'usage emploie ne depend pas de la nature de la mesure.
+      */}
+      <section className="mb-4">
+        <h3 className="mb-2 text-sm font-semibold text-ink-900">Ce que le cas d’usage emploie</h3>
+        {assets.length ? (
+          <ul className="mb-3 flex flex-col gap-1.5">
+            {assets.map((a) => {
+              const porte = carriers.find((c) => c.asset_id === a.asset_id)
+              return (
+                <li key={a.asset_id} className="flex flex-wrap items-center gap-2 text-sm text-ink-800">
+                  <span>{a.name}</span>
+                  <span className="text-xs text-ink-400">{ASSET_KIND_LABELS[a.kind] ?? a.kind}</span>
+                  {porte ? (
+                    <>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[11px] ${
+                          porte.status === 'verified' || porte.status === 'implemented'
+                            ? 'bg-ok-600/10 text-ok-600'
+                            : 'bg-ink-100 text-ink-600'
+                        }`}
+                      >
+                        porte la mesure · {ASSET_MEASURE_STATUS_LABELS[porte.status] ?? porte.status}
+                      </span>
+                      {porte.note ? <span className="text-xs text-ink-500">{porte.note}</span> : null}
+                      {/*
+                        Poser sans pouvoir retirer fait mentir la couverture :
+                        une mesure posee sur le mauvais actif compte comme
+                        juste. Le retrait ne touche pas l'applicabilite.
+                      */}
+                      <form action={retirerAction} className="contents">
+                        <input type="hidden" name="useCaseId" value={useCaseId} />
+                        <input type="hidden" name="controlId" value={control.id} />
+                        <input type="hidden" name="assetId" value={a.asset_id} />
+                        <button
+                          type="submit"
+                          disabled={retirerPending}
+                          className="text-xs text-ink-400 hover:text-stop-600 hover:underline disabled:opacity-60"
+                        >
+                          Retirer
+                        </button>
+                      </form>
+                    </>
+                  ) : technical ? (
+                    <span className="text-xs text-warn-600">ne porte pas cette mesure</span>
+                  ) : null}
+                </li>
+              )
+            })}
+          </ul>
+        ) : (
+          <p className="mb-3 rounded-md border border-dashed border-ink-200 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+            Ce cas d’usage n’emploie aucun actif d’IA déclaré.
+          </p>
+        )}
+        <FormFeedback state={retirer} />
+      </section>
+
       {technical ? (
         <section className="mb-4">
-          <h3 className="mb-2 text-sm font-semibold text-ink-900">Ce qui porte la mesure</h3>
-          {carriers.length ? (
-            <ul className="mb-3 flex flex-col gap-1.5">
-              {carriers.map((c) => (
-                <li key={c.asset_id} className="flex flex-wrap items-baseline gap-2 text-sm text-ink-800">
-                  <span>{c.name}</span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] ${
-                      c.status === 'verified' || c.status === 'implemented'
-                        ? 'bg-ok-600/10 text-ok-600'
-                        : 'bg-ink-100 text-ink-600'
-                    }`}
-                  >
-                    {ASSET_MEASURE_STATUS_LABELS[c.status] ?? c.status}
-                  </span>
-                  {c.note ? <span className="text-xs text-ink-500">{c.note}</span> : null}
-                </li>
-              ))}
-            </ul>
-          ) : (
+          {!carriers.length && assets.length ? (
             <p className="mb-3 rounded-md border border-warn-600/25 bg-warn-600/5 px-3.5 py-2.5 text-xs leading-relaxed text-ink-700">
               Aucun actif ne porte encore cette mesure : en l’état, elle est énoncée sans être posée.
             </p>
-          )}
+          ) : null}
 
           {assets.length ? (
             <form id={idPoser} action={poserAction} className="flex flex-col gap-4">
@@ -482,7 +542,7 @@ function AssetPanel({
             attachableAssets.length
               ? `${attachableAssets.length} actif(s) du registre que ce cas d’usage n’emploie pas encore`
               : assets.length
-                ? 'Tous les actifs du registre sont déjà rattachés'
+                ? `${assets.length} actif(s) rattaché(s) — le registre n’en contient pas d’autre`
                 : 'Le registre des actifs de cette organisation est vide'
           }
           defaultOpen={!assets.length && attachableAssets.length > 0}

@@ -240,6 +240,19 @@ export const MEASURE_KIND_LABELS: Record<string, string> = {
   contractual: 'Mesure contractuelle',
 }
 
+/**
+ * Le pluriel s'ecrit, il ne se derive pas.
+ *
+ * L'en-tete des groupes ajoutait un « s » au libelle entier et donnait
+ * « Mesure techniques ». Une regle automatique se trompe des qu'un complement
+ * suit le nom — c'est la meme lecon que pour les intitules d'attention.
+ */
+export const MEASURE_KIND_PLURALS: Record<string, string> = {
+  technical: 'Mesures techniques',
+  organizational: 'Mesures organisationnelles',
+  contractual: 'Mesures contractuelles',
+}
+
 export const MEASURE_KIND_HINTS: Record<string, string> = {
   technical: 'Se pose sur un actif — modèle, système, agent, jeu de données — et se prouve là.',
   organizational: 'Se pose sur l’organisation, un processus ou le cas d’usage : politique, formation, revue, séparation des rôles.',
