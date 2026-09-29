@@ -60,6 +60,10 @@ export const GATE_CHECK_SATISFIED_BY: Record<string, string> = {
   use_case_authorization: 'AUTHORIZATION_DECISION',
   pilot_approval: 'PILOT_DECISION',
   retirement: 'RETIREMENT_DECISION',
+  // Le gate PRODUCTION porte huit preconditions, et la septieme est « Décision
+  // GO production approuvée et en vigueur » : la plus tendue du registre
+  // l'etait aussi. Ses sept autres continuent de la juger, une par une.
+  go_production: 'PRODUCTION_DECISION',
 }
 
 /** Le jalon qu'une decision fait franchir, une fois approuvee. */

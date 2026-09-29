@@ -1,6 +1,6 @@
 # Script de démonstration — Shadow AI dans le BTP
 
-*Version 1 — 25 septembre 2026. Durée visée : 18 minutes, 20 avec l'option.*
+*Version 1 — 25 septembre 2026. Durée visée : 20 minutes, 22 avec l'option.*
 
 Ce script déroule un cas d'usage réel devant un prospect du bâtiment : **des
 commerciaux génèrent leurs devis sur des comptes ChatGPT personnels**, en y
@@ -85,7 +85,7 @@ visible dès l'étape 1.
 
 ---
 
-## 2. Le fil — huit gestes
+## 2. Le fil — neuf gestes
 
 | # | Étape | Qui | Durée |
 |---|---|---|---|
@@ -97,6 +97,7 @@ visible dès l'étape 1.
 | 6 | Produire une preuve | Officer | 2 min |
 | 7 | Conduire l'étude d'impact | Officer + Porteur | 4 min |
 | 8 | **Franchir les jalons, puis décider — le moment clé** | Officer + Administrateur client | 4 min |
+| 9 | La Déclaration d'Applicabilité | Officer | 2 min |
 
 ---
 
@@ -951,6 +952,29 @@ Approuvez. **Le statut passe alors à Approuvé**, et c'est seulement là que
 > l'officer : ce qu'on exige partout, c'est **un approbateur humain identifié**,
 > et la base refuse une décision approuvée sans lui. »
 
+#### Ce que votre verdict vient d'ouvrir — et ce qu'il a fermé
+
+**Le verdict n'est pas binaire**, et il change la suite du parcours. La fenêtre
+« Se prononcer » propose *Approuvée*, *Approuvée sous conditions*, *Refusée*.
+
+| Verdict | Statut atteint | Ce qui s'ouvre ensuite |
+|---|---|---|
+| **Approuvée** | Approuvé | **Pilote *ou* Production** — les deux, au choix |
+| **Approuvée sous conditions** | Approuvé sous conditions | **Le pilote seulement** — la production ne s'ouvre qu'après lui |
+| **Refusée** | Refusé | Ramener au brouillon, ou retirer |
+
+> **Si vous avez approuvé sous conditions**, la fenêtre *Faire évoluer* vous le
+> dit sous les trois cartes : *« Approuvé sous conditions : la mise en
+> production ne s'ouvre pas d'ici. Le chemin passe par le pilote — c'est le sens
+> des conditions posées à l'approbation. »* **Ce n'est pas un reliquat dans la
+> liste : c'est le seul chemin.** Et *Franchir un jalon* est grisé, parce que
+> tout ce qui reste depuis là **engage** : cela se décide, cela ne se franchit
+> pas.
+
+**La frise le montre aussi.** « Approuvé sous conditions » n'est pas une étape,
+c'est une **issue** de l'étape Approuvé : la frise l'y ancre, en ambre, sous son
+propre nom — on ne lit pas « Approuvé » là où il est écrit « sous conditions ».
+
 #### 8c — La décision qui emporte tout : la mise en production
 
 **`officer@aigms.eu` → *Faire évoluer* → *Décider* → *Mise en production***
@@ -962,6 +986,42 @@ Approuvez. **Le statut passe alors à Approuvé**, et c'est seulement là que
 | **Date de revue** | **devient exigée** — *« rien ne doit dormir »* |
 | **Preuves sur lesquelles la décision se fonde** | **au moins une preuve validée** : cochez la charte déposée à l'étape 6 |
 | **Ce que vous en dites** | apparaît *si* des contrôles applicables n'ont aucune preuve — et devient exigé |
+
+**Depuis « Approuvé sous conditions », passez d'abord par le pilote** : décision
+*Approbation de pilote*, approuvée → statut **Pilote**. C'est de là que *Mise en
+production* devient proposable. Depuis « Approuvé » tout court, elle l'est
+directement.
+
+**Les huit préconditions du gate PRODUCTION.** Elles s'évaluent en continu, et
+le « ◆ » de la frise ouvre leur liste. Montrez-la : c'est le cœur du produit.
+
+| # | Précondition | Où elle a été remplie |
+|---|---|---|
+| 1 | Classification réglementaire complète et validée | étape **3** |
+| 2 | Aucun risque élevé ou critique sans traitement effectif ni acceptation décidée | étape **4**, puis le traitement |
+| 3 | AI Impact Assessment terminé lorsqu'il est requis | étape **7** — visa *et* acceptation |
+| 4 | Revue fournisseur close pour chaque tiers impliqué | registre des fournisseurs — *Open.AI y est en ambre* |
+| 5 | Supervision humaine approuvée, ou non applicable et justifiée | onglet *Supervision humaine* |
+| 6 | Applicabilité statuée pour tous les contrôles obligatoires | étape **5** |
+| 7 | Décision GO production approuvée et en vigueur | **c'est celle que vous soumettez** |
+| 8 | Aucune action bloquante ouverte | le préjudice **grave** de l'étape 7 en a ouvert une |
+
+> **Deux d'entre elles vont vous arrêter, et c'est voulu.** La **revue du
+> fournisseur Open.AI** n'est pas close, et l'**action bloquante** née du
+> préjudice grave est encore ouverte. « Regardez ce que l'outil refuse. Il ne
+> refuse pas parce qu'une case n'est pas cochée : il refuse parce que
+> **personne n'a encore répondu du fournisseur**, et parce qu'une mesure que
+> vous avez vous-même jugée nécessaire n'est pas faite. Fermez-les, et le jalon
+> s'ouvre. »
+>
+> Pour la démonstration : soldez l'action *(Suivi d'actions → Terminée)* et
+> closez la revue fournisseur avant cette étape, ou assumez de montrer le refus
+> — **c'est souvent le plus convaincant des deux**.
+
+**La septième ne vous retient pas**, et il faut le dire si on vous le demande :
+la décision que vous soumettez est précisément celle que cette précondition
+attend. *« On ne demande pas à la porte la clef qu'on vient lui apporter. »*
+Les sept autres, elles, jugent la soumission.
 
 Le formulaire affiche l'écart : **les contrôles applicables sans preuve, nommés
 par leur code**, les obligatoires en ambre. Il exige que vous disiez ce qu'il en
@@ -1017,6 +1077,102 @@ Toutes les alertes ne partent pas au même moment, et c'est délibéré.
 > **dans sa cloche, tout de suite ; par courriel, au prochain envoi.** Le seul
 > message qui part pendant la démonstration est celui de la décision de mise en
 > production : c'est celui qui retient un jalon, et il n'attend pas.
+
+---
+
+### Étape 9 — La Déclaration d'Applicabilité, le document qu'un auditeur ouvre en premier
+
+**Registres → Déclaration d'Applicabilité** *(2 min)*
+
+C'est la pièce qu'on vous demandera en certification ISO/IEC 42001, et celle
+qu'aucun tableur ne tient à jour. Elle se construit **toute seule** à partir de
+ce que vous venez de faire — il ne reste qu'à trancher.
+
+#### Ce que la page montre, sans rien saisir
+
+Quatre compteurs en tête : **couvertes et prouvées**, **partiellement
+couvertes**, **non couvertes**, **sans décision portée**. Puis, pour chaque
+exigence du référentiel, ce qui la couvre **chez ce client** et dans quel état.
+
+| État | Ce qu'il signifie |
+|---|---|
+| **Couverte et prouvée** *(vert)* | Un contrôle opérant, avec au moins une preuve rattachée |
+| **Opérante sans preuve** *(ambre)* | Le contrôle fonctionne, mais rien ne permet de le démontrer |
+| **Contrôle déclaré** *(ambre)* | Un contrôle est rattaché, sans être encore opérant |
+| **Non couverte** *(rouge)* | Aucun contrôle ne répond à cette exigence |
+
+> **Le geste qui porte.** « Personne n'a rempli cette page. Chaque ligne est le
+> reflet de ce que nous avons fait depuis dix minutes : le contrôle retenu à
+> l'étape 5 l'a fait passer de *non couverte* à *contrôle déclaré*, la preuve
+> déposée à l'étape 6 l'a fait passer au vert. **Une exigence sans couverture
+> s'affiche comme telle** — une ligne vide serait plus trompeuse qu'un aveu. »
+
+#### La règle d'or, écrite en tête de page
+
+> **« Aucune case vide : chaque exigence est sélectionnée ou exclue, et
+> justifiée. »**
+
+C'est le premier défaut qu'un auditeur relève, et le seul qui ne se rattrape pas
+par un argument. La page compte donc, en clair : *« n exigences décidées sur N —
+n sélectionnées, n exclues »*.
+
+#### Le rôle de l'organisation commande le régime de preuve
+
+La ligne suivante le dit : *« Le rôle **Utilisateur métier** impose une preuve
+technique sur n d'entre elles. »* Selon la criticité que la matrice attribue à
+ce rôle, chaque exigence appelle :
+
+| Régime | Ce qui est attendu |
+|---|---|
+| **Preuve technique** | Décrire la mesure en place et pointer un livrable concret : journaux, manifestes, rapports d'audit |
+| **Preuve organisationnelle** | L'exigence s'applique, mais la preuve est une politique, une clause, une procédure humaine |
+| **Exclusion motivée** | Le rôle exercé ne rencontre pas ce risque : écrire pourquoi |
+| **Non couverte par la matrice** | La matrice ne se prononce pas — la règle d'or s'applique quand même |
+
+> **Insistez.** « Le même référentiel ne demande pas la même chose à un hébergeur
+> et à une PME qui achète un assistant. Vous n'entraînez pas de modèle : on ne
+> vous demandera pas de prouver l'équité d'un modèle que vous n'avez pas fait.
+> **Ce n'est pas de l'indulgence, c'est de la pertinence** — et c'est ce qui rend
+> l'exercice tenable. »
+
+#### Trancher : le geste, et ce qu'on écrit
+
+Le filtre **« Filtrer par écart »** isole ce qui appelle une décision :
+
+| Écart | Ce qu'il rassemble |
+|---|---|
+| **À décider** | Ni sélectionnée ni exclue — la règle d'or n'est pas tenue |
+| **Exclusion à réexaminer** | Exclue alors que la matrice attend une preuve pour ce rôle |
+| **Preuve technique manquante** | Sélectionnée, attendue en technique, sans preuve technique |
+| **Aucun contrôle rattaché** | Sélectionnée, mais rien ne la sert |
+
+Sur la ligne, **« Décider — sélectionner ou exclure »** ouvre trois éléments : le
+rappel de ce que le régime attend, deux boutons **Sélectionnée / Exclue**, et une
+**justification obligatoire**. Puis *« Porter la décision »*.
+
+**Trois lignes à faire devant le prospect** — prenez celles qui sont en écart
+sur son écran ; à défaut, ces trois-là :
+
+| Exigence | Décision | Justification à saisir |
+|---|---|---|
+| Une exigence servie par un contrôle retenu à l'étape 5 | **Sélectionnée** | `Servie par AIGMS-SEC-008, outillé par Netskope, preuve attendue au 30/11.` |
+| Une exigence d'entraînement ou de conception de modèle | **Exclue** | `BATIVAL n'entraîne ni ne conçoit de modèle : elle exploite un système acquis. Le rôle d'utilisateur métier ne rencontre pas cette exigence.` |
+| Une exigence d'hébergement ou d'isolation physique | **Exclue** | `L'infrastructure est celle du fournisseur, sous sa responsabilité. La clause contractuelle en tient lieu — voir AIGMS-SUP-005.` |
+
+> **La phrase de fin.** « Une exclusion n'est pas une case décochée : c'est une
+> **décision signée, avec son motif, et le nom de qui l'a portée**. Voilà la
+> différence entre un tableur de conformité et un système de gouvernance. Le jour
+> de l'audit, on ne vous demandera pas si vous avez tout fait — on vous demandera
+> **ce que vous avez décidé, et pourquoi**. »
+
+**Avertissement à connaître**, écrit dans l'infobulle de la page : les intitulés
+et résumés sont **rédigés par AIGMS** et expriment ce qu'une organisation doit
+pouvoir démontrer. Ils **ne reproduisent pas le texte de la norme**, qui s'obtient
+auprès de l'ISO, et ne valent **ni avis de certification ni conclusion d'audit**.
+
+> **Dites-le vous-même avant qu'on vous le demande.** « Nous ne vendons pas une
+> certification, et nous ne redistribuons pas la norme. Nous vous donnons le
+> document qui la sert, tenu à jour par votre travail. »
 
 ---
 

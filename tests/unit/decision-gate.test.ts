@@ -35,12 +35,16 @@ describe('les préconditions qui retiennent une décision', () => {
     ])
   })
 
-  it('ne dispense de rien une mise en production : aucune de ses préconditions ne parle d’elle-même', () => {
-    expect(GATE_CHECK_SATISFIED_BY.go_production).toBeUndefined()
+  it('ne dispense une mise en production que de la précondition qui la réclame elle-même', () => {
     const checks: Check[] = [
-      { code: 'AIIA_COMPLETE', label: 'Étude d’impact achevée', satisfied: false },
+      { code: 'PRODUCTION_DECISION', label: 'Décision GO production approuvée et en vigueur', satisfied: false },
+      { code: 'IMPACT_ASSESSMENT', label: 'AI Impact Assessment terminé lorsqu’il est requis', satisfied: false },
+      { code: 'BLOCKING_ACTIONS', label: 'Aucune action bloquante ouverte', satisfied: false },
     ]
-    expect(blockingGateChecks('go_production', checks, bloquante)).toHaveLength(1)
+    expect(blockingGateChecks('go_production', checks, bloquante).map((c) => c.code)).toEqual([
+      'IMPACT_ASSESSMENT',
+      'BLOCKING_ACTIONS',
+    ])
   })
 
   it('laisse passer les avertissements, qui s’assument à l’approbation', () => {
@@ -51,11 +55,13 @@ describe('les préconditions qui retiennent une décision', () => {
   })
 
   it('chaque jalon auto-référentiel a sa dispense, et elle porte le code du gate', () => {
-    // Les trois gates de app.evaluate_gate qui exigent « une décision approuvée ».
+    // Les quatre gates qui exigent « une décision approuvée » : trois dans
+    // app.evaluate_gate, et la septième précondition du gate PRODUCTION.
     const attendus: Record<string, string> = {
       use_case_authorization: 'AUTHORIZATION_DECISION',
       pilot_approval: 'PILOT_DECISION',
       retirement: 'RETIREMENT_DECISION',
+      go_production: 'PRODUCTION_DECISION',
     }
     expect(GATE_CHECK_SATISFIED_BY).toEqual(attendus)
     for (const type of Object.keys(attendus)) {
