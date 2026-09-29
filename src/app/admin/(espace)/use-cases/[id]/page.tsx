@@ -309,6 +309,14 @@ export default async function UseCasePage({
       .from('control')
       .select('id, code, name, status, organization_id')
       .order('code'),
+    /*
+      Avec quoi chaque controle se tient. La ligne disait ce qui manquait sans
+      jamais dire ce qui existe : on retenait un outil, on revenait, et rien
+      n'avait change a l'ecran.
+    */
+    tab === 'controles'
+      ? supabase.from('control_tooling').select('control_id, tooling:tooling_id (id, product)')
+      : Promise.resolve({ data: null }),
     supabase.from('vendor').select('id, name, organization_id').order('name'),
     supabase.from('ai_asset').select('id, name, kind, business_ref, organization_id').order('name'),
   ])
@@ -329,6 +337,7 @@ export default async function UseCasePage({
     { data: reviewGateData },
     { data: memberships },
     { data: orgControls },
+    { data: controlTooling },
     { data: orgVendors },
     { data: orgAssets },
   ] = lectures
@@ -592,6 +601,16 @@ export default async function UseCasePage({
   const assetChoices = (orgAssets ?? [])
     .filter((a) => a.organization_id === useCase.organization_id)
     .map((a) => ({ id: a.id, name: a.name, kind: a.kind }))
+  /** Avec quoi chaque controle se tient, chez cette organisation. */
+  const outilsParControle = new Map<string, string[]>()
+  for (const lien of controlTooling ?? []) {
+    const outil = lien.tooling as unknown as { product: string } | null
+    if (!outil) continue
+    const liste = outilsParControle.get(lien.control_id) ?? []
+    liste.push(outil.product)
+    outilsParControle.set(lien.control_id, liste)
+  }
+
   const attachableAssets = assetChoices.filter(
     (a) => !useCaseAssets.some((u) => u.asset_id === a.id),
   )
@@ -1438,17 +1457,26 @@ export default async function UseCasePage({
                                 </span>
                               </div>
                               {/*
-                                Sur quoi la mesure est posee, sans ouvrir la
-                                fiche. Quand rien ne la porte, le dire : une
-                                mesure technique sans actif est une phrase.
+                                Ce que la ligne dit sans qu'on l'ouvre : sur
+                                quoi la mesure est posee, et avec quoi elle se
+                                tient. Elle ne disait que ce qui manquait — on
+                                retenait un outil, on revenait, et rien n'avait
+                                change.
                               */}
-                              {kind === 'technical' && applicable ? (
+                              {applicable ? (
                                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                                  {carriers.length ? null : (
+                                  {kind !== 'organizational' && !carriers.length ? (
                                     <span className="text-[11px] text-warn-600">
-                                      Aucun actif ne la porte — au crayon, « Actifs d’IA qui la portent ».
+                                      {kind === 'contractual'
+                                        ? 'La clause n’est établie pour aucun actif.'
+                                        : 'Aucun actif ne la porte.'}
                                     </span>
-                                  )}
+                                  ) : null}
+                                  {outilsParControle.get(control.id)?.length ? (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-brand-500/10 px-2 py-0.5 text-[11px] text-brand-700">
+                                      Servi par : {outilsParControle.get(control.id)!.join(', ')}
+                                    </span>
+                                  ) : null}
                                   {carriers.map((a) => {
                                     const m = a.measures.find((x) => x.control_id === control.id)!
                                     return (

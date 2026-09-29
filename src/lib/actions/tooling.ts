@@ -14,7 +14,7 @@ import { resolveVendor } from '@/lib/actions/registry'
  * controle, et le controle-type n'est jamais modifie.
  */
 export type FormState =
-  | { ok: true; message: string }
+  | { ok: true; message: string; toolingId?: string }
   | { ok: false; message: string; fieldErrors?: Record<string, string> }
 
 function firstIssues(error: z.ZodError): FormState {
@@ -102,9 +102,16 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     note: d.note || null,
   }
 
-  const { error } = d.toolingId
-    ? await supabase.from('organization_tooling').update(row).eq('id', d.toolingId)
-    : await supabase.from('organization_tooling').insert(row)
+  /*
+    L'identifiant revient a l'ecran. Le produit qu'on vient de nommer
+    apparaissait dans la liste a cocher — mais decoche, au milieu des autres,
+    au-dessus du volet ou l'on venait d'ecrire : on ne le voyait pas, et l'on
+    concluait qu'il fallait rafraichir. Le rendre permet de le cocher
+    d'office : le geste se termine la ou il a commence.
+  */
+  const { data: outil, error } = d.toolingId
+    ? await supabase.from('organization_tooling').update(row).eq('id', d.toolingId).select('id').single()
+    : await supabase.from('organization_tooling').insert(row).select('id').single()
   if (error) return { ok: false, message: explain(error) }
 
   paths(d.organizationId)
@@ -113,9 +120,10 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
   // propose pas.
   return {
     ok: true,
+    toolingId: outil.id,
     message: fournisseur.cree
-      ? `${d.product} enregistré, et le tiers ${fournisseur.cree} créé — sa revue reste à ouvrir.`
-      : `${d.product} enregistré. Les contrôles peuvent le retenir.`,
+      ? `${d.product} enregistré, et le tiers ${fournisseur.cree} créé — sa revue reste à ouvrir. Il est coché ci-dessus : « Retenir » l'attache à ce contrôle.`
+      : `${d.product} enregistré et coché ci-dessus : « Retenir » l’attache à ce contrôle.`,
   }
 }
 

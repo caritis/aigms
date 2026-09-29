@@ -7,7 +7,7 @@ import {
   setControlApplicability,
   type FormState,
 } from '@/lib/actions/controls'
-import { retainTooling, saveTooling } from '@/lib/actions/tooling'
+import { retainTooling, saveTooling, type FormState as ToolingState } from '@/lib/actions/tooling'
 import { declareAssetForUseCase, linkAssetToUseCase } from '@/lib/actions/registry'
 import { AssetFields } from '@/components/governance/registry-forms'
 import { TOOLING_ROLES, ToolingFields } from '@/components/governance/tooling-forms'
@@ -196,7 +196,7 @@ export function ControlApplicabilityModal({
         </InfoTip>
       }
     >
-      {() => (
+      {(close) => (
         <div className="flex min-h-0 flex-col">
           <nav
             aria-label="Rubriques du contrôle"
@@ -263,6 +263,7 @@ export function ControlApplicabilityModal({
                 control={control}
                 vendors={vendors}
                 orgAssets={orgAssets}
+                close={close}
               />
             )}
           </div>
@@ -682,11 +683,14 @@ function ToolingPanel({
   control,
   vendors,
   orgAssets,
+  close,
 }: {
   organizationId: string
   control: { id: string; code: string }
   vendors: { id: string; name: string }[]
   orgAssets: { id: string; name: string; business_ref: string }[]
+  /** Retenir clot le geste : la suite se lit sur la fiche, pas ici. */
+  close: () => void
 }) {
   const [view, setView] = useState<ControlToolingView | null>(null)
   const [familles, setFamilles] = useState<
@@ -697,12 +701,25 @@ function ToolingPanel({
   const [failed, setFailed] = useState(false)
   const [loaded, setLoaded] = useState(false)
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(retainTooling, null)
-  const [declareState, declareAction, declaring] = useActionState<FormState | null, FormData>(
+  // L'etat de la declaration vient du module outillage : il porte l'identifiant
+  // du produit cree, que celui des controles ne connait pas.
+  const [declareState, declareAction, declaring] = useActionState<ToolingState | null, FormData>(
     saveTooling,
     null,
   )
   const [checked, setChecked] = useState<Set<string>>(new Set())
   const [famille, setFamille] = useState('')
+
+  /*
+    « Retenir » est un acte qui se termine : ce qu'on vient de rattacher se lit
+    ensuite sur la ligne du controle, pas dans cette fenetre. La laisser
+    ouverte donnait a croire qu'il restait quelque chose a y faire.
+  */
+  useEffect(() => {
+    if (!state?.ok) return
+    const t = setTimeout(close, 900)
+    return () => clearTimeout(t)
+  }, [state, close])
 
   /*
     La vue se relit a chaque declaration : le produit qu'on vient de nommer
@@ -720,7 +737,13 @@ function ToolingPanel({
         }
         const v = data as unknown as ControlToolingView
         setView(v)
-        setChecked((prev) => (prev.size ? prev : new Set(v.retained.map((r) => r.tooling_id))))
+        setChecked((prev) => {
+          const base = prev.size ? prev : new Set(v.retained.map((r) => r.tooling_id))
+          // Le produit qu'on vient de nommer arrive coché : on le voit, et
+          // « Retenir » n'a plus qu'à confirmer.
+          const neuf = declareState?.ok ? declareState.toolingId : undefined
+          return neuf ? new Set([...base, neuf]) : base
+        })
         setFamille((prev) => prev || v.suggested[0]?.code || '')
         setLoaded(true)
       })
