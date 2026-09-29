@@ -260,6 +260,7 @@ export function ControlApplicabilityModal({
             ) : (
               <ToolingPanel
                 organizationId={organizationId}
+                useCaseId={useCaseId}
                 control={control}
                 vendors={vendors}
                 orgAssets={orgAssets}
@@ -680,12 +681,14 @@ function AssetPanel({
  */
 function ToolingPanel({
   organizationId,
+  useCaseId,
   control,
   vendors,
   orgAssets,
   close,
 }: {
   organizationId: string
+  useCaseId: string
   control: { id: string; code: string }
   vendors: { id: string; name: string }[]
   orgAssets: { id: string; name: string; business_ref: string }[]
@@ -938,6 +941,8 @@ function ToolingPanel({
         >
         <form action={declareAction} className="flex flex-col gap-4">
           <input type="hidden" name="organizationId" value={organizationId} />
+          {/* La fiche se revalide : un tiers créé à l'instant doit y figurer. */}
+          <input type="hidden" name="useCaseId" value={useCaseId} />
           <Field
             label="Famille du référentiel"
             htmlFor={`fam-${control.id}`}

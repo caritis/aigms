@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react'
 import {
   createAsset,
   createVendor,
+  NOUVEAU_FOURNISSEUR,
   linkAssetToUseCase,
   linkVendorToUseCase,
   reviewVendor,
@@ -244,7 +245,7 @@ export function VendorPicker({
           id={`${idPrefix}-vendor`}
           name="vendorId"
           defaultValue={defaultValue}
-          onChange={(event) => setNouveau(event.target.value === '__nouveau__')}
+          onChange={(event) => setNouveau(event.target.value === NOUVEAU_FOURNISSEUR)}
           className={FIELD}
         >
           <option value="">— Interne ou sans fournisseur</option>
@@ -253,7 +254,7 @@ export function VendorPicker({
               {vendor.name}
             </option>
           ))}
-          <option value="__nouveau__">+ Nouveau fournisseur…</option>
+          <option value={NOUVEAU_FOURNISSEUR}>+ Nouveau fournisseur…</option>
         </select>
       </Field>
 

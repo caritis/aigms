@@ -92,6 +92,23 @@ const vendorSchema = z.object({
  * le DPA, la revue de securite et la reversibilite se renseignent sur la fiche
  * du tiers — et le tiers nait « revue non commencee », ce que l'ecran dit.
  */
+/**
+ * La valeur que porte « + Nouveau fournisseur… ».
+ *
+ * Ce n'est pas un identifiant, et les schemas de validation attendaient un
+ * UUID : ils refusaient la saisie AVANT que la resolution n'ait lieu, sur un
+ * « Invalid UUID » que rien ne rattachait au champ. Le tri se fait donc a
+ * l'entree, une fois, au meme endroit que la resolution.
+ */
+export const NOUVEAU_FOURNISSEUR = '__nouveau__'
+
+/** Ce que le schema doit voir : un UUID, ou rien. Jamais le mot-cle. */
+export function vendorIdSaisi(formData: FormData): string {
+  const brut = formData.get('vendorId')
+  if (typeof brut !== 'string' || brut === NOUVEAU_FOURNISSEUR) return ''
+  return brut
+}
+
 export type ResolutionFournisseur =
   | { ok: true; vendorId: string | null; cree: string | null }
   | { ok: false; message: string }
@@ -102,10 +119,10 @@ export async function resolveVendor(
   tenantId: string,
 ): Promise<ResolutionFournisseur> {
   const choisi = formData.get('vendorId')
-  if (typeof choisi === 'string' && choisi && choisi !== '__nouveau__') {
+  if (typeof choisi === 'string' && choisi && choisi !== NOUVEAU_FOURNISSEUR) {
     return { ok: true, vendorId: choisi, cree: null }
   }
-  if (choisi !== '__nouveau__') return { ok: true, vendorId: null, cree: null }
+  if (choisi !== NOUVEAU_FOURNISSEUR) return { ok: true, vendorId: null, cree: null }
 
   const parsed = z
     .object({
@@ -282,7 +299,7 @@ export async function createAsset(
     kind: formData.get('kind') ?? 'ai_system',
     name: formData.get('name'),
     description: formData.get('description') ?? '',
-    vendorId: formData.get('vendorId') ?? '',
+    vendorId: vendorIdSaisi(formData),
     version: formData.get('version') ?? '',
     ownerUserId: formData.get('ownerUserId') ?? '',
     containsPersonalData: formData.get('containsPersonalData') === 'on',
@@ -421,7 +438,7 @@ export async function declareAssetForUseCase(
     kind: formData.get('kind') ?? 'ai_system',
     name: formData.get('name'),
     description: formData.get('description') ?? '',
-    vendorId: formData.get('vendorId') ?? '',
+    vendorId: vendorIdSaisi(formData),
     version: formData.get('version') ?? '',
     ownerUserId: formData.get('ownerUserId') ?? '',
     containsPersonalData: formData.get('containsPersonalData') === 'on',
@@ -827,7 +844,7 @@ export async function updateAssetLabels(_previous: FormState | null, formData: F
     hostingLocation: formData.get('hostingLocation') ?? '',
     containsPersonalData: formData.get('containsPersonalData') === 'on',
     ownerUserId: formData.get('ownerUserId') ?? '',
-    vendorId: formData.get('vendorId') ?? '',
+    vendorId: vendorIdSaisi(formData),
   })
   if (!parsed.success) return firstIssues(parsed.error)
   const input = parsed.data

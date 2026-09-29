@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { resolveVendor } from '@/lib/actions/registry'
+import { resolveVendor, vendorIdSaisi } from '@/lib/actions/registry'
 
 /**
  * Avec quoi l'organisation tient ses controles.
@@ -55,18 +55,25 @@ const toolingSchema = z.object({
   note: z.string().trim().max(1000).optional().or(z.literal('')),
 })
 
-function paths(organizationId: string) {
+function paths(organizationId: string, useCaseId?: string) {
   revalidatePath(`/admin/organizations/${organizationId}/outillage`)
   revalidatePath(`/admin/organizations/${organizationId}/controles`)
+  /*
+    La fiche du cas d'usage aussi, quand la declaration en vient : le registre
+    des tiers qu'elle a passe a la fenetre est alors perime, et un fournisseur
+    cree a l'instant n'apparaitrait pas dans la liste.
+  */
+  if (useCaseId) revalidatePath(`/admin/use-cases/${useCaseId}`)
 }
 
 export async function saveTooling(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const useCaseId = formData.get('useCaseId')
   const parsed = toolingSchema.safeParse({
     organizationId: formData.get('organizationId'),
     toolingId: formData.get('toolingId') ?? '',
     toolCode: formData.get('toolCode'),
     product: formData.get('product'),
-    vendorId: formData.get('vendorId') ?? '',
+    vendorId: vendorIdSaisi(formData),
     role: formData.get('role') || 'control_instrument',
     assetId: formData.get('assetId') ?? '',
     note: formData.get('note') ?? '',
@@ -112,9 +119,18 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
   const { data: outil, error } = d.toolingId
     ? await supabase.from('organization_tooling').update(row).eq('id', d.toolingId).select('id').single()
     : await supabase.from('organization_tooling').insert(row).select('id').single()
-  if (error) return { ok: false, message: explain(error) }
+  if (error) {
+    // Le tiers a pu naitre avant l'echec : le taire ferait chercher un
+    // fournisseur qu'on croirait perdu, et le recreer en double.
+    return {
+      ok: false,
+      message: fournisseur.cree
+        ? `${explain(error)} Le tiers ${fournisseur.cree} a bien été créé : reprenez en le choisissant dans la liste.`
+        : explain(error),
+    }
+  }
 
-  paths(d.organizationId)
+  paths(d.organizationId, typeof useCaseId === 'string' ? useCaseId : undefined)
   // Brancher une source pour en tirer les preuves reste a venir, et relevera
   // de l'administration de la plateforme : la colonne existe, l'ecran ne la
   // propose pas.
