@@ -39,8 +39,16 @@ const toolingSchema = z.object({
   toolCode: z.string().trim().min(2).max(64),
   product: z.string().trim().min(2, 'Nommer le produit employé.').max(160),
   vendorId: z.string().uuid().optional().or(z.literal('')),
-  // À quel titre l'outil est déclaré : instrument d'un contrôle (ISO 27002,
-  // RGPD art. 32), ressource d'un système d'IA (ISO 42001 A.4.4), ou les deux.
+  /*
+    À quel titre l'outil est déclaré : instrument d'un contrôle (ISO 27002,
+    RGPD art. 32), ressource d'un système d'IA (ISO 42001 A.4.4), ou les deux.
+
+    Ce n'est plus une question posée. Un produit n'est ni l'un ni l'autre EN
+    SOI : il l'est par le rôle qu'il joue. Un outil déclaré depuis un contrôle
+    en est l'instrument ; rattaché à un actif d'IA employé, il est les deux.
+    Le champ reste accepté pour qui l'enverrait, mais l'écran ne le demande
+    plus — et le rattachement le tranche.
+  */
   role: z.enum(['control_instrument', 'system_resource', 'both']).default('control_instrument'),
   // Renseigné quand l'outil est lui-même un actif d'IA déclaré.
   assetId: z.string().uuid().optional().or(z.literal('')),
@@ -88,7 +96,8 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     tool_code: d.toolCode,
     product: d.product,
     vendor_id: fournisseur.vendorId,
-    role: d.role,
+    // Déduit, jamais deviné : rattaché à un actif, l'outil est les deux.
+    role: d.assetId ? 'both' : d.role,
     asset_id: d.assetId || null,
     note: d.note || null,
   }

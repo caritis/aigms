@@ -225,7 +225,21 @@ export function VendorPicker({
 
   return (
     <div className="flex flex-col gap-3">
-      <Field label="Fournisseur" htmlFor={`${idPrefix}-vendor`} optional={optional} error={error}>
+      {/*
+        Une seule phrase, au meme endroit, partout.
+        Le fournisseur apparaissait dans les deux formulaires avec deux
+        libelles : on croyait a deux sortes de tiers, un pour les actifs et un
+        pour les outils. Il n'y a qu'un registre — le fournisseur ne dit pas CE
+        QU'EST la chose, il dit QUI VOUS LA FOURNIT. Il est orthogonal au
+        reste, et c'est ce que le libelle doit faire entendre.
+      */}
+      <Field
+        label="Qui vous le fournit ?"
+        htmlFor={`${idPrefix}-vendor`}
+        optional={optional}
+        error={error}
+        hint="Le registre des tiers est le même pour tout ce que vous employez. Sa revue conditionne la mise en production."
+      >
         <select
           id={`${idPrefix}-vendor`}
           name="vendorId"

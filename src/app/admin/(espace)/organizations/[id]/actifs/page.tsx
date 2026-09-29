@@ -40,6 +40,20 @@ export default async function AssetRegisterPage({
       .order('name'),
     organizationPeople(id),
   ])
+
+  /*
+    Ce que l'organisation emploie, en UNE liste.
+
+    Deux registres pour ecrire — ils n'ont ni les memes champs ni la meme
+    origine reglementaire — mais une seule lecture. C'est la que la distinction
+    cesse d'etre abstraite : on voit des produits reels, chacun une fois, avec
+    ce qu'il est ici. Un produit peut etre gouverne, instrument, ou les deux.
+  */
+  const { data: outils } = await supabase
+    .from('organization_tooling')
+    .select('id, product, tool_code, role, asset_id, vendor_id')
+    .eq('organization_id', id)
+    .order('product')
   if (!organization) notFound()
   const vendorChoices = (vendors ?? []).map((v) => ({ id: v.id, name: v.name }))
   const peopleChoices = people.map((p) => ({ id: p.userId, label: p.jobTitle ? `${p.name} — ${p.jobTitle}` : p.name }))
@@ -56,6 +70,46 @@ export default async function AssetRegisterPage({
     fournisseurs », il doit savoir montrer les deux.
   */
   const vueFournisseurs = nature === 'fournisseurs'
+  const vueTout = nature === 'tout'
+
+  /*
+    Un produit, une ligne. L'outil rattache a un actif ne parait pas deux
+    fois : il porte les deux roles sur la meme ligne — c'est precisement le cas
+    qui faisait douter de la distinction.
+  */
+  const nomDuTiers = new Map((vendors ?? []).map((v) => [v.id, v.name]))
+  const outilsParActif = new Map(
+    (outils ?? []).filter((o) => o.asset_id).map((o) => [o.asset_id as string, o]),
+  )
+  const employes = [
+    ...assets.map((a) => {
+      const outil = outilsParActif.get(a.id)
+      return {
+        cle: `asset-${a.id}`,
+        nom: a.name,
+        ref: a.business_ref,
+        quoi: ASSET_KIND_LABELS[a.kind] ?? a.kind,
+        gouverne: true,
+        instrument: Boolean(outil),
+        famille: outil?.tool_code ?? null,
+        tiers: a.vendor ?? null,
+        href: `/admin/organizations/${id}/actifs/${a.id}`,
+      }
+    }),
+    ...(outils ?? [])
+      .filter((o) => !o.asset_id)
+      .map((o) => ({
+        cle: `tool-${o.id}`,
+        nom: o.product,
+        ref: null,
+        quoi: 'Outil',
+        gouverne: false,
+        instrument: true,
+        famille: o.tool_code,
+        tiers: o.vendor_id ? (nomDuTiers.get(o.vendor_id) ?? null) : null,
+        href: null,
+      })),
+  ].sort((a, b) => a.nom.localeCompare(b.nom))
   const shown = nature && !vueFournisseurs ? assets.filter((a) => a.kind === nature) : assets
   const counts = KIND_ORDER.map((k) => ({ kind: k, n: assets.filter((a) => a.kind === k).length }))
   const unused = assets.filter((a) => !a.use_cases.length).length
@@ -98,6 +152,7 @@ export default async function AssetRegisterPage({
             { kind: '', label: 'Tous les actifs', n: assets.length },
             ...counts.map((c) => ({ ...c, label: ASSET_KIND_LABELS[c.kind] ?? c.kind })),
             { kind: 'fournisseurs', label: 'Fournisseurs', n: vendors?.length ?? 0 },
+            { kind: 'tout', label: 'Tout ce que vous employez', n: employes.length },
           ].map((c) => (
             <Link
               key={c.kind || 'tous'}
@@ -122,7 +177,55 @@ export default async function AssetRegisterPage({
         </p>
       </div>
 
-      {vueFournisseurs ? (
+      {vueTout ? (
+        <div className="max-w-5xl">
+          <Card
+            title="Tout ce que vous employez"
+            subtitle={`${employes.length} produit(s) — chacun une fois, avec le rôle qu’il joue ici`}
+          >
+            <p className="mb-4 rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+              <strong className="font-medium text-ink-800">Gouverné</strong> : le produit est un
+              actif d’IA — ce que vos cas d’usage emploient, et ce dont vous répondez.{' '}
+              <strong className="font-medium text-ink-800">Instrument</strong> : il sert à tenir ou
+              à prouver un contrôle. Un même produit peut être les deux — une passerelle d’appels
+              IA applique vos règles <em>et</em> traite vos données. Le fournisseur, lui, ne dit
+              pas ce qu’est la chose : il dit qui vous la fournit.
+            </p>
+            {employes.length ? (
+              <ul className="divide-y divide-ink-100">
+                {employes.map((e) => (
+                  <li key={e.cle} className="flex flex-wrap items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                    <div className="min-w-0">
+                      <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-ink-900">
+                        {e.href ? (
+                          <Link href={e.href} className="hover:underline">
+                            {e.nom}
+                          </Link>
+                        ) : (
+                          e.nom
+                        )}
+                        {e.gouverne ? <Badge tone="info">Gouverné</Badge> : null}
+                        {e.instrument ? <Badge tone="neutral">Instrument</Badge> : null}
+                      </p>
+                      <p className="mt-0.5 text-xs text-ink-500">
+                        {e.ref ? `${e.ref} · ` : ''}
+                        {e.quoi}
+                        {e.famille ? ` · famille ${e.famille}` : ''}
+                        {e.tiers ? ` · fourni par ${e.tiers}` : ' · sans fournisseur déclaré'}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Empty>
+                Rien de déclaré. Un actif d’IA se déclare ici ; un outil, depuis un contrôle ou la
+                carte d’outillage.
+              </Empty>
+            )}
+          </Card>
+        </div>
+      ) : vueFournisseurs ? (
         <div className="max-w-5xl">
           <Card
             title="Fournisseurs"

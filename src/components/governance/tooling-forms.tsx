@@ -160,6 +160,27 @@ export function ToolingFields({
   declared?: DeclaredTool | null
   placeholder?: string
 }) {
+  const [produit, setProduit] = useState(declared?.product ?? '')
+  const [actif, setActif] = useState(declared?.asset?.id ?? '')
+
+  /*
+    Le meme produit, des deux cotes. « Netskope » declare comme outil alors
+    qu'il figure deja au registre des actifs : c'est le cas qui fait douter de
+    la distinction. L'ecran le reconnait au nom et propose le lien, au lieu de
+    laisser saisir deux fois la meme chose sans le dire.
+
+    La comparaison est volontairement lache — sans accents, sans casse, par
+    inclusion : « Netskope » doit reconnaitre « Netskope DLP ».
+  */
+  const nu = (v: string) => v.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const homonyme =
+    !actif && produit.trim().length > 2
+      ? assets.find((a) => {
+          const [x, y] = [nu(a.name), nu(produit)]
+          return x === y || x.includes(y) || y.includes(x)
+        })
+      : undefined
+
   return (
     <>
       <Field label="Produit employé" htmlFor={`product-${idSuffix}`} error={errors.product}>
@@ -168,11 +189,30 @@ export function ToolingFields({
               name="product"
               type="text"
               required
-              defaultValue={declared?.product ?? ''}
+              value={produit}
+              onChange={(event) => setProduit(event.target.value)}
               className={FIELD}
               placeholder={placeholder ?? 'Nom du produit'}
             />
           </Field>
+
+          {homonyme ? (
+            <div className="-mt-1 rounded-md border border-brand-600/25 bg-brand-600/5 px-3.5 py-2.5 text-xs leading-relaxed text-ink-700">
+              <p>
+                <strong className="font-medium text-ink-900">{homonyme.name}</strong> figure déjà au
+                registre des actifs d’IA ({homonyme.business_ref}). Si c’est le même produit,
+                rattachez-le : il ne sera pas saisi deux fois, et il sera à la fois gouverné et
+                instrument.
+              </p>
+              <button
+                type="button"
+                onClick={() => setActif(homonyme.id)}
+                className="mt-1.5 rounded-md border border-brand-600/40 bg-white px-2.5 py-1 text-xs font-medium text-brand-700 hover:bg-brand-500/10"
+              >
+                C’est le même — les rattacher
+              </button>
+            </div>
+          ) : null}
 
           {/*
             Le connecteur ne se choisit pas ici : brancher une source releve
@@ -188,48 +228,43 @@ export function ToolingFields({
           />
 
           {/*
-            Deux natures, deux textes. Un outil qui ne sert qu'a tenir un
-            controle reste hors du registre des actifs ; un outil qui traite
-            lui-meme de l'IA y entre, et le lien ci-dessous evite de le saisir
-            deux fois sans le dire.
+            « Déclaré à quel titre » ne se demande plus.
+
+            Le champ posait, en abstrait, la question que l'ecran doit resoudre
+            a la place de l'utilisateur : instrument d'un controle, ressource
+            d'un systeme d'IA, ou les deux. C'etait exact, source, et c'est le
+            moment precis ou l'on decrochait — parce qu'un produit n'est ni
+            l'un ni l'autre EN SOI : il l'est par le role qu'il joue ici.
+
+            Le role se DEDUIT donc : un outil declare depuis un controle en est
+            l'instrument ; s'il est aussi un actif d'IA employe, il est les
+            deux. La seule question posee est concrete, et repond a un fait que
+            l'utilisateur connait.
           */}
           <Field
-            label="Déclaré à quel titre"
-            htmlFor={`role-${idSuffix}`}
-            hint="Instrument du contrôle, ressource du système d’IA, ou les deux."
-          >
-            <select
-              id={`role-${idSuffix}`}
-              name="role"
-              defaultValue={declared?.role ?? 'control_instrument'}
-              className={FIELD}
-            >
-              {TOOLING_ROLES.map((r) => (
-                <option key={r.value} value={r.value}>{r.label}</option>
-              ))}
-            </select>
-          </Field>
-          <ul className="-mt-2 flex flex-col gap-1 text-xs leading-relaxed text-ink-500">
-            {TOOLING_ROLES.map((r) => (
-              <li key={r.value}>
-                <span className="font-medium text-ink-700">{r.label}</span> — {r.hint}
-              </li>
-            ))}
-          </ul>
-
-          <Field
-            label="Cet outil est lui-même un actif d’IA"
+            label="Est-ce aussi un actif d’IA que vous employez ?"
             htmlFor={`asset-${idSuffix}`}
             optional
-            hint="Le registre et la carte d’outillage cessent alors de s’ignorer."
+            hint="Une passerelle d’appels IA, un juge LLM, un assistant de code : ils appliquent vos règles ET traitent vos données."
           >
-            <select id={`asset-${idSuffix}`} name="assetId" defaultValue={declared?.asset?.id ?? ''} className={FIELD}>
-              <option value="">—</option>
+            <select
+              id={`asset-${idSuffix}`}
+              name="assetId"
+              value={actif}
+              onChange={(event) => setActif(event.target.value)}
+              className={FIELD}
+            >
+              <option value="">Non — il sert seulement à tenir des contrôles</option>
               {assets.map((a) => (
                 <option key={a.id} value={a.id}>{a.business_ref} — {a.name}</option>
               ))}
             </select>
           </Field>
+          <p className="-mt-2 text-xs leading-relaxed text-ink-500">
+            {actif
+              ? 'Il sera déclaré « instrument et ressource » : vous le gouvernez, et vous gouvernez avec.'
+              : 'Il sera déclaré « instrument d’un contrôle » : vous gouvernez avec, sans le gouverner lui-même.'}
+          </p>
 
           <Field label="Note" htmlFor={`note-${idSuffix}`} optional hint="Version, périmètre, ce qu’il couvre et ce qu’il ne couvre pas.">
             <textarea id={`note-${idSuffix}`} name="note" rows={2} defaultValue={declared?.note ?? ''} className={FIELD} />

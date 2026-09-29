@@ -137,10 +137,19 @@ export function ControlApplicabilityModal({
               passerelle, DLP, journalisation, supervision humaine. Ce n’est pas l’objet gouverné :
               c’est l’instrument, et c’est de lui que la preuve se prend.
             </p>
+            <p className="rounded-md bg-ink-100 px-3.5 py-2.5">
+              <strong className="font-medium text-ink-800">Le test, quand le doute revient.</strong>{' '}
+              Si l’auditeur dit <em>« montrez-moi ce que fait votre IA »</em>, il parle des
+              <strong className="font-medium text-ink-800"> actifs</strong>. S’il dit{' '}
+              <em>« prouvez-moi que vous la maîtrisez »</em>, il parle de l’
+              <strong className="font-medium text-ink-800">outillage</strong>.
+            </p>
             <p>
-              C’est pourquoi l’onglet Outillage demande <strong className="font-medium text-ink-800">à
-              quel titre</strong> un produit est déclaré. Trois réponses, et chacune s’adosse à un
-              texte :
+              L’onglet Outillage ne vous demande donc <strong className="font-medium text-ink-800">pas</strong>{' '}
+              de classer le produit : un produit n’est ni l’un ni l’autre en soi, il l’est par le
+              rôle qu’il joue ici. Le rôle se déduit — déclaré depuis un contrôle, l’outil en est
+              l’instrument ; rattaché à un actif que vous employez, il est les deux. Les trois
+              titres, et le texte qui les fonde :
             </p>
             <dl className="flex flex-col gap-2 rounded-md bg-ink-100 px-3.5 py-3">
               {TOOLING_ROLES.map((r) => (
@@ -151,8 +160,13 @@ export function ControlApplicabilityModal({
               ))}
             </dl>
             <p>
-              Le choix n’est pas cosmétique : un outil déclaré « ressource d’un système d’IA »
-              entre dans le périmètre gouverné, et cesse d’être un simple instrument de contrôle.
+              Ce n’est pas cosmétique : un outil qui est aussi une ressource entre dans le
+              périmètre gouverné, et cesse d’être un simple instrument.
+            </p>
+            <p className="text-ink-500">
+              Le <strong className="font-medium text-ink-700">fournisseur</strong>, lui, ne dit pas
+              ce qu’est la chose : il dit qui vous la fournit. Un seul registre de tiers, pour tout
+              ce que vous employez.
             </p>
             <p className="text-ink-500">
               Les deux derniers onglets savent aussi <em>créer</em> : rien ne se rattache quand le
