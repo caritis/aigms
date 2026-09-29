@@ -398,6 +398,47 @@ export function ClassificationPanel({
  * en direct — la definition de la categorie, le niveau calcule — et le rend a
  * son parent quand celui-ci en a besoin.
  */
+/**
+ * Ce qu'on attend de chaque champ, dans l'en-tete de la fenetre.
+ *
+ * Elle occupait la premiere ligne du corps, seule sur sa rangee : un rond
+ * flottant au-dessus du formulaire, et un vide sous l'en-tete. Elle se pose
+ * la ou l'on regarde avant de saisir — a cote du titre.
+ */
+export function RiskFieldsNote() {
+  return (
+    <InfoTip label="Ce qu’on attend de chaque champ" title="Coter un risque">
+        <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+          <p>
+            <strong className="font-medium text-ink-800">Intitulé.</strong> Ce qui peut mal
+            tourner, en une ligne. Pas la cause, pas la parade : l’événement redouté.
+          </p>
+          <p>
+            <strong className="font-medium text-ink-800">Scénario.</strong> Ce qui arrive, à qui,
+            par quel enchaînement. C’est le seul champ qu’un auditeur relit : un risque sans
+            scénario ne se traite pas, et l’assistant s’en sert pour chercher le contrôle.
+          </p>
+          <p>
+            <strong className="font-medium text-ink-800">Catégorie.</strong> La nature de
+            l’atteinte. Elle sert au rapprochement avec les contrôles et aux tableaux de bord :
+            une catégorie posée au hasard fausse les deux.
+          </p>
+          <p>
+            <strong className="font-medium text-ink-800">Qui répond du risque.</strong> Pas qui
+            exécute la mesure — celui-là se désigne au traitement. Cette personne seule pourra
+            accepter le risque, et la base le lui réserve.
+          </p>
+          <p>
+            <strong className="font-medium text-ink-800">Vraisemblance × gravité.</strong> Deux
+            crans de 1 à 5, cotés <em>avant</em> tout traitement : c’est le risque inhérent. Le
+            niveau en découle et ne se saisit pas, pour qu’il ne puisse pas diverger de sa
+            cotation.
+          </p>
+        </div>
+      </InfoTip>
+  )
+}
+
 function RiskFields({
   idPrefix,
   people,
@@ -445,43 +486,6 @@ function RiskFields({
 
   return (
     <>
-      {/*
-        Une seule infobulle pour toute la fenetre, plutot qu'une par champ :
-        huit ronds « i » cote a cote ne se distinguent plus, et ce qu'on
-        cherche a savoir en cotant un risque se lit d'un trait.
-      */}
-      <div className="flex justify-end">
-        <InfoTip label="Ce qu’on attend de chaque champ" title="Coter un risque">
-          <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
-            <p>
-              <strong className="font-medium text-ink-800">Intitulé.</strong> Ce qui peut mal
-              tourner, en une ligne. Pas la cause, pas la parade : l’événement redouté.
-            </p>
-            <p>
-              <strong className="font-medium text-ink-800">Scénario.</strong> Ce qui arrive, à qui,
-              par quel enchaînement. C’est le seul champ qu’un auditeur relit : un risque sans
-              scénario ne se traite pas, et l’assistant s’en sert pour chercher le contrôle.
-            </p>
-            <p>
-              <strong className="font-medium text-ink-800">Catégorie.</strong> La nature de
-              l’atteinte. Elle sert au rapprochement avec les contrôles et aux tableaux de bord :
-              une catégorie posée au hasard fausse les deux.
-            </p>
-            <p>
-              <strong className="font-medium text-ink-800">Qui répond du risque.</strong> Pas qui
-              exécute la mesure — celui-là se désigne au traitement. Cette personne seule pourra
-              accepter le risque, et la base le lui réserve.
-            </p>
-            <p>
-              <strong className="font-medium text-ink-800">Vraisemblance × gravité.</strong> Deux
-              crans de 1 à 5, cotés <em>avant</em> tout traitement : c’est le risque inhérent. Le
-              niveau en découle et ne se saisit pas, pour qu’il ne puisse pas diverger de sa
-              cotation.
-            </p>
-          </div>
-        </InfoTip>
-      </div>
-
       <Field label="Intitulé" htmlFor={`${idPrefix}-title`} error={errors.title}>
         <input
           id={`${idPrefix}-title`}
@@ -717,9 +721,17 @@ export function RiskPanel({
       trigger={riskCount ? 'Identifier un risque' : 'Identifier le premier risque'}
       title="Identifier un risque"
       description="Le niveau se calcule ; il ne se saisit pas."
+      headerAside={<RiskFieldsNote />}
     >
       {() => (
-      <form action={formAction} className="flex flex-col gap-4">
+      /*
+        Le corps defile, le bouton reste. On saisissait la cotation en haut et
+        l'on cherchait « Enregistrer » tout en bas, apres la liste des
+        controles que l'assistant venait de proposer — la fenetre s'allongeait
+        a mesure qu'elle devenait utile.
+      */
+      <form action={formAction} className="flex max-h-[68vh] min-h-0 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
         <input type="hidden" name="useCaseId" value={useCaseId} />
 
         <RiskFields
@@ -780,8 +792,12 @@ export function RiskPanel({
           }}
         />
 
-        <FormFeedback state={state} />
-        <Submit pending={pending} idle="Enregistrer le risque" />
+        </div>
+
+        <div className="-mx-5 -mb-5 mt-4 flex flex-col gap-3 border-t border-ink-100 bg-white px-5 py-3.5">
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Enregistrer le risque" />
+        </div>
       </form>
       )}
     </Modal>
@@ -839,9 +855,11 @@ export function RiskEditForm({
       triggerClassName="inline-flex size-6 items-center justify-center rounded-md border border-ink-200 text-ink-500 hover:border-ink-400 hover:text-ink-800"
       title={`${risk.business_ref} — corriger`}
       description="Le niveau se recalcule. Ce qui change est enregistré au journal."
+      headerAside={<RiskFieldsNote />}
     >
       {() => (
-        <form action={formAction} className="flex flex-col gap-4">
+        <form action={formAction} className="flex max-h-[68vh] min-h-0 flex-col">
+          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1">
           <input type="hidden" name="useCaseId" value={useCaseId} />
           <input type="hidden" name="riskId" value={risk.id} />
 
@@ -877,8 +895,12 @@ export function RiskEditForm({
             }}
           />
 
-          <FormFeedback state={state} />
-          <Submit pending={pending} idle="Enregistrer la correction" />
+          </div>
+
+          <div className="-mx-5 -mb-5 mt-4 flex flex-col gap-3 border-t border-ink-100 bg-white px-5 py-3.5">
+            <FormFeedback state={state} />
+            <Submit pending={pending} idle="Enregistrer la correction" />
+          </div>
         </form>
       )}
     </Modal>
