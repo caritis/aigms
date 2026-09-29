@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getViewerContext } from '@/lib/auth/context'
 import { InfoTip } from '@/components/info-tip'
 import { EvidenceGapNotice } from '@/components/governance/evidence-gap-notice'
+import { DecisionRulingForm } from '@/components/governance/decision-forms'
 import { CheckboxFilter } from '@/components/governance/checkbox-filter'
 import { ControlEvidenceModal } from '@/components/governance/control-evidence-modal'
 import { proofState, type ControlProof } from '@/lib/domain/proof'
@@ -494,6 +495,11 @@ export default async function UseCasePage({
   const gapByDecision = new Map(
     ((decisions ?? []) as unknown as {
       id: string
+      decision_type: string
+      subject: string
+      rationale: string | null
+      conditions: string | null
+      status: string
       evidence_gap: EvidenceGap[] | null
       evidence_gap_statement: string | null
       evidence_gap_acknowledged_at: string | null
@@ -1874,7 +1880,10 @@ export default async function UseCasePage({
               Ce fil se lit ; il ne se saisit pas. Soumettre une décision ou prévoir un changement
               se fait par <strong className="font-medium text-ink-700">Faire évoluer</strong>, en
               tête de fiche — le point d’exclamation y explique ce que chacune des trois évolutions
-              engage.
+              engage. En revanche,{' '}
+              <strong className="font-medium text-ink-700">une décision qui attend un verdict se
+              tranche ici</strong> : se prononcer n’est pas une saisie, c’est un acte, et il se pose
+              devant le dossier qu’il engage.
             </p>
             {timelineEntries.length ? (
               <ul className="divide-y divide-ink-100">
@@ -1940,21 +1949,47 @@ export default async function UseCasePage({
                           </div>
                         )}
                       </div>
-                      <Badge
-                        tone={
-                          ['approved', 'APPROVED', 'IMPLEMENTED', 'VERIFIED'].includes(e.status)
-                            ? 'ok'
-                            : e.status === 'approved_with_conditions'
-                              ? 'warn'
-                              : ['rejected', 'REJECTED', 'CANCELLED'].includes(e.status)
-                                ? 'stop'
-                                : 'neutral'
-                        }
-                      >
-                        {e.kind === 'decision'
-                          ? DECISION_STATUS_LABELS[e.status] ?? e.status
-                          : CHANGE_STATUS_LABELS[e.status] ?? e.status}
-                      </Badge>
+                      {/*
+                        Le verdict se pose ici, devant le dossier.
+
+                        La decision soumise s'affichait sur ce fil sans aucun
+                        moyen de la trancher : il fallait deviner qu'elle
+                        attendait dans le registre des decisions de
+                        l'organisation, au milieu de celles des autres cas
+                        d'usage. Le compteur disait « 1 a instruire » et
+                        n'ouvrait sur rien.
+                      */}
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <Badge
+                          tone={
+                            ['approved', 'APPROVED', 'IMPLEMENTED', 'VERIFIED'].includes(e.status)
+                              ? 'ok'
+                              : e.status === 'approved_with_conditions'
+                                ? 'warn'
+                                : ['rejected', 'REJECTED', 'CANCELLED'].includes(e.status)
+                                  ? 'stop'
+                                  : 'neutral'
+                          }
+                        >
+                          {e.kind === 'decision'
+                            ? DECISION_STATUS_LABELS[e.status] ?? e.status
+                            : CHANGE_STATUS_LABELS[e.status] ?? e.status}
+                        </Badge>
+                        {e.kind === 'decision' && gapByDecision.has(e.id) ? (
+                          <DecisionRulingForm
+                            organizationId={useCase.organization_id}
+                            decisionId={e.id}
+                            useCaseId={id}
+                            subject={gapByDecision.get(e.id)!.subject}
+                            decisionType={gapByDecision.get(e.id)!.decision_type}
+                            rationale={gapByDecision.get(e.id)!.rationale}
+                            conditions={gapByDecision.get(e.id)!.conditions}
+                            awaiting={['draft', 'submitted'].includes(gapByDecision.get(e.id)!.status)}
+                            evidenceGap={(gapByDecision.get(e.id)!.evidence_gap ?? []) as EvidenceGap[]}
+                            evidenceGapStatement={gapByDecision.get(e.id)!.evidence_gap_statement}
+                          />
+                        ) : null}
+                      </div>
                     </div>
                   </li>
                 ))}

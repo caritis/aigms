@@ -925,8 +925,31 @@ connaître.
 L'écran annonce ce que la décision fera : *« Approuvée, elle fait passer le cas
 d'usage “Approuvé” — ou “sous conditions”, ou “Refusé”. »*
 
-**Approuvez-la**, et le statut passe à **Approuvé**. C'est seulement là que
+**Soumettez.** Et arrêtez-vous une seconde sur ce qui vient de se passer — le
+prospect va poser la question.
+
+> **Le statut est resté « Revue ». C'est le point.** « Une décision naît
+> **soumise**, jamais approuvée. Le jalon ne se franchit pas parce que
+> quelqu'un a rempli un formulaire : il se franchit quand **quelqu'un s'est
+> prononcé**, nommément. Regardez en haut : *1 décision à instruire*. Voilà
+> l'état réel de mon dossier. »
+
+**Onglet *Décisions et changements*** : la décision y figure, badge **Soumise**,
+avec *« attend Marc Lecomte »*. Le bouton **« Se prononcer »** est sur sa ligne
+— on tranche **devant le dossier**, pas dans un registre où les décisions de
+tous les cas d'usage se mélangent.
+
+Approuvez. **Le statut passe alors à Approuvé**, et c'est seulement là que
 *Mise en production* apparaît dans la liste des décisions possibles.
+
+> **Si on vous demande pourquoi vous pouvez approuver votre propre
+> autorisation.** « Parce que la séparation des rôles ne s'applique pas à tout,
+> et qu'AIGMS ne fait pas semblant. Elle est **exigée par la base** sur trois
+> types : mise en production, acceptation de risque, exception de politique.
+> Sur ceux-là, l'auteur ne peut pas être l'approbateur — vous le verrez au
+> paragraphe suivant. Une autorisation d'usage, elle, peut se prononcer par
+> l'officer : ce qu'on exige partout, c'est **un approbateur humain identifié**,
+> et la base refuse une décision approuvée sans lui. »
 
 #### 8c — La décision qui emporte tout : la mise en production
 
