@@ -41,3 +41,45 @@ export const DECISION_TYPES_BY_STATUS: Record<UseCaseStatus, string[]> = {
   SUSPENDED: ['go_production', 'significant_change', 'policy_exception', 'retirement'],
   RETIRED: [],
 }
+
+/**
+ * La precondition qu'une decision SATISFAIT elle-meme.
+ *
+ * Le gate d'un jalon engageant exige « une decision approuvee » : c'est vrai
+ * d'une TRANSITION, c'est absurde pour la decision qui l'apportera. Soumettre
+ * une autorisation d'usage depuis Revue etait refuse au motif qu'aucune
+ * autorisation d'usage n'etait approuvee — la porte demandait la clef qu'on
+ * venait la chercher.
+ *
+ * On ecarte donc, a la soumission, la seule verification que cette decision a
+ * precisement pour objet de remplir. Toutes les autres tiennent : une mise en
+ * production reste jugee sur ses huit preconditions, dont aucune ne parle
+ * d'elle-meme.
+ */
+export const GATE_CHECK_SATISFIED_BY: Record<string, string> = {
+  use_case_authorization: 'AUTHORIZATION_DECISION',
+  pilot_approval: 'PILOT_DECISION',
+  retirement: 'RETIREMENT_DECISION',
+}
+
+/** Le jalon qu'une decision fait franchir, une fois approuvee. */
+export const MILESTONE_OF_DECISION: Record<string, string> = {
+  use_case_authorization: 'APPROVED',
+  pilot_approval: 'PILOT',
+  go_production: 'PRODUCTION',
+  suspension: 'SUSPENDED',
+  retirement: 'RETIRED',
+}
+
+/**
+ * Ce qui manque VRAIMENT pour soumettre cette decision : les verifications
+ * bloquantes non satisfaites, moins celle qu'elle apporte.
+ */
+export function blockingGateChecks<T extends { code?: string; satisfied: boolean }>(
+  decisionType: string,
+  checks: T[],
+  isBlocking: (check: T) => boolean,
+): T[] {
+  const apportee = GATE_CHECK_SATISFIED_BY[decisionType]
+  return checks.filter((c) => !c.satisfied && isBlocking(c) && c.code !== apportee)
+}

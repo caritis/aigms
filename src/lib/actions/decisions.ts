@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { isBlocking, type GateCheck } from '@/lib/domain/governance'
+import { blockingGateChecks, MILESTONE_OF_DECISION } from '@/lib/domain/transitions'
 import { publicEnv } from '@/lib/env'
 import { isMailerConfigured, sendSystemEmail } from '@/lib/email/mailer'
 import { immediateEmail } from '@/lib/email/notifications'
@@ -176,25 +177,20 @@ export async function submitDecision(
 
   // Une decision de jalon ne se soumet pas sur un jalon ferme : on ne fait pas
   // voter sur ce qui sera refuse. Le gate dit ce qui manque, precondition par
-  // precondition (0065).
-  const MILESTONES: Record<string, string> = {
-    use_case_authorization: 'APPROVED',
-    pilot_approval: 'PILOT',
-    go_production: 'PRODUCTION',
-    suspension: 'SUSPENDED',
-    retirement: 'RETIRED',
-  }
-  const milestone = MILESTONES[input.decisionType]
+  // precondition (0065) — sauf celle que cette decision apporte elle-meme.
+  const milestone = MILESTONE_OF_DECISION[input.decisionType]
   if (milestone && input.useCaseId) {
     const { data: gate } = await supabase.rpc('evaluate_gate', { p_use_case_id: input.useCaseId, p_target: milestone })
     const g = gate as { satisfied: boolean; checks: GateCheck[] } | null
-    if (g && !g.satisfied) {
+    if (g) {
       // Une vérification d'avertissement ne retient pas la soumission : elle
       // s'assume à l'approbation (0097).
-      const missing = g.checks.filter((c) => !c.satisfied && isBlocking(c)).map((c) => c.label)
-      return {
-        ok: false,
-        message: `Le jalon n’est pas prêt : ${missing.join(' ; ')}. La décision se soumettra quand les préconditions seront réunies.`,
+      const missing = blockingGateChecks(input.decisionType, g.checks, isBlocking).map((c) => c.label)
+      if (missing.length) {
+        return {
+          ok: false,
+          message: `Le jalon n’est pas prêt : ${missing.join(' ; ')}. La décision se soumettra quand les préconditions seront réunies.`,
+        }
       }
     }
   }

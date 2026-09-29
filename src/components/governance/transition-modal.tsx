@@ -37,6 +37,8 @@ export function TransitionModal({
   people,
   evidence,
   evidenceGap = [],
+  useCaseName,
+  defaultApproverUserId,
 }: {
   useCaseId: string
   organizationId: string
@@ -57,6 +59,10 @@ export function TransitionModal({
    * rebrancher ceci aurait fait disparaitre la regle avec lui.
    */
   evidenceGap?: { control_id: string; code: string; name: string; is_mandatory: boolean }[]
+  /** Le nom de la fiche, pour l'objet de la decision. */
+  useCaseName?: string
+  /** Le Responsable redevable : approbateur propose. */
+  defaultApproverUserId?: string
 }) {
   const steps = targets.filter((t) => !ENGAGING.includes(t))
   const engaging = targets.filter((t) => ENGAGING.includes(t))
@@ -193,6 +199,8 @@ export function TransitionModal({
               allowedTypes={decisionTypes}
               evidence={evidence}
               evidenceGap={evidenceGap}
+              useCaseName={useCaseName}
+              defaultApproverUserId={defaultApproverUserId}
               framed
             />
           ) : intent === 'change' ? (

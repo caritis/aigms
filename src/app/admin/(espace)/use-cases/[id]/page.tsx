@@ -730,6 +730,8 @@ export default async function UseCasePage({
             people={reviewers}
             evidence={validatedEvidence ?? []}
             evidenceGap={evidenceGap}
+            useCaseName={useCase.name}
+            defaultApproverUserId={useCase.accountable_user_id ?? undefined}
           />
         </div>
       }

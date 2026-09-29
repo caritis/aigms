@@ -40,6 +40,11 @@ const SEPARATED = ['go_production', 'risk_acceptance', 'policy_exception']
 /** Types qui portent un changement sur le systeme. */
 const CHANGE_DECISIONS = ['significant_change', 'suspension', 'retirement']
 
+/** Le jour, a N jours d'ici, au format que lit un champ `date`. */
+function jour(dans: number): string {
+  return new Date(Date.now() + dans * 86_400_000).toISOString().slice(0, 10)
+}
+
 /** Le jalon que porte chaque type de decision, et ce qu'il signifie. */
 const MILESTONE_HINTS: Record<string, string> = {
   use_case_authorization: 'Approuvée, elle fait passer le cas d’usage « Approuvé » (ou « sous conditions », ou « Refusé »).',
@@ -59,6 +64,8 @@ export function DecisionForm({
   evidence = [],
   evidenceGap = [],
   framed = false,
+  useCaseName,
+  defaultApproverUserId,
 }: {
   organizationId: string
   useCases: { id: string; name: string; business_ref: string }[]
@@ -87,6 +94,15 @@ export function DecisionForm({
    * cadre.
    */
   framed?: boolean
+  /** Le nom du cas d'usage : il fait l'objet, personne ne le retape. */
+  useCaseName?: string
+  /**
+   * Le Responsable redevable de la fiche, propose comme approbateur.
+   *
+   * C'est lui qui repond du cas d'usage : le designer n'est pas une commodite,
+   * c'est la lecture par defaut du dossier. Elle se change d'un clic.
+   */
+  defaultApproverUserId?: string
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
     submitDecision,
@@ -97,6 +113,21 @@ export function DecisionForm({
     : DECISION_TYPES
   const [type, setType] = useState<string>(types[0]?.[0] ?? 'use_case_authorization')
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+
+  /*
+    Ce que le dossier sait deja, on ne le redemande pas.
+
+    L'objet se deduit du type et du nom de la fiche ; la date d'effet est le
+    jour meme ; la revue, un an plus tard quand la base l'exigera. Trois
+    champs de moins a taper, et aucun jugement pris a la place de qui decide :
+    ce qui est decide, la justification et le contexte restent vierges, parce
+    que personne ne peut les ecrire a sa place.
+  */
+  const libelleType = DECISION_TYPES.find(([value]) => value === type)?.[1] ?? ''
+  const objetPropose = useCaseName ? `${libelleType} — ${useCaseName}` : libelleType
+  // Lire l'horloge pendant le rendu n'est pas pur : on la lit une fois, au
+  // montage, et les deux dates ne bougent plus tant que la fenetre est ouverte.
+  const [[aujourdHui, dansUnAn]] = useState(() => [jour(0), jour(365)])
 
   return (
     <form
@@ -168,7 +199,11 @@ export function DecisionForm({
         <select
           id="dec-approver"
           name="expectedApproverUserId"
-          defaultValue=""
+          defaultValue={
+            defaultApproverUserId && people.some((p) => p.userId === defaultApproverUserId)
+              ? defaultApproverUserId
+              : ''
+          }
           disabled={people.length === 0}
           className={FIELD}
         >
@@ -181,8 +216,23 @@ export function DecisionForm({
         </select>
       </Field>
 
-      <Field label="Objet" htmlFor="dec-subject" error={errors.subject}>
-        <input id="dec-subject" name="subject" type="text" required className={FIELD} />
+      <Field
+        label="Objet"
+        htmlFor="dec-subject"
+        error={errors.subject}
+        hint="Proposé d’après le type et la fiche — à préciser si la décision porte sur un point particulier."
+      >
+        <input
+          // Le type change : l'objet propose suit. Remonter le corriger a la
+          // main apres avoir change d'avis n'a aucun interet.
+          key={type}
+          id="dec-subject"
+          name="subject"
+          type="text"
+          required
+          defaultValue={objetPropose}
+          className={FIELD}
+        />
       </Field>
 
       <Field
@@ -247,8 +297,8 @@ export function DecisionForm({
       </details>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Date d’effet" htmlFor="dec-effective" optional>
-          <input id="dec-effective" name="effectiveFrom" type="date" className={FIELD} />
+        <Field label="Date d’effet" htmlFor="dec-effective" optional hint="Le jour même, sauf bascule prévue.">
+          <input id="dec-effective" name="effectiveFrom" type="date" defaultValue={aujourdHui} className={FIELD} />
         </Field>
         <Field
           label="Date de revue"
@@ -260,7 +310,14 @@ export function DecisionForm({
               : undefined
           }
         >
-          <input id="dec-review" name="reviewDueAt" type="date" className={FIELD} />
+          <input
+            key={type}
+            id="dec-review"
+            name="reviewDueAt"
+            type="date"
+            defaultValue={NEEDS_REVIEW.includes(type) ? dansUnAn : ''}
+            className={FIELD}
+          />
         </Field>
       </div>
 

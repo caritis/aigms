@@ -891,14 +891,24 @@ connaître.
 | Champ | Exigé ? | À saisir pour l'autorisation d'usage |
 |---|---|---|
 | **Type de décision** | oui | **Autorisation d'usage** |
-| **Personne appelée à se prononcer** | non | **Marc Lecomte** |
-| **Objet** | oui — 5 car. min. | `Autorisation d'usage — génération de devis par IA` |
+| **Personne appelée à se prononcer** | non | **déjà proposée** — Marc Lecomte, le Responsable redevable de la fiche |
+| **Objet** | oui — 5 car. min. | **déjà proposé** — *Autorisation d'usage — Génération de devis par IA générative* |
 | **Ce qui est décidé** | oui — 20 car. min. | `Autoriser l'usage de la génération de devis assistée, sous les contrôles retenus et les mesures de l'étude d'impact.` |
 | **Justification** | oui — 20 car. min. | `Criticité élevée, étude d'impact achevée et risques résiduels acceptés par le Porteur. Les quatre contrôles applicables sont statués et outillés.` |
 | **Contexte** | **oui** — 20 car. min. | `Les commerciaux emploient déjà des comptes personnels. L'usage existe : il s'agit de l'encadrer, pas de l'autoriser à partir de rien.` |
 | **Options écartées** | non | `Interdiction pure et simple — écartée : l'usage se poursuivrait hors de toute vue.` |
 | **Conditions** | non | `Sous réserve de la bascule DLP au 30/11.` |
-| **Date d'effet** · **Date de revue** | non *(la revue devient exigée sur une mise en production)* | à un mois · à un an |
+| **Date d'effet** · **Date de revue** | non *(la revue devient exigée sur une mise en production)* | **déjà proposées** — le jour même · dans un an quand la revue est exigée |
+
+> **Quatre champs sont déjà remplis quand la fenêtre s'ouvre.** L'objet se
+> déduit du type et du nom de la fiche ; la personne appelée à se prononcer est
+> le **Responsable redevable** désigné à l'étape 1 ; la date d'effet est le jour
+> même ; la date de revue, un an plus tard dès que la base l'exige. Tout se
+> corrige d'un clic.
+>
+> « Ce que le dossier sait déjà, on ne vous le redemande pas. Ce qui reste à
+> écrire — **ce qui est décidé, pourquoi, et dans quel contexte** — personne ne
+> peut l'écrire à votre place, et l'outil ne fait pas semblant d'essayer. »
 
 > **Trois champs que le prospect croit décoratifs, et qui ne le sont pas.**
 >
