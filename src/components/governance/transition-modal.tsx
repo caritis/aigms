@@ -36,6 +36,7 @@ export function TransitionModal({
   decisionTypes,
   people,
   evidence,
+  evidenceGap = [],
 }: {
   useCaseId: string
   organizationId: string
@@ -47,6 +48,15 @@ export function TransitionModal({
   decisionTypes: string[]
   people: { userId: string; label: string }[]
   evidence: { id: string; business_ref: string; title: string }[]
+  /**
+   * Les controles applicables que rien ne prouve (0098).
+   *
+   * La porte unique rendait `DecisionForm` sans le lui passer : l'avertissement
+   * qui doit se lire AVANT de soumettre une mise en production ne s'affichait
+   * donc que depuis l'ancien bouton de l'onglet. Retirer ce bouton sans
+   * rebrancher ceci aurait fait disparaitre la regle avec lui.
+   */
+  evidenceGap?: { control_id: string; code: string; name: string; is_mandatory: boolean }[]
 }) {
   const steps = targets.filter((t) => !ENGAGING.includes(t))
   const engaging = targets.filter((t) => ENGAGING.includes(t))
@@ -169,6 +179,7 @@ export function TransitionModal({
               fixedUseCaseId={useCaseId}
               allowedTypes={decisionTypes}
               evidence={evidence}
+              evidenceGap={evidenceGap}
             />
           ) : intent === 'change' ? (
             <ChangeRequestFields organizationId={organizationId} useCaseId={useCaseId} currentAutonomy={currentAutonomy} />

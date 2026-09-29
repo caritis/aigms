@@ -11,7 +11,6 @@ import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { TransitionModal } from '@/components/governance/transition-modal'
-import { DecisionModal } from '@/components/governance/decision-modal'
 import { IncidentTicket } from '@/components/governance/incident-ticket'
 import { EvidenceDepositModal } from '@/components/governance/evidence-deposit-modal'
 import type { ControlChoice, TypologyChoice } from '@/components/governance/evidence-forms'
@@ -51,7 +50,6 @@ import {
   ActionStatusForm,
   CapaCloseForm,
   CapaForm,
-  ChangeRequestForm,
   IncidentForm,
   IncidentProgressForm,
 } from '@/components/governance/operations-forms'
@@ -712,6 +710,7 @@ export default async function UseCasePage({
             decisionTypes={DECISION_TYPES_BY_STATUS[status]}
             people={reviewers}
             evidence={validatedEvidence ?? []}
+            evidenceGap={evidenceGap}
           />
         </div>
       }
@@ -1042,8 +1041,14 @@ export default async function UseCasePage({
         <SuiviSwitch useCaseId={id} active={suiviView} actions={openActions.length} incidents={openIncidents} />
       ) : null}
 
+      {/*
+        Ces quatre rubriques n'ont pas de colonne de droite : rien ne justifie
+        de les brider a quatre-vingt-seize caracteres. Une action porte son
+        intitule, son responsable, son echeance et deux boutons ; un risque, sa
+        cotation brute et residuelle. A cette largeur, tout se repliait.
+      */}
       {tab === 'suivi' && suiviView === 'actions' ? (
-        <div className="max-w-4xl">
+        <div>
           <Card
             title="Actions"
             subtitle={
@@ -1476,7 +1481,7 @@ export default async function UseCasePage({
       ) : null}
 
       {tab === 'risques' ? (
-        <div className="max-w-4xl">
+        <div>
           <Card
             title="Risques"
             subtitle={`${risks?.length ?? 0} risque(s)`}
@@ -1811,27 +1816,12 @@ export default async function UseCasePage({
       ) : null}
 
       {tab === 'decisions' ? (
-        <div className="max-w-4xl">
+        <div>
           <Card
             title="Décisions et changements"
             subtitle="Un seul fil : ce qui a été décidé, ce qui a changé, et comment l’un a appelé l’autre."
             action={
               <span className="flex items-center gap-2">
-                {DECISION_TYPES_BY_STATUS[status].length ? (
-                  <DecisionModal
-                    organizationId={useCase.organization_id}
-                    useCaseId={id}
-                    allowedTypes={DECISION_TYPES_BY_STATUS[status]}
-                    people={reviewers}
-                    evidence={validatedEvidence ?? []}
-                    evidenceGap={evidenceGap}
-                  />
-                ) : null}
-                <ChangeRequestForm
-                  organizationId={useCase.organization_id}
-                  useCaseId={id}
-                  currentAutonomy={useCase.autonomy_level}
-                />
                 <DecisionNote />
                 <ChangeNote />
               </span>
@@ -1843,7 +1833,20 @@ export default async function UseCasePage({
               un changement qui appelle une reevaluation ouvre une decision, une
               decision de changement cree le changement (0063). On les lit
               ensemble, dans l'ordre, chacun disant a quoi il est lie.
+
+              Cet onglet LIT. Il portait aussi deux boutons — soumettre une
+              decision, prevoir un changement — qui ouvraient exactement les
+              memes formulaires que « Faire évoluer ». Deux portes pour un meme
+              geste obligent a se demander laquelle prendre, et c'est ce que la
+              porte unique voulait supprimer. Il n'en reste qu'une, en tete de
+              fiche, ou l'infobulle dit ce que chaque evolution engage.
             */}
+            <p className="mb-4 text-xs leading-relaxed text-ink-500">
+              Ce fil se lit ; il ne se saisit pas. Soumettre une décision ou prévoir un changement
+              se fait par <strong className="font-medium text-ink-700">Faire évoluer</strong>, en
+              tête de fiche — le point d’exclamation y explique ce que chacune des trois évolutions
+              engage.
+            </p>
             {timelineEntries.length ? (
               <ul className="divide-y divide-ink-100">
                 {timelineEntries.map((e) => (
@@ -1935,7 +1938,7 @@ export default async function UseCasePage({
       ) : null}
 
       {tab === 'suivi' && suiviView === 'incidents' ? (
-        <div className="max-w-4xl">
+        <div>
           <Card
             title="Incidents"
             subtitle={
