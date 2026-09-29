@@ -1,6 +1,6 @@
 # Script de démonstration — Shadow AI dans le BTP
 
-*Version 1 — 25 septembre 2026. Durée visée : 12 minutes, 15 avec l'option.*
+*Version 1 — 25 septembre 2026. Durée visée : 16 minutes, 18 avec l'option.*
 
 Ce script déroule un cas d'usage réel devant un prospect du bâtiment : **des
 commerciaux génèrent leurs devis sur des comptes ChatGPT personnels**, en y
@@ -94,8 +94,8 @@ visible dès l'étape 1.
 | 3 | Qualifier au regard du règlement | Officer | 1 min |
 | 4 | Coter le risque | Officer | 1 min 30 |
 | 5 | Retenir les contrôles et leur outillage | Officer | 2 min |
-| 6 | Produire une preuve | Officer | 1 min 30 |
-| 7 | Conduire l'étude d'impact | Officer + Porteur | 2 min |
+| 6 | Produire une preuve | Officer | 2 min |
+| 7 | Conduire l'étude d'impact | Officer + Porteur | 4 min |
 | 8 | **Décider — le moment clé** | Officer + Administrateur client | 2 min 30 |
 
 ---
@@ -533,25 +533,230 @@ l'outil sait distinguer une preuve d'organisation d'une preuve d'ingénierie.
 
 **Cas d'usage → Conduire une étude d'impact IA**
 
-- Parties prenantes : *Clients* (population : « environ 900 devis par an »),
-  *Commerciaux*
-- Constat : **« Prix ou normes obsolètes dans un devis émis »** — gravité
-  **sévère**, vraisemblance probable
-- Mesure : **« Relecture humaine obligatoire avant envoi »**, échéance à trente
-  jours
+L'écran suit **le modèle ISO/IEC 42005** en quatre temps. Trois se saisissent,
+**le quatrième s'écrit tout seul** — et c'est celui-là qu'il faut faire
+remarquer.
 
-Un constat sévère **ouvre une action bloquante** : montrez-la.
+| Rubrique | Ce qu'on y fait | Qui l'écrit |
+|---|---|---|
+| **1. Cadrage et contexte** | Le périmètre, la méthode, la phase, l'AIPD | Vous — le reste vient de la fiche |
+| **1.1 Parties prenantes** | Les groupes affectés, vulnérables ou non, consultés ou non | Vous |
+| **2. Analyse croisée des impacts** | Bénéfices et préjudices, par domaine de la norme | Vous |
+| **3. Plan de gouvernance et remédiation** | Les mesures devenues actions, confiées et datées | **L'outil** — rien ne s'y saisit |
 
-Puis : *Viser la méthode* en tant qu'officer.
+---
 
-**Basculez sur `devsecops@aigms.eu`** — Dominique Etchart reçoit l'alerte,
-ouvre l'étude, et **accepte les risques résiduels** avec sa propre déclaration :
-*« J'assume l'écart sous relecture systématique, avec audit trimestriel. »*
+#### 1. Cadrage et contexte
+
+Le bouton **« Modifier le cadrage »** ouvre quatre champs seulement.
+
+| Champ | À saisir | Remarque à faire |
+|---|---|---|
+| **Périmètre** | `Rédiger les devis clients à partir d'anciens devis et des grilles de prix fournisseurs, pour réduire le délai de réponse aux appels d'offres.` | Repris de la fiche : vous ne redécrivez pas le système |
+| **Méthodologie** | `ISO/IEC 42005` | Modifiable — certains cabinets ont leur propre méthode |
+| **Phase du cycle de vie** *(facultatif)* | **Développement** | Conception, Développement, Pilote, Déploiement, Exploitation, Retrait |
+| **AIPD requise** | **déjà cochée** | Voir l'encadré ci-dessous |
+| **Référence de l'AIPD** *(facultatif)* | `AIPD-2026-014` | Le numéro du dossier chez le DPO |
+| **Prochaine revue** *(facultatif)* | dans douze mois | Une étude se revoit |
+
+> **Le geste qui porte — la case AIPD pré-cochée.** « Je n'ai pas coché cette
+> case. L'outil l'a fait, et il dit pourquoi, en dessous : *pré-cochée, des
+> données personnelles sont en jeu — fiche ou actif rattaché*. C'est ma réponse
+> de l'étape 3 qui remonte. Et lisez la phrase suivante : *l'étude d'impact IA
+> ne s'y substitue pas, elle la référence.* Votre DPO garde son dossier ; AIGMS
+> le cite, il ne le remplace pas. »
+
+**Sous le formulaire, une fiche d'identité que personne ne saisit** : statut du
+triage (*criticité élevée · étude exigée par les faits*), autonomie,
+qualification au sens de l'AI Act, Porteur et Redevable, données en jeu avec
+leurs pastilles, AIPD, et les actifs employés.
+
+> **À dire.** « Sept informations, zéro saisie. Elles viennent de la fiche, du
+> triage et du registre. Un auditeur qui ouvre cette page sait en dix secondes
+> de quoi on parle. »
+
+---
+
+#### 1.1 Parties prenantes
+
+*« Un groupe affecté par le système — directement ou non. »* **Trois à saisir,
+une à la fois.**
+
+| Groupe | Population estimée | Vulnérable | Consulté | Méthode |
+|---|---|---|---|---|
+| `Clients — maîtres d'ouvrage destinataires des devis` | `~900 devis par an` | non | non | — |
+| `Commerciaux chargés d'affaires` | `14 personnes` | non | **oui** | `Atelier de deux heures, 3 septembre` |
+| `Fournisseurs et sous-traitants cités dans les grilles de prix` | `~40 entreprises` | non | non | — |
+
+> **Insistez sur le troisième.** « Personne ne pense à celui-là. Les commerciaux
+> versent des **grilles de prix fournisseurs** dans l'outil : ce sont les
+> conditions commerciales de tiers qui n'ont rien demandé et qui ne sont même
+> pas au contrat. Une étude d'impact sert exactement à cela — trouver l'affecté
+> qu'on n'avait pas vu. »
+
+> **Le champ « vulnérable » et le silence qu'il faut assumer.** Aucun des trois
+> groupes ne l'est, et l'outil ne vous pousse pas à en inventer un. « Chez vous,
+> non. Si demain vous faites de la sélection de candidats ou de l'aide sociale,
+> vous cocherez cette case et le niveau d'examen se renforcera de lui-même. »
+
+---
+
+#### 2. Analyse croisée des impacts
+
+Le bouton **« Ajouter un constat »**. La fenêtre s'appelle *« 2. Constat :
+bénéfice ou préjudice »* — les deux, et c'est délibéré.
+
+Le champ **Domaine** ne propose pas une liste plate : **douze domaines groupés
+en quatre familles** — *Droits fondamentaux et éthique*, *Vie privée et données
+(AIPD)*, *Environnement et énergie*, *Impacts socio-économiques*.
+
+**Quatre constats à saisir**, choisis pour montrer les trois régimes :
+
+**① Le bénéfice** — on ne conduit pas une étude à charge.
+
+| Champ | Valeur |
+|---|---|
+| Nature | **Bénéfice attendu** |
+| Domaine | Emploi et conditions de travail |
+| Description | `Le délai de réponse à un appel d'offres est divisé par deux. Les chargés d'affaires reprennent du temps sur la visite de chantier et la relation client.` |
+| **Ampleur** | Significative |
+| Vraisemblance | Probable |
+| Partie prenante | Commerciaux |
+
+> Le champ *Gravité* s'appelle **Ampleur** dès qu'on choisit *Bénéfice*, et le
+> cadre « Mesure de réduction » disparaît. « On ne réduit pas un bénéfice. »
+
+**② Le préjudice grave** — celui qui bloquera la production.
+
+| Champ | Valeur |
+|---|---|
+| Nature | **Préjudice potentiel** |
+| Domaine | Protection des consommateurs |
+| Description | `Un devis part au client avec un prix ou une norme obsolètes, repris d'un ancien dossier. L'entreprise est engagée sur un chiffre qu'elle ne peut pas tenir, ou sur une norme qui ne s'applique plus.` |
+| **Gravité** | **Grave** |
+| Vraisemblance | Probable |
+| Partie prenante | Clients |
+| **Mesure** | `Relecture humaine obligatoire avant envoi, et double validation au-delà de 50 000 €.` |
+| Responsable | Sacha Belarbi |
+| Échéance | à trente jours |
+| Gravité résiduelle | Limitée |
+| **Risque du registre** | **le risque coté à l'étape 4** — *Fuite de données commerciales vers un tiers* |
+
+**③ Le préjudice significatif** — une action, mais qui ne bloque pas.
+
+| Champ | Valeur |
+|---|---|
+| Nature | Préjudice potentiel |
+| Domaine | **Vie privée et protection des données** |
+| Description | `Coordonnées de clients et conditions tarifaires de fournisseurs sont versées dans un service tiers, sans base contractuelle et potentiellement réutilisées pour l'entraînement.` |
+| Gravité | **Significative** |
+| Vraisemblance | Possible |
+| Partie prenante | Fournisseurs et sous-traitants |
+| Mesure | `Rétention désactivée sur la console Enterprise, et filtrage DLP sur les flux sortants.` |
+| Responsable | Marc Lecomte |
+| Échéance | 30/11 |
+| Gravité résiduelle | Limitée |
+
+**④ Le préjudice limité** — celui qui ne déclenche rien, et qu'il faut montrer.
+
+| Champ | Valeur |
+|---|---|
+| Nature | Préjudice potentiel |
+| Domaine | **Environnement et énergie** |
+| Description | `Chaque devis généré consomme des appels à un modèle hébergé. À neuf cents devis par an, l'empreinte reste marginale au regard du poste chantier.` |
+| Gravité | **Limitée** |
+| Vraisemblance | Possible |
+| Mesure | *(aucune)* |
+
+> **Le tableau qui fait comprendre l'outil.** Dites-le en montrant les quatre
+> lignes à l'écran :
+>
+> | Gravité du préjudice | Ce que l'outil en fait |
+> |---|---|
+> | **Grave** | Une action **bloquante** : le jalon Production ne passera pas |
+> | **Significative** | Une action **suivie**, non bloquante |
+> | **Limitée** ou négligeable | **Rien** — la ligne affiche *« Aucune action — gravité limitée »* |
+>
+> « Trois régimes, une seule règle : c'est la gravité que **vous** avez cotée
+> qui décide, pas un réglage d'administrateur. Et tant qu'un préjudice grave
+> n'a pas de mesure, l'écran l'écrit en orange sous la ligne : *sans mesure de
+> réduction — un préjudice grave en porte une*. »
+
+---
+
+#### 3. Plan de gouvernance et remédiation — **rien ne s'y saisit**
+
+C'est la question que le prospect pose toujours : *« et là, on tape quoi ? »*
+**Rien.** Cette rubrique n'a pas de bouton.
+
+Elle **reprend les mesures saisies en rubrique 2** et affiche, pour chacune, le
+domaine, l'extrait du constat, le responsable, l'échéance — et à droite **le
+numéro de l'action ouverte, cliquable**, qui mène au suivi d'actions où elle vit
+avec toutes les autres.
+
+> **Le geste qui porte.** Cliquez sur le numéro d'action du constat ②. « Je
+> quitte l'étude d'impact et j'arrive dans le suivi d'actions de l'entreprise.
+> C'est la même action. Je n'ai pas recopié une mesure d'un rapport Word vers un
+> plan d'action Excel : **la mesure EST l'action**. Et si je corrige l'échéance
+> dans l'étude, l'action suit — tant qu'elle est ouverte. »
+
+> **Si on vous demande pourquoi ce n'est pas modifiable ici.** « Parce qu'une
+> mesure ne s'invente pas dans un plan d'action : elle répond à un constat. Si
+> vous voulez une mesure de plus, ajoutez le constat qui la justifie. C'est la
+> différence entre un plan d'action et un plan d'action *tracé*. »
+
+---
+
+#### Conclusion et signatures — la colonne de droite
+
+Avant de viser, montrez le pavé **Conclusion et signatures**. Tant que l'étude
+est ouverte, il liste **ce qui manque**, en clair :
+
+- *aucune partie prenante identifiée*
+- *aucun constat — ni bénéfice ni préjudice*
+- *n préjudice(s) grave(s) sans mesure de réduction*
+- *AIPD requise sans référence*
+
+Quand tout est là : **« Rien ne manque : l'étude peut s'achever. »**
+
+**Vous, `officer@aigms.eu` → « Viser l'étude »**
+
+| Champ | À saisir |
+|---|---|
+| Conclusion | `Les effets sont acceptables sous les deux mesures retenues : relecture humaine avant envoi, et rétention désactivée avec filtrage sortant. L'empreinte environnementale reste marginale. À surveiller : la tentation de sauter la relecture sous pression d'appel d'offres.` |
+| Prochaine revue | dans douze mois |
+
+La fenêtre rappelle la règle avant que vous ne signiez : *« votre visa dit que
+la méthode tient ; l'acceptation du Porteur dit que l'organisation assume ce qui
+demeure. Une même personne ne pose pas les deux. »*
+
+**Basculez sur `devsecops@aigms.eu`** — Dominique Etchart ouvre l'étude. Il voit
+en haut **« En attente de l'acceptation des risques résiduels »**, et la fenêtre
+lui rappelle **ce qui demeure de significatif ou grave après mesures**, constat
+par constat. Deux boutons seulement : *Accepter les risques résiduels*, ou
+**Renvoyer à l'étude** — auquel cas le visa tombe et l'officer reprend la main.
+
+> *« J'assume l'écart sous relecture systématique, avec audit trimestriel. »*
 
 > **Insistez ici.** « Deux actes, deux signataires. L'officer atteste que
 > l'étude est bien conduite ; le porteur dit que l'organisation assume ce qui
 > reste. La base refuse que la même personne pose les deux — ce n'est pas un
 > réglage d'écran. »
+
+#### Ce qui se produit à la seconde où l'étude est achevée
+
+Sans que vous demandiez quoi que ce soit, **une action s'ouvre** : *« Déposer la
+preuve de l'évaluation d'impact IA-…  »*, confiée à qui l'a conduite, échéance à
+trente jours. Le libellé cite l'AIPD si elle est requise.
+
+Et dans la colonne de droite, le pavé **Preuve** porte un bouton : **« Déposer
+l'export comme preuve »**. Un clic — l'export `.docx` au format du modèle part
+au registre des preuves, *à valider*, et l'action se solde.
+
+> **La phrase de fin d'étape.** « Le rapport d'étude d'impact n'est pas un
+> fichier sur un partage réseau qu'on retrouvera peut-être. Il est une pièce du
+> registre, horodatée, avec son empreinte, rattachée à son cas d'usage — et
+> l'outil vient de m'ouvrir l'obligation de la déposer. »
 
 ---
 
