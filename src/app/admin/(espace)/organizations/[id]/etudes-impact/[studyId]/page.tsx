@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
 import { InfoTip } from '@/components/info-tip'
+import { Fold } from '@/components/fold'
 import {
   AcceptResidualForm,
   CompleteForm,
@@ -76,6 +77,18 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
   const adverseSevere = study.findings.filter((f) => f.is_adverse && ['significant', 'severe'].includes(f.severity))
   const remediation = study.findings.filter((f) => f.is_adverse && f.mitigation?.trim())
 
+  /*
+    Ce que chaque rubrique repliee doit dire d'elle-meme. Une rubrique fermee
+    qui ne porte qu'un titre oblige a l'ouvrir pour savoir s'il y a lieu : le
+    resume tient ce que l'ouvrir aurait appris.
+  */
+  const sansMesure = adverseSevere.filter((f) => !f.mitigation?.trim()).length
+  const vulnerables = study.stakeholders.filter((s) => s.is_vulnerable_group).length
+  const consultes = study.stakeholders.filter((s) => s.consulted).length
+  const prejudices = study.findings.filter((f) => f.is_adverse).length
+  const benefices = study.findings.length - prejudices
+  const bloquantes = remediation.filter((f) => f.severity === 'severe' && f.action).length
+
   return (
     <Shell
       breadcrumb={[
@@ -114,7 +127,17 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
           )}
           <InfoTip label="Comment conduire l’étude" title="Quatre temps, comme le modèle">
             <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
-              <p><strong className="font-medium text-ink-800">1. Cadrage.</strong> Ce que fait le système, sur qui, avec quelles données ; les groupes affectés, directement ou non — et s’ils sont vulnérables.</p>
+              <p><strong className="font-medium text-ink-800">1. Cadrage.</strong> Ce que fait le système, sur qui, avec quelles données, dans quel but ; la méthode suivie, la phase du cycle de vie, et si une AIPD est requise — l’étude d’impact IA ne s’y substitue pas, elle la référence.</p>
+              <div className="rounded-md bg-ink-50 px-3 py-2.5">
+                <p><strong className="font-medium text-ink-800">1.1 Les parties prenantes, et ce qui s’y joue.</strong> Un groupe affecté par le système, <em>directement ou non</em>. Les utilisateurs en sont — mais rarement les seuls : les personnes dont les données sont traitées, celles qui subissent la décision sans jamais voir l’outil, et les tiers dont les informations transitent sans qu’ils l’aient demandé. C’est l’affecté qu’on n’avait pas vu que l’exercice sert à trouver.</p>
+                <ul className="mt-1.5 flex list-disc flex-col gap-1 pl-4">
+                  <li><strong className="font-medium text-ink-800">Population estimée</strong> — un ordre de grandeur suffit. Elle dit l’ampleur : douze personnes et trois mille candidats par an n’appellent pas le même examen.</li>
+                  <li><strong className="font-medium text-ink-800">Groupe vulnérable</strong> — mineurs, patients, personnes en situation de précarité ou de handicap, subordination. Le cocher renforce le niveau d’examen attendu : la gravité d’un préjudice ne se cote pas de la même façon quand celui qui le subit ne peut ni le refuser ni le contester.</li>
+                  <li><strong className="font-medium text-ink-800">Consulté</strong>, et par quelle méthode — entretiens, atelier, enquête, représentants du personnel. Une étude qui ne consulte personne reste une étude ; elle dit alors qu’elle n’a pas consulté, ce qui est une information en soi pour qui la relit.</li>
+                </ul>
+                <p className="mt-1.5">Chaque constat de la rubrique 2 peut se rattacher à l’un de ces groupes : c’est ce rattachement qui rend l’analyse lisible — <em>qui</em> subit <em>quoi</em>.</p>
+                <p className="mt-1.5">Tant qu’aucun groupe n’est identifié, la colonne de droite le compte parmi ce qui manque, et l’étude ne devrait pas s’achever.</p>
+              </div>
               <p><strong className="font-medium text-ink-800">2. Analyse croisée.</strong> Domaine par domaine, les bénéfices attendus et les préjudices potentiels, avec gravité et vraisemblance. Un préjudice significatif ou grave porte une mesure de réduction.</p>
               <p><strong className="font-medium text-ink-800">3. Remédiation.</strong> Chaque mesure est une action, confiée et datée, suivie avec les autres ; un préjudice grave la rend bloquante pour la production.</p>
               <p><strong className="font-medium text-ink-800">4. Conclusion.</strong> Ce que l’étude retient. Achevée, elle ouvre « déposer la preuve » : l’export au format du modèle se dépose d’un clic, à valider.</p>
@@ -131,7 +154,20 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
 
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
-          <Card title="1. Cadrage et contexte" subtitle="Le périmètre de l’étude et le statut du triage." action={open ? <ScopeForm study={study} /> : null}>
+          {/*
+            Une fois l'analyse commencee, le cadrage est acquis : sa ligne de
+            resume suffit, et l'on gagne l'ecran qu'il fallait faire defiler
+            pour atteindre les constats et le plan.
+          */}
+          <Fold
+            step="1"
+            title="Cadrage et contexte"
+            subtitle="Le périmètre de l’étude et le statut du triage."
+            summary={`${study.methodology} · ${uc.criticality ? `criticité ${CRITICALITY_LABELS[uc.criticality as Criticality].toLowerCase()}` : 'criticité non déterminée'} · ${study.dpia_required ? (study.dpia_reference ? `AIPD ${study.dpia_reference}` : 'AIPD requise — référence à fournir') : 'sans AIPD'}`}
+            tone={study.dpia_required && !study.dpia_reference?.trim() ? 'warn' : 'neutral'}
+            defaultOpen={!study.findings.length}
+            action={open ? <ScopeForm study={study} /> : null}
+          >
             <p className="text-sm leading-relaxed text-ink-700">{study.scope_description}</p>
             <dl className="mt-4 grid gap-3 border-t border-ink-100 pt-4 text-sm sm:grid-cols-2">
               <div>
@@ -174,9 +210,20 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
                 </div>
               ) : null}
             </dl>
-          </Card>
+          </Fold>
 
-          <Card title="1.1 Parties prenantes" subtitle="Qui subit les effets du système — directement ou non." action={open ? <StakeholderForm studyId={studyId} /> : null}>
+          <Fold
+            step="1.1"
+            title="Parties prenantes"
+            subtitle="Qui subit les effets du système — directement ou non."
+            summary={
+              study.stakeholders.length
+                ? `${study.stakeholders.length} groupe(s) · ${vulnerables ? `${vulnerables} vulnérable(s)` : 'aucun vulnérable'} · ${consultes ? `${consultes} consulté(s)` : 'aucun consulté'}`
+                : 'Aucun groupe identifié — l’étude ne peut pas s’achever ainsi'
+            }
+            tone={study.stakeholders.length ? (vulnerables ? 'warn' : 'neutral') : 'warn'}
+            action={open ? <StakeholderForm studyId={studyId} /> : null}
+          >
             {uc.users_description || uc.affected_persons ? (
               <p className="mb-3 text-xs text-ink-500">
                 Sur la fiche : {uc.users_description ? `utilisateurs — ${uc.users_description}` : ''}{uc.users_description && uc.affected_persons ? ' · ' : ''}{uc.affected_persons ? `affectés — ${uc.affected_persons}` : ''}
@@ -200,12 +247,18 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
             ) : (
               <Empty>Aucune partie prenante identifiée.</Empty>
             )}
-          </Card>
+          </Fold>
 
-          <Card
-            title="2. Analyse croisée des impacts"
+          <Fold
+            step="2"
+            title="Analyse croisée des impacts"
             subtitle="Bénéfices attendus et préjudices potentiels, par domaine de la norme."
-            tone={adverseSevere.some((f) => !f.mitigation?.trim()) ? 'warn' : 'neutral'}
+            summary={
+              study.findings.length
+                ? `${prejudices} préjudice(s) · ${benefices} bénéfice(s)${sansMesure ? ` · ${sansMesure} grave(s) sans mesure de réduction` : ''}`
+                : 'Aucun constat — ni bénéfice ni préjudice'
+            }
+            tone={sansMesure ? 'warn' : study.findings.length ? 'neutral' : 'warn'}
             action={open ? <FindingForm studyId={studyId} stakeholders={study.stakeholders} people={peopleChoices} risks={risks ?? []} /> : null}
           >
             {study.findings.length ? (
@@ -257,9 +310,19 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
             ) : (
               <Empty>Aucun constat. Un bénéfice, un préjudice : l’étude se conclut sur des faits.</Empty>
             )}
-          </Card>
+          </Fold>
 
-          <Card title="3. Plan de gouvernance et remédiation" subtitle="Chaque mesure est une action : confiée, datée, suivie.">
+          <Fold
+            step="3"
+            title="Plan de gouvernance et remédiation"
+            subtitle="Rien ne s’y saisit : chaque mesure de la rubrique 2 y devient une action, confiée et datée."
+            summary={
+              remediation.length
+                ? `${remediation.length} mesure(s)${bloquantes ? ` · ${bloquantes} action(s) bloquante(s) pour la production` : ''}`
+                : 'Aucune mesure de réduction renseignée'
+            }
+            tone={bloquantes ? 'stop' : 'neutral'}
+          >
             {remediation.length ? (
               <ul className="divide-y divide-ink-100">
                 {remediation.map((f) => (
@@ -272,9 +335,18 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
                         {f.mitigation_due_date ? ` · pour le ${formatDate(f.mitigation_due_date)}` : ''}
                       </p>
                     </div>
+                    {/*
+                      L'action ouverte par un constat appartient d'abord a SON
+                      cas d'usage. Elle menait au registre general des actions
+                      de l'organisation : on quittait le dossier pour
+                      retrouver, au milieu de toutes les autres, celle qu'on
+                      venait de creer. Elle mene desormais a l'onglet
+                      « Actions et incidents » de la fiche, et l'ancre pose le
+                      regard sur la bonne ligne.
+                    */}
                     {f.action ? (
                       <Link
-                        href={`/admin/organizations/${id}/suivi?vue=actions&action=${f.action.id}#action-${f.action.id}`}
+                        href={`/admin/use-cases/${uc.id}?onglet=suivi&vue=actions#action-${f.action.id}`}
                         className="inline-flex items-center gap-1.5 rounded-md border border-ink-200 px-2.5 py-1 text-xs text-brand-600 hover:bg-ink-50"
                       >
                         {f.action.business_ref} · {ACTION_STATUS_LABELS[f.action.status] ?? f.action.status}
@@ -288,7 +360,7 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
             ) : (
               <Empty>Aucune mesure de réduction renseignée.</Empty>
             )}
-          </Card>
+          </Fold>
         </div>
 
         <div className="space-y-5">

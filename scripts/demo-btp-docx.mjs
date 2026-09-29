@@ -360,6 +360,9 @@ const doc = new Document({
         ligne(['3. Plan de gouvernance et remédiation', 'Les mesures devenues actions, confiées et datées', 'L’OUTIL — rien ne s’y saisit']),
       ]),
       p(''),
+      p('Les quatre rubriques se replient, et une rubrique fermée n’est pas muette : elle porte sa ligne de résumé — « 3 groupe(s) · aucun vulnérable · 1 consulté », « 3 préjudice(s) · 1 bénéfice · 1 grave sans mesure de réduction », « 2 mesure(s) · 1 action bloquante pour la production ». Le cadrage se replie de lui-même dès qu’un constat existe : on n’a plus à faire défiler un écran de contexte pour atteindre l’analyse.'),
+      insister('Je peux lire l’état de l’étude entière sans en ouvrir une seule rubrique. C’est fait pour la relecture — la vôtre, et celle de l’auditeur.'),
+      p(''),
 
       h('1. Cadrage et contexte', HeadingLevel.HEADING_3),
       p('Le bouton « Modifier le cadrage » ouvre quatre champs seulement.'),
@@ -475,8 +478,8 @@ const doc = new Document({
 
       h('3. Plan de gouvernance et remédiation — rien ne s’y saisit', HeadingLevel.HEADING_3),
       p('C’est la question que le prospect pose toujours : « et là, on tape quoi ? » Rien. Cette rubrique n’a pas de bouton.'),
-      p('Elle reprend les mesures saisies en rubrique 2 et affiche, pour chacune, le domaine, l’extrait du constat, le responsable, l’échéance — et à droite le numéro de l’action ouverte, cliquable, qui mène au suivi d’actions où elle vit avec toutes les autres.'),
-      insister('Cliquez sur le numéro d’action du constat ②. Je quitte l’étude d’impact et j’arrive dans le suivi d’actions de l’entreprise. C’est la même action. Je n’ai pas recopié une mesure d’un rapport Word vers un plan d’action Excel : la mesure EST l’action. Et si je corrige l’échéance dans l’étude, l’action suit — tant qu’elle est ouverte.'),
+      p('Elle reprend les mesures saisies en rubrique 2 et affiche, pour chacune, le domaine, l’extrait du constat, le responsable, l’échéance — et à droite le numéro de l’action ouverte, cliquable, qui ramène à l’onglet « Actions et incidents » du cas d’usage, sur la ligne exacte de cette action.'),
+      insister('Cliquez sur le numéro d’action du constat ②. Je quitte l’étude d’impact et je retombe dans le dossier du cas d’usage, sur la ligne de cette action-là — marquée Bloquante. C’est la même action. Je n’ai pas recopié une mesure d’un rapport Word vers un plan d’action Excel : la mesure EST l’action. Et si je corrige l’échéance dans l’étude, l’action suit — tant qu’elle est ouverte.'),
       p('Si on vous demande pourquoi ce n’est pas modifiable ici : parce qu’une mesure ne s’invente pas dans un plan d’action, elle répond à un constat. Si vous voulez une mesure de plus, ajoutez le constat qui la justifie. C’est la différence entre un plan d’action et un plan d’action tracé.'),
       p(''),
 

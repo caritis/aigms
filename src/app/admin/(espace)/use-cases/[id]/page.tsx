@@ -1095,7 +1095,9 @@ export default async function UseCasePage({
                     a.due_date !== null &&
                     a.due_date < new Date().toISOString().slice(0, 10)
                   return (
-                    <li key={a.id} className="flex items-start justify-between gap-3 text-sm">
+                    // L'ancre : une action ouverte par une etude d'impact ou une
+                    // alerte s'atteint par son lien, et le regard tombe dessus.
+                    <li key={a.id} id={`action-${a.id}`} className="flex scroll-mt-28 items-start justify-between gap-3 text-sm">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-ink-900">{a.title}</span>
