@@ -58,6 +58,7 @@ export function DecisionForm({
   allowedTypes,
   evidence = [],
   evidenceGap = [],
+  framed = false,
 }: {
   organizationId: string
   useCases: { id: string; name: string; business_ref: string }[]
@@ -76,6 +77,16 @@ export function DecisionForm({
    * s'explique (0098).
    */
   evidenceGap?: { control_id: string; code: string; name: string; is_mandatory: boolean }[]
+  /**
+   * En fenetre : les champs defilent dans leur propre zone et le bouton reste
+   * visible en pied. Sur sa page, le formulaire coule dans le document.
+   *
+   * Douze champs sous trois grandes cartes d'intention : on descendait sans
+   * jamais voir le bouton, et l'on remontait pour verifier ce qu'on avait
+   * choisi. Ce n'est pas un formulaire trop long — c'est un formulaire sans
+   * cadre.
+   */
+  framed?: boolean
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
     submitDecision,
@@ -88,7 +99,12 @@ export function DecisionForm({
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form
+      id="decision-form"
+      action={formAction}
+      className={framed ? 'flex max-h-[68vh] min-h-0 flex-col' : 'flex flex-col gap-4'}
+    >
+      <div className={framed ? 'flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1' : 'contents'}>
       <input type="hidden" name="organizationId" value={organizationId} />
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -134,6 +150,37 @@ export function DecisionForm({
         )}
       </div>
 
+      {/*
+        Qui se prononce se choisit AVEC le type, pas douze champs plus bas : ce
+        sont les deux seules questions auxquelles on repond avant de rediger.
+      */}
+      <Field
+        label="Personne appelée à se prononcer"
+        htmlFor="dec-approver"
+        optional
+        error={errors.expectedApproverUserId}
+        hint={
+          people.length
+            ? 'Désignée, pas habilitée : l’approbation restera enregistrée au nom de celui qui la prononce.'
+            : 'Aucune personne habilitée n’est déclarée sur cette organisation : la décision restera adressée à personne.'
+        }
+      >
+        <select
+          id="dec-approver"
+          name="expectedApproverUserId"
+          defaultValue=""
+          disabled={people.length === 0}
+          className={FIELD}
+        >
+          <option value="">— Personne désignée plus tard</option>
+          {people.map((person) => (
+            <option key={person.userId} value={person.userId}>
+              {person.label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
       <Field label="Objet" htmlFor="dec-subject" error={errors.subject}>
         <input id="dec-subject" name="subject" type="text" required className={FIELD} />
       </Field>
@@ -147,36 +194,57 @@ export function DecisionForm({
         <textarea id="dec-statement" name="decisionStatement" rows={3} required className={FIELD} />
       </Field>
 
-      <Field
-        label="Justification"
-        htmlFor="dec-rationale"
-        error={errors.rationale}
-        hint="Pourquoi cette décision, au vu de quoi. C’est ce qu’un auditeur lit en premier."
-      >
-        <textarea id="dec-rationale" name="rationale" rows={3} required className={FIELD} />
-      </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="Justification"
+          htmlFor="dec-rationale"
+          error={errors.rationale}
+          hint="Pourquoi cette décision, au vu de quoi. C’est ce qu’un auditeur lit en premier."
+        >
+          <textarea id="dec-rationale" name="rationale" rows={3} required className={FIELD} />
+        </Field>
 
-      <Field
-        label="Contexte"
-        htmlFor="dec-context"
-        error={errors.context}
-        hint="Ce qui amène à décider : la situation, ce qui a changé, ce qui presse. Exigé."
-      >
-        <textarea id="dec-context" name="context" rows={2} required className={FIELD} />
-      </Field>
+        <Field
+          label="Contexte"
+          htmlFor="dec-context"
+          error={errors.context}
+          hint="Ce qui amène à décider : la situation, ce qui a changé, ce qui presse. Exigé."
+        >
+          <textarea id="dec-context" name="context" rows={3} required className={FIELD} />
+        </Field>
+      </div>
 
-      <Field
-        label="Options écartées"
-        htmlFor="dec-options"
-        optional
-        hint="Ce qui a été envisagé et non retenu. Une décision sans alternative examinée se défend mal."
-      >
-        <textarea id="dec-options" name="optionsConsidered" rows={2} className={FIELD} />
-      </Field>
+      {/*
+        Les deux champs facultatifs se replient. Ils ne sont pas accessoires —
+        une decision sans alternative examinee se defend mal — mais les laisser
+        deployes faisait descendre les dates et le bouton hors de l'ecran, et
+        l'on renoncait aux deux.
+      */}
+      <details className="rounded-md border border-dashed border-ink-200 px-3.5 py-2.5">
+        <summary className="cursor-pointer text-sm text-ink-700">
+          Options écartées et conditions
+          <span className="ml-1 text-xs text-ink-400">(facultatif — mais c’est ce qui fait tenir une décision)</span>
+        </summary>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Options écartées"
+            htmlFor="dec-options"
+            optional
+            hint="Ce qui a été envisagé et non retenu. Une décision sans alternative examinée se défend mal."
+          >
+            <textarea id="dec-options" name="optionsConsidered" rows={2} className={FIELD} />
+          </Field>
 
-      <Field label="Conditions" htmlFor="dec-conditions" optional>
-        <textarea id="dec-conditions" name="conditions" rows={2} className={FIELD} />
-      </Field>
+          <Field
+            label="Conditions"
+            htmlFor="dec-conditions"
+            optional
+            hint="Ce à quoi l’approbation sera subordonnée : « sous réserve de la bascule DLP au 30/11 »."
+          >
+            <textarea id="dec-conditions" name="conditions" rows={2} className={FIELD} />
+          </Field>
+        </div>
+      </details>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Date d’effet" htmlFor="dec-effective" optional>
@@ -207,7 +275,7 @@ export function DecisionForm({
             : 'Les pièces validées du registre ; c’est ce qu’un auditeur lira avec la décision.'}
         </p>
         {evidence.length ? (
-          <div className="grid max-h-40 gap-1.5 overflow-y-auto rounded-md border border-ink-200 p-2.5 sm:grid-cols-2">
+          <div className="grid max-h-32 gap-1.5 overflow-y-auto rounded-md border border-ink-200 p-2.5 sm:grid-cols-2">
             {evidence.map((e) => (
               <label key={e.id} className="flex items-start gap-2 text-sm text-ink-700">
                 <input type="checkbox" name="evidenceIds" value={e.id} className="mt-0.5" />
@@ -267,33 +335,6 @@ export function DecisionForm({
           </div>
         </div>
       ) : null}
-
-      <Field
-        label="Personne appelée à se prononcer"
-        htmlFor="dec-approver"
-        optional
-        error={errors.expectedApproverUserId}
-        hint={
-          people.length
-            ? 'Elle est désignée, pas habilitée : l’approbation restera enregistrée au nom de celui qui la prononce.'
-            : 'Aucune personne habilitée n’est déclarée sur cette organisation : la décision restera adressée à personne.'
-        }
-      >
-        <select
-          id="dec-approver"
-          name="expectedApproverUserId"
-          defaultValue=""
-          disabled={people.length === 0}
-          className={FIELD}
-        >
-          <option value="">— Personne désignée plus tard</option>
-          {people.map((person) => (
-            <option key={person.userId} value={person.userId}>
-              {person.label}
-            </option>
-          ))}
-        </select>
-      </Field>
 
       {/*
         Une decision de changement significatif, de suspension ou de retrait
@@ -370,8 +411,19 @@ export function DecisionForm({
         </p>
       ) : null}
 
-      <FormFeedback state={state} />
-      <Submit pending={pending} idle="Soumettre la décision" />
+      </div>
+
+      {framed ? (
+        <div className="-mx-5 -mb-5 mt-3 flex flex-col gap-2 border-t border-ink-100 bg-white px-5 py-3.5">
+          <FormFeedback state={state} />
+          <Submit form="decision-form" pending={pending} idle="Soumettre la décision" />
+        </div>
+      ) : (
+        <>
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Soumettre la décision" />
+        </>
+      )}
     </form>
   )
 }

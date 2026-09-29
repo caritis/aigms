@@ -884,11 +884,33 @@ laisser passer.
 
 **`officer@aigms.eu` → *Faire évoluer* → *Décider* → *Autorisation d'usage***
 
-| Champ | À saisir |
-|---|---|
-| Type | **Autorisation d'usage** |
-| Ce sur quoi elle porte | `Autoriser l'usage de la génération de devis assistée, sous les contrôles retenus et les mesures de l'étude d'impact.` |
-| Personne appelée à se prononcer | **Marc Lecomte** |
+**Les neuf champs d'une décision, et lesquels sont exigés.** C'est le même
+formulaire pour les huit types de décision : le remplir une fois suffit à le
+connaître.
+
+| Champ | Exigé ? | À saisir pour l'autorisation d'usage |
+|---|---|---|
+| **Type de décision** | oui | **Autorisation d'usage** |
+| **Personne appelée à se prononcer** | non | **Marc Lecomte** |
+| **Objet** | oui — 5 car. min. | `Autorisation d'usage — génération de devis par IA` |
+| **Ce qui est décidé** | oui — 20 car. min. | `Autoriser l'usage de la génération de devis assistée, sous les contrôles retenus et les mesures de l'étude d'impact.` |
+| **Justification** | oui — 20 car. min. | `Criticité élevée, étude d'impact achevée et risques résiduels acceptés par le Porteur. Les quatre contrôles applicables sont statués et outillés.` |
+| **Contexte** | **oui** — 20 car. min. | `Les commerciaux emploient déjà des comptes personnels. L'usage existe : il s'agit de l'encadrer, pas de l'autoriser à partir de rien.` |
+| **Options écartées** | non | `Interdiction pure et simple — écartée : l'usage se poursuivrait hors de toute vue.` |
+| **Conditions** | non | `Sous réserve de la bascule DLP au 30/11.` |
+| **Date d'effet** · **Date de revue** | non *(la revue devient exigée sur une mise en production)* | à un mois · à un an |
+
+> **Trois champs que le prospect croit décoratifs, et qui ne le sont pas.**
+>
+> - **Ce qui est décidé** ≠ **Justification**. L'un est l'énoncé — *« c'est
+>   cette phrase qui sera lue dans deux ans »* —, l'autre le pourquoi. L'écran
+>   le dit sous chaque champ.
+> - **Le contexte est exigé.** *« Une décision sans contexte ne se relit pas. »*
+>   Vingt caractères minimum, refusés par la base, pas par l'écran.
+> - **Les options écartées** se replient sous *« Options écartées et
+>   conditions »* — facultatives, mais l'écran ajoute : *« mais c'est ce qui
+>   fait tenir une décision »*. Une décision sans alternative examinée se
+>   défend mal devant un auditeur.
 
 L'écran annonce ce que la décision fera : *« Approuvée, elle fait passer le cas
 d'usage “Approuvé” — ou “sous conditions”, ou “Refusé”. »*
@@ -900,8 +922,17 @@ d'usage “Approuvé” — ou “sous conditions”, ou “Refusé”. »*
 
 **`officer@aigms.eu` → *Faire évoluer* → *Décider* → *Mise en production***
 
+**Les mêmes neuf champs**, plus trois choses que ce type-là seul appelle.
+
+| Champ | Ce qui change sur une mise en production |
+|---|---|
+| **Date de revue** | **devient exigée** — *« rien ne doit dormir »* |
+| **Preuves sur lesquelles la décision se fonde** | **au moins une preuve validée** : cochez la charte déposée à l'étape 6 |
+| **Ce que vous en dites** | apparaît *si* des contrôles applicables n'ont aucune preuve — et devient exigé |
+
 Le formulaire affiche l'écart : **les contrôles applicables sans preuve, nommés
-par leur code**. Il exige que vous disiez ce qu'il en est :
+par leur code**, les obligatoires en ambre. Il exige que vous disiez ce qu'il en
+est :
 
 > *« Charte signée le 12/11. Console Enterprise livrée, option de rétention
 > désactivée. Passerelle DLP en recette, bascule prévue le 30/11. »*

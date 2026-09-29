@@ -141,8 +141,17 @@ export function TransitionModal({
       }
     >
       {() => (
-        <div className="flex flex-col gap-4">
-          <nav aria-label="Intention" className="grid gap-2 sm:grid-cols-3">
+        /*
+          Les trois intentions ne defilent pas : elles disent ou l'on est, et
+          l'on doit pouvoir changer d'avis sans remonter. Ce qu'elles ouvrent
+          defile dans sa propre zone, sous elles.
+
+          Une fois l'intention prise, les cartes se resserrent : leur texte a
+          servi a choisir, il n'a plus a occuper le tiers de la fenetre pendant
+          qu'on saisit. Celle qui est choisie garde le sien.
+        */
+        <div className="flex max-h-[76vh] min-h-0 flex-col gap-3">
+          <nav aria-label="Intention" className="grid shrink-0 gap-2 sm:grid-cols-3">
             {INTENTS.map((option) => (
               <button
                 key={option.key}
@@ -157,20 +166,24 @@ export function TransitionModal({
                 }`}
               >
                 <span className="block text-sm font-semibold">{option.title}</span>
-                <span className={`mt-0.5 block text-xs leading-relaxed ${intent === option.key ? 'text-white/80' : 'text-ink-500'}`}>
-                  {option.body}
-                </span>
+                {intent === null || intent === option.key ? (
+                  <span className={`mt-0.5 block text-xs leading-relaxed ${intent === option.key ? 'text-white/80' : 'text-ink-500'}`}>
+                    {option.body}
+                  </span>
+                ) : null}
               </button>
             ))}
           </nav>
 
           {intent === 'step' ? (
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
             <TransitionPanel
               useCaseId={useCaseId}
               targets={steps}
               unsettledRisks={unsettledRisks}
               unassessedRisks={unassessedRisks}
             />
+            </div>
           ) : intent === 'decide' ? (
             <DecisionForm
               organizationId={organizationId}
@@ -180,9 +193,12 @@ export function TransitionModal({
               allowedTypes={decisionTypes}
               evidence={evidence}
               evidenceGap={evidenceGap}
+              framed
             />
           ) : intent === 'change' ? (
-            <ChangeRequestFields organizationId={organizationId} useCaseId={useCaseId} currentAutonomy={currentAutonomy} />
+            <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+              <ChangeRequestFields organizationId={organizationId} useCaseId={useCaseId} currentAutonomy={currentAutonomy} />
+            </div>
           ) : (
             <p className="text-sm text-ink-500">Choisir ce que l’on veut faire.</p>
           )}
