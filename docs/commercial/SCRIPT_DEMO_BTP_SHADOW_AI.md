@@ -293,6 +293,37 @@ contrôle sur ce cas d'usage**, en trois onglets.
 | **Actifs d'IA** | Poser la mesure sur l'assistant conversationnel, état *Prévue* | AIGMS-SEC-008, AIGMS-SEC-006 *(mesures techniques)* |
 | **Outillage** | Déclarer le produit sur la famille que le référentiel attend | voir le tableau ci-dessous |
 
+#### Les quatre natures d'actif — à connaître avant de saisir
+
+Quand vous inscrivez un actif, l'écran demande sa **nature**. Les quatre ne se
+recouvrent pas, et le prospect posera la question.
+
+| Nature | Ce que c'est | Exemple chez BATIVAL |
+|---|---|---|
+| **Système d'IA** | Ce qui est **déployé et utilisé** tel quel : une application, un service, un assistant. La nature la plus fréquente | ChatGPT Enterprise |
+| **Modèle** | Le modèle lui-même, **entraîné ou acquis**, servant un ou plusieurs systèmes, avec sa version | — |
+| **Agent** | Un système qui **enchaîne des actions** avec une autonomie propre : il ne répond pas, il agit | — |
+| **Jeu de données** | Ce que le système **apprend ou mobilise** : entraînement, réglage, évaluation, base documentaire | Devis émis et grilles de prix |
+
+> **La phrase qui tranche.** « Un *système* est employé. Un *modèle* est ce qui
+> produit la sortie. Un *agent* décide de ses actions. Un *jeu de données* est
+> ce dont il se nourrit. BATIVAL n'entraîne aucun modèle et n'exploite aucun
+> agent : deux des quatre cases resteront vides, et c'est une information. »
+
+#### Pourquoi « Poser sur l'actif » ne propose qu'un seul actif
+
+La liste ne contient **que ce que ce cas d'usage emploie** — pas tout le
+registre. Poser une mesure sur un actif que le cas d'usage n'emploie pas ne
+voudrait rien dire.
+
+Pour en ajouter, les deux volets sous le formulaire : **Rattacher un actif déjà
+inscrit** (il existe au registre, il n'est pas encore employé ici) ou **Inscrire
+un actif** (il n'existe pas encore).
+
+> **À dire si on vous le demande.** « La liste est courte parce que le dossier
+> est honnête : ce cas d'usage emploie un assistant et un jeu de données, pas
+> l'informatique entière de l'entreprise. »
+
 > **Avant de cliquer, montrez le point ambre.** Sur AIGMS-SEC-006 et
 > AIGMS-SEC-008, l'onglet *Actifs d'IA* porte une pastille orange : la mesure
 > est technique, applicable, et ne repose sur aucun actif. « L'outil ne me
@@ -314,6 +345,19 @@ seuls gestes possibles.
 La famille est **déjà proposée dans la liste déroulante** : c'est celle que le
 contrôle appelle. Vous ne tapez que le nom du produit. Rien à chercher, aucun
 aller-retour vers le registre.
+
+**Ce que la liste des outils déclarés affiche**, une fois plusieurs produits
+posés — c'est ce que le prospect lira :
+
+```
+☑ Azure API Management    API Management · instrument et ressource
+☑ Netskope                Data Loss Prevention · instrument · suggéré par le référentiel
+☐ Splunk                  Journaux d'événements · instrument
+```
+
+Trois informations par ligne, et aucune à saisir : **la famille** du référentiel,
+**le titre** auquel l'outil est déclaré, et le fait que le référentiel l'attendait
+ou non pour ce contrôle-ci.
 
 #### Le cas qui fait comprendre la différence
 

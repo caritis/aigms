@@ -44,7 +44,16 @@ import type { ControlToolingView } from '@/components/governance/tooling-forms'
  * quand le registre est vide, et renvoyer au registre fait perdre le fil.
  */
 
+/**
+ * Le titre auquel un outil est declare, en un mot.
+ *
+ * Il ne s'affichait que pour deux roles sur trois : le plus courant —
+ * instrument d'un controle — ne montrait rien, et la typologie devenait
+ * invisible la ou elle se lit le plus. Trois mots, un par ligne, et la
+ * distinction se rappelle d'elle-meme sans rien alourdir.
+ */
 const ROLE_HINTS: Record<string, string> = {
+  control_instrument: 'instrument',
   system_resource: 'ressource du système',
   both: 'instrument et ressource',
 }
@@ -538,6 +547,12 @@ function AssetPanel({
             <form id={idPoser} action={poserAction} className="flex flex-col gap-4">
               <input type="hidden" name="useCaseId" value={useCaseId} />
               <input type="hidden" name="controlId" value={control.id} />
+              {/*
+                La liste ne propose que ce que le cas d'usage EMPLOIE — poser
+                une mesure sur un actif qu'il n'emploie pas ne voudrait rien
+                dire. Elle parait donc courte, et l'on cherchait les autres :
+                le dire evite de croire a un filtre de trop.
+              */}
               <Field
                 label={
                   nature === 'contractual'
@@ -548,8 +563,8 @@ function AssetPanel({
                 error={errors.assetId}
                 hint={
                   nature === 'contractual'
-                    ? 'La clause se signe chez le fournisseur de cet actif. Un actif sans fournisseur déclaré ne dit pas avec qui elle a été conclue.'
-                    : undefined
+                    ? 'Seuls les actifs que ce cas d’usage emploie sont proposés. La clause se signe chez le fournisseur de cet actif — sans fournisseur déclaré, elle ne dit pas avec qui elle a été conclue.'
+                    : 'Seuls les actifs que ce cas d’usage emploie sont proposés : une mesure ne se pose pas sur un actif qu’il n’emploie pas. Pour en ajouter, dépliez « Rattacher un actif déjà inscrit » ou « Inscrire un actif » ci-dessous.'
                 }
               >
                 <select id={`am-asset-${control.id}`} name="assetId" required defaultValue="" className={FIELD}>
