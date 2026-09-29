@@ -1,6 +1,6 @@
 # Script de démonstration — Shadow AI dans le BTP
 
-*Version 1 — 25 septembre 2026. Durée visée : 16 minutes, 18 avec l'option.*
+*Version 1 — 25 septembre 2026. Durée visée : 18 minutes, 20 avec l'option.*
 
 Ce script déroule un cas d'usage réel devant un prospect du bâtiment : **des
 commerciaux génèrent leurs devis sur des comptes ChatGPT personnels**, en y
@@ -96,7 +96,7 @@ visible dès l'étape 1.
 | 5 | Retenir les contrôles et leur outillage | Officer | 2 min |
 | 6 | Produire une preuve | Officer | 2 min |
 | 7 | Conduire l'étude d'impact | Officer + Porteur | 4 min |
-| 8 | **Décider — le moment clé** | Officer + Administrateur client | 2 min 30 |
+| 8 | **Franchir les jalons, puis décider — le moment clé** | Officer + Administrateur client | 4 min |
 
 ---
 
@@ -822,10 +822,83 @@ au registre des preuves, *à valider*, et l'action se solde.
 
 ---
 
-### Étape 8 — Décider : le moment qui emporte la décision
+### Étape 8 — Franchir les jalons, puis décider
 
-**`officer@aigms.eu` → onglet *Décisions* → Soumettre une décision → Mise en
-production**
+#### Où cela se passe — et pourquoi pas dans l'onglet *Décisions*
+
+**Tout part du bouton *« Faire évoluer »*, en tête de fiche.** L'onglet
+*Décisions et changements* **ne se saisit pas** : il se lit. Il l'écrit lui-même
+en toutes lettres — *« Ce fil se lit ; il ne se saisit pas. Soumettre une
+décision ou prévoir un changement se fait par Faire évoluer, en tête de
+fiche. »*
+
+Le bouton ouvre **trois intentions**, et le point d'exclamation à côté du titre
+explique ce que chacune engage :
+
+| Intention | Ce qu'elle fait | Le statut |
+|---|---|---|
+| **Franchir un jalon** | Les étapes *non engageantes* — triage, évaluation, revue | change **tout de suite**, avec un motif |
+| **Décider** | Les jalons *engageants* — approuvé, pilote, production, suspension, retrait | change **quand la décision est approuvée**, à sa date d'effet |
+| **Prévoir un changement du système** | Modèle, données, finalité, fournisseur, autonomie… | **ne bouge pas** |
+
+> **Insistez.** « Les trois ne se valent pas. L'une avance le dossier, l'autre
+> **engage l'organisation**, la troisième décrit un fait sur le système. Les
+> confondre, c'est franchir un jalon sans l'avoir décidé. »
+
+#### Pourquoi la mise en production n'est pas proposée tout de suite
+
+Le cas d'usage est encore **Brouillon**. Depuis ce statut, *Décider* ne propose
+que *Retrait* et *Exception de politique* : **la mise en production n'existe
+pas**, et ce n'est pas un défaut — c'est la chaîne de gouvernance qui refuse le
+raccourci.
+
+Chaque jalon a sa précondition, et **vous les avez toutes remplies sans le
+savoir** aux étapes précédentes. Montrez ce tableau, c'est un argument à lui
+seul :
+
+| Jalon | Ce que la base exige | Rempli à l'étape |
+|---|---|---|
+| **Triage** | Finalité renseignée, Porteur et Redevable désignés | **1** |
+| **Évaluation** | Criticité déterminée | **2** |
+| **Revue** | Pré-classification réglementaire **et** au moins un risque identifié | **3** et **4** |
+| **Approuvé** | Une décision *Autorisation d'usage* approuvée | *ci-dessous* |
+| **Production** | Le gate complet — huit vérifications | *ci-dessous* |
+
+> **Le geste qui porte.** « Je n'ai pas cliqué huit fois sur *Suivant*. J'ai fait
+> le travail, et les jalons se sont ouverts parce que le travail était fait.
+> Essayez de sauter une étape : la base vous dira laquelle manque, nommément. »
+
+#### 8a — Franchir les trois jalons non engageants
+
+**`officer@aigms.eu` → *Faire évoluer* → *Franchir un jalon***, trois fois, avec
+un motif à chaque fois. La fenêtre montre les préconditions **cochées** avant de
+laisser passer.
+
+| Vers | Motif à saisir |
+|---|---|
+| **Triage** | `Fiche complète : finalité, porteur et redevable désignés.` |
+| **Évaluation** | `Criticité élevée déterminée : données personnelles et décision commerciale engageante.` |
+| **Revue** | `Classification posée, risque coté, contrôles retenus, étude d'impact achevée et acceptée.` |
+
+#### 8b — La première décision : autoriser l'usage
+
+**`officer@aigms.eu` → *Faire évoluer* → *Décider* → *Autorisation d'usage***
+
+| Champ | À saisir |
+|---|---|
+| Type | **Autorisation d'usage** |
+| Ce sur quoi elle porte | `Autoriser l'usage de la génération de devis assistée, sous les contrôles retenus et les mesures de l'étude d'impact.` |
+| Personne appelée à se prononcer | **Marc Lecomte** |
+
+L'écran annonce ce que la décision fera : *« Approuvée, elle fait passer le cas
+d'usage “Approuvé” — ou “sous conditions”, ou “Refusé”. »*
+
+**Approuvez-la**, et le statut passe à **Approuvé**. C'est seulement là que
+*Mise en production* apparaît dans la liste des décisions possibles.
+
+#### 8c — La décision qui emporte tout : la mise en production
+
+**`officer@aigms.eu` → *Faire évoluer* → *Décider* → *Mise en production***
 
 Le formulaire affiche l'écart : **les contrôles applicables sans preuve, nommés
 par leur code**. Il exige que vous disiez ce qu'il en est :
@@ -834,7 +907,10 @@ par leur code**. Il exige que vous disiez ce qu'il en est :
 > désactivée. Passerelle DLP en recette, bascule prévue le 30/11. »*
 
 La personne appelée à se prononcer est **Marc Lecomte**, proposé par défaut :
-c'est la DSI côté client qui met en service.
+c'est la DSI côté client qui met en service. **Et vous ne pouvez pas vous
+prononcer vous-même** : sur une mise en production, une acceptation de risque ou
+une exception de politique, la base refuse que l'auteur approuve son propre
+acte.
 
 **Soumettez.**
 
@@ -859,6 +935,24 @@ remédiation.
 > pas l'écran, la base. Et l'écart reste au dossier, figé tel qu'il était au
 > moment de la soumission : une preuve déposée demain ne réécrit pas ce que
 > Marc a lu aujourd'hui. Voilà ce que vous pourrez montrer à un auditeur. »
+
+#### Quels courriels partent, et quand — à savoir avant qu'on vous le demande
+
+Toutes les alertes ne partent pas au même moment, et c'est délibéré.
+
+| Événement | Alerte dans l'application | Courriel |
+|---|---|---|
+| **Décision de mise en production soumise** | oui | **sur-le-champ**, pendant la démonstration |
+| Étude visée → le Porteur doit accepter | oui | au passage suivant de la tâche planifiée |
+| **Risques résiduels acceptés** (étape 7) | oui — l'officer la voit dans sa cloche | au passage suivant |
+| Étude renvoyée à l'étude | oui | au passage suivant |
+| Action en retard, preuve qui expire, revue due | oui | dans la **synthèse**, à la cadence de chacun |
+
+> **Ne promettez donc pas un courriel à l'étape 7.** Après l'acceptation de
+> Dominique Etchart, l'officer reçoit bien *« Risques résiduels acceptés »* —
+> **dans sa cloche, tout de suite ; par courriel, au prochain envoi.** Le seul
+> message qui part pendant la démonstration est celui de la décision de mise en
+> production : c'est celui qui retient un jalon, et il n'attend pas.
 
 ---
 
