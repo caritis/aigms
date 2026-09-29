@@ -62,6 +62,26 @@ export const LIFECYCLE_STEPS: UseCaseStatus[] = [
   'MONITORING',
 ]
 
+/**
+ * Ou se tiennent les statuts qui ne sont pas des etapes.
+ *
+ * « Approuve sous conditions », « Refuse », « Suspendu » ne figurent pas dans
+ * la frise : ce ne sont pas des etapes, ce sont des ISSUES d'une etape. Mais
+ * les tenir entierement hors de la frise revenait a l'eteindre — plus rien
+ * n'etait en cours, et l'on ne voyait plus ou l'on en etait. Le dossier
+ * paraissait revenu a zero au moment precis ou il venait d'avancer.
+ *
+ * Chacun s'ancre donc sur l'etape dont il est l'issue, et la frise l'y montre
+ * — dans sa couleur propre, et sous son nom, pour qu'on ne confonde pas une
+ * approbation sous conditions avec une approbation.
+ */
+export const OFF_PATH_ANCHOR: Partial<Record<UseCaseStatus, { step: UseCaseStatus; tone: 'warn' | 'stop' }>> = {
+  CONDITIONAL_APPROVAL: { step: 'APPROVED', tone: 'warn' },
+  REJECTED: { step: 'REVIEW', tone: 'stop' },
+  SUSPENDED: { step: 'PRODUCTION', tone: 'stop' },
+  RETIRED: { step: 'MONITORING', tone: 'stop' },
+}
+
 export type GateCheck = {
   code: string
   label: string

@@ -85,6 +85,7 @@ export function TransitionModal({
         : 'Rien à décider depuis ce statut.',
       available: decisionTypes.length > 0,
     },
+    // La troisieme intention s'ajoute apres, pour garder l'ordre a l'ecran.
     {
       key: 'change',
       title: 'Prévoir un changement du système',
@@ -92,6 +93,22 @@ export function TransitionModal({
       available: status !== 'RETIRED',
     },
   ]
+
+  /*
+    Ce que ce statut-ci permet, dit en clair sous les trois cartes.
+
+    « Approuvé sous conditions » n'ouvre pas la production : il ouvre le
+    pilote. On lisait « Approbation de pilote » dans la liste sans savoir si
+    c'etait un reliquat ou le seul chemin — c'est le seul chemin.
+  */
+  const CHEMINS: Partial<Record<UseCaseStatus, string>> = {
+    CONDITIONAL_APPROVAL:
+      'Approuvé sous conditions : la mise en production ne s’ouvre pas d’ici. Le chemin passe par le pilote — c’est le sens des conditions posées à l’approbation. Une approbation pleine, elle, ouvrirait la production directement.',
+    APPROVED: 'Approuvé : le pilote et la mise en production sont ouverts, l’un et l’autre par décision.',
+    REJECTED: 'Refusé : le dossier se reprend en le ramenant au brouillon, ou se retire.',
+    SUSPENDED: 'Suspendu : la reprise en service se décide, comme l’arrêt s’était décidé.',
+  }
+  const chemin = CHEMINS[status]
 
   return (
     <Modal
@@ -172,7 +189,12 @@ export function TransitionModal({
                 }`}
               >
                 <span className="block text-sm font-semibold">{option.title}</span>
-                {intent === null || intent === option.key ? (
+                {/*
+                  Une carte indisponible garde son texte : c'est la qu'est
+                  ecrit POURQUOI elle l'est. La griser sans rien dire laissait
+                  chercher la porte qui manque.
+                */}
+                {intent === null || intent === option.key || !option.available ? (
                   <span className={`mt-0.5 block text-xs leading-relaxed ${intent === option.key ? 'text-white/80' : 'text-ink-500'}`}>
                     {option.body}
                   </span>
@@ -180,6 +202,12 @@ export function TransitionModal({
               </button>
             ))}
           </nav>
+
+          {chemin ? (
+            <p className="shrink-0 rounded-md border border-ink-200 bg-ink-50 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+              {chemin}
+            </p>
+          ) : null}
 
           {intent === 'step' ? (
             <div className="min-h-0 flex-1 overflow-y-auto pr-1">
