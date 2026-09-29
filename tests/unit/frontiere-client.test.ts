@@ -68,4 +68,32 @@ describe('Frontière serveur / client', () => {
 
     expect(fautes).toEqual([])
   })
+
+  /*
+    L'erreur miroir, et elle est pire : un module `'use server'` ne peut
+    exporter QUE des fonctions asynchrones. Une constante ou une fonction
+    synchrone y annule TOUS les exports du module — « the module has no
+    exports at all » — et tout ce qui en dependait tombe d'un coup.
+
+    Ni `tsc` ni ESLint ne le voient. Seul `next build` le dit, c'est-a-dire au
+    deploiement. Ce test le dit en une seconde.
+  */
+  it('un module d’actions serveur n’exporte que des fonctions asynchrones', () => {
+    const fautes: string[] = []
+
+    for (const fichier of tous) {
+      const source = readFileSync(fichier, 'utf8')
+      if (!/^\s*['"]use server['"]/m.test(source)) continue
+
+      for (const m of source.matchAll(/^export\s+(?!type\b|interface\b)(\w+)\s*(\w+)?/gm)) {
+        const [, mot, nom] = m
+        // `export async function` est la seule forme admise ; `export type`
+        // et `export interface` sont effaces a la compilation.
+        if (mot === 'async') continue
+        fautes.push(`${fichier} exporte « ${mot}${nom ? ` ${nom}` : ''} » : seules les fonctions asynchrones sont permises dans un module 'use server'.`)
+      }
+    }
+
+    expect(fautes).toEqual([])
+  })
 })

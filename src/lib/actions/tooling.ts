@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { resolveVendor, vendorIdSaisi } from '@/lib/actions/registry'
+import { resolveVendor } from '@/lib/actions/registry'
+import { vendorIdSaisi } from '@/lib/domain/vendors'
 
 /**
  * Avec quoi l'organisation tient ses controles.

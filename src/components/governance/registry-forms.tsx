@@ -4,7 +4,6 @@ import { useActionState, useState } from 'react'
 import {
   createAsset,
   createVendor,
-  NOUVEAU_FOURNISSEUR,
   linkAssetToUseCase,
   linkVendorToUseCase,
   reviewVendor,
@@ -14,6 +13,7 @@ import {
   type FormState,
 } from '@/lib/actions/registry'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
+import { NOUVEAU_FOURNISSEUR } from '@/lib/domain/vendors'
 import { Modal } from '@/components/modal'
 import { adoptCatalogControl } from '@/lib/actions/controls'
 
