@@ -305,20 +305,67 @@ inscrit*, *inscrire un actif*, *déclarer un produit* — sont repliés… **sau
 quand le registre est vide**, où ils s'ouvrent d'eux-mêmes : ce sont alors les
 seuls gestes possibles.
 
-| Famille suggérée | Produit à déclarer | Sur quel contrôle |
-|---|---|---|
-| Passerelle d'appels IA *(AI Gateway)* | ChatGPT Enterprise | AIGMS-SUP-005 |
-| Prévention des fuites *(DLP)* | Netskope | AIGMS-SEC-008 |
-| Journalisation *(Logs / SIEM)* | Splunk | AIGMS-SEC-006 |
+| Famille suggérée | Produit à déclarer | Sur quel contrôle | Rôle |
+|---|---|---|---|
+| Prévention des fuites *(DLP)* | Netskope | AIGMS-SEC-008 | instrument seul |
+| Journalisation *(Logs)* | Splunk | AIGMS-SEC-006 | instrument seul |
+| Passerelle d'appels IA *(AI Gateway)* | Azure API Management | AIGMS-SEC-008 | **les deux** |
 
 La famille est **déjà proposée dans la liste déroulante** : c'est celle que le
 contrôle appelle. Vous ne tapez que le nom du produit. Rien à chercher, aucun
 aller-retour vers le registre.
 
+#### Le cas qui fait comprendre la différence
+
+Sur la passerelle, l'écran demande : **« Est-ce aussi un actif d'IA que vous
+employez ? »** Répondez **oui** et rattachez-la.
+
+> **Le geste qui porte.** « Une passerelle d'appels IA **applique mes règles** —
+> c'est un instrument de contrôle. Et elle **traite mes données** — c'est donc
+> aussi quelque chose que je dois gouverner. Un produit, deux rôles. L'outil ne
+> me demande pas de choisir : il me demande un fait, et il en déduit le reste. »
+
+Ouvrez ensuite **Registres → Actifs d'IA et fournisseurs → Tout ce que vous
+employez** : la passerelle y figure **une seule fois**, avec ses deux pastilles
+*Gouverné* et *Instrument*. Netskope et Splunk ne portent que *Instrument*.
+ChatGPT Enterprise ne porte que *Gouverné*.
+
+> **La phrase à retenir, si on vous la demande.** « Si l'auditeur dit *montrez-moi
+> ce que fait votre IA*, il parle des actifs. S'il dit *prouvez-moi que vous la
+> maîtrisez*, il parle de l'outillage. »
+
+#### Et AIGMS-SUP-005 ? Aucun outil
+
+Ouvrez son onglet **Outillage**. L'écran dit : *« Le référentiel AIGMS ne
+suggère aucune famille pour ce contrôle. »*
+
+Ce n'est pas un manque. **AIGMS-SUP-005 est un contrôle contractuel** : il
+établit *si le fournisseur peut utiliser les données soumises pour entraîner ses
+modèles, les conserver, les relire*. Ce qui le tient n'est pas un outil, c'est un
+**contrat** — et la preuve est la clause signée, plus la capture de la console
+Enterprise montrant la rétention désactivée.
+
+> **Insistez ici.** « Tout ne se tient pas avec un outil. Celui-ci se tient avec
+> une signature. AIGMS ne me force pas à inventer un produit pour remplir une
+> case : il me dit qu'il n'en attend pas, et il attend une preuve d'une autre
+> nature. »
+
+#### Où ChatGPT Enterprise se déclare, et pourquoi là
+
+**C'est un actif d'IA, pas un outillage.** Il se déclare depuis l'onglet
+*Actifs d'IA* du contrôle — ou depuis le registre — comme **système d'IA**, en
+remplacement des comptes personnels. C'est ce que les commerciaux emploieront :
+il traite vos devis, vos marges, vos coordonnées clients. **Il est l'objet
+gouverné.**
+
+Ce qui *tient* les contrôles, ce sont Netskope, Splunk et la passerelle. La
+console Enterprise, elle, ne tient rien : elle **prouve** — sa configuration est
+une pièce déposée sur AIGMS-SUP-005.
+
 #### Le fournisseur se crée sans quitter l'écran
 
-Sur **AIGMS-SUP-005**, au moment de déclarer *ChatGPT Enterprise*, le champ
-*Fournisseur* porte une entrée **« + Nouveau fournisseur… »**. Choisissez-la :
+Au moment de déclarer *ChatGPT Enterprise* comme actif, le champ **« Qui vous le
+fournit ? »** porte une entrée **« + Nouveau fournisseur… »**. Choisissez-la :
 deux champs apparaissent, *nom* et *pays*. Saisissez `Open.AI` et `US`.
 
 > **Le geste qui porte.** « Je viens de créer un tiers au milieu de ma saisie,
