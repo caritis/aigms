@@ -13,7 +13,7 @@ import {
   type FormState,
 } from '@/lib/actions/registry'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
-import { NOUVEAU_FOURNISSEUR } from '@/lib/domain/vendors'
+import { NOUVEAU_FOURNISSEUR } from '@/lib/domain/saisie'
 import { Modal } from '@/components/modal'
 import { adoptCatalogControl } from '@/lib/actions/controls'
 
@@ -42,7 +42,7 @@ const REVIEW_STATUSES = [
   ['expired', 'Échue'],
 ] as const
 
-const ASSET_KINDS = [
+export const ASSET_KINDS = [
   ['ai_system', 'Système d’IA — ce qui est déployé et utilisé'],
   ['ai_model', 'Modèle — entraîné ou acquis, servant un ou plusieurs systèmes'],
   ['ai_agent', 'Agent — enchaîne des actions avec une autonomie propre'],

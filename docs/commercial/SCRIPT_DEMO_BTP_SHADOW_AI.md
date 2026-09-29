@@ -336,15 +336,37 @@ inscrit*, *inscrire un actif*, *déclarer un produit* — sont repliés… **sau
 quand le registre est vide**, où ils s'ouvrent d'eux-mêmes : ce sont alors les
 seuls gestes possibles.
 
-| Famille suggérée | Produit à déclarer | Sur quel contrôle | Rôle |
-|---|---|---|---|
-| Prévention des fuites *(DLP)* | Netskope | AIGMS-SEC-008 | instrument seul |
-| Journalisation *(Logs)* | Splunk | AIGMS-SEC-006 | instrument seul |
-| Passerelle d'appels IA *(AI Gateway)* | Azure API Management | AIGMS-SEC-008 | **les deux** |
+Trois champs seulement se saisissent : la **famille**, le **produit**, et une
+question fermée — *« Est-ce aussi un actif d'IA que vous employez ? »*
 
-La famille est **déjà proposée dans la liste déroulante** : c'est celle que le
-contrôle appelle. Vous ne tapez que le nom du produit. Rien à chercher, aucun
-aller-retour vers le registre.
+| Famille suggérée | Produit à déclarer | Sur quel contrôle | Aussi un actif ? |
+|---|---|---|---|
+| Prévention des fuites *(DLP)* | Netskope | AIGMS-SEC-008 | **non** |
+| Journalisation *(Logs)* | Splunk | AIGMS-SEC-006 | **non** |
+| Passerelle d'appels IA *(AI Gateway)* | Azure API Management | AIGMS-SEC-008 | **oui** — *« + L'inscrire au registre des actifs d'IA… »* |
+
+> **Le rôle ne se choisit pas : il se déduit.** L'écran ne demande jamais
+> « instrument ou ressource ? » — un produit n'est ni l'un ni l'autre en soi.
+> Il pose une question de fait, et en tire la conséquence, écrite sous le champ :
+>
+> - **non** → *« Il sera déclaré instrument d'un contrôle : vous gouvernez avec,
+>   sans le gouverner lui-même. »*
+> - **oui** → *« Il sera déclaré instrument et ressource : vous le gouvernez, et
+>   vous gouvernez avec. »*
+
+La famille, elle, est **déjà proposée dans la liste déroulante** : c'est celle
+que le contrôle appelle. Vous ne tapez que le nom du produit.
+
+**La passerelle n'est nulle part encore** — et c'est le point. La question
+*« est-ce aussi un actif d'IA ? »* n'aurait aucune réponse possible s'il fallait
+d'abord sortir, ouvrir le registre des actifs, l'y inscrire, revenir. La liste
+déroulante offre donc, en dernière ligne, **« + L'inscrire au registre des
+actifs d'IA… »** : un seul champ de plus apparaît — **de quelle nature ?**
+(*système d'IA*, par défaut) — et l'actif naît avec le nom du produit et le
+fournisseur déjà saisis. Sa fiche se complète plus tard, au registre.
+
+> Même geste que pour le fournisseur qu'on crée sans quitter l'écran : **on
+> n'oblige jamais à sortir pour créer ce qui manque au moment où il manque.**
 
 **Ce que la liste des outils déclarés affiche**, une fois plusieurs produits
 posés — c'est ce que le prospect lira :

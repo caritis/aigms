@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { resolveVendor } from '@/lib/actions/registry'
-import { vendorIdSaisi } from '@/lib/domain/vendors'
+import { assetIdSaisi, NOUVEL_ACTIF, vendorIdSaisi } from '@/lib/domain/saisie'
 
 /**
  * Avec quoi l'organisation tient ses controles.
@@ -53,6 +53,8 @@ const toolingSchema = z.object({
   role: z.enum(['control_instrument', 'system_resource', 'both']).default('control_instrument'),
   // Renseigné quand l'outil est lui-même un actif d'IA déclaré.
   assetId: z.string().uuid().optional().or(z.literal('')),
+  /** La nature de l'actif à inscrire, quand on demande à l'inscrire ici. */
+  assetKind: z.enum(['ai_system', 'ai_model', 'ai_agent', 'dataset']).optional(),
   note: z.string().trim().max(1000).optional().or(z.literal('')),
 })
 
@@ -76,7 +78,8 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     product: formData.get('product'),
     vendorId: vendorIdSaisi(formData),
     role: formData.get('role') || 'control_instrument',
-    assetId: formData.get('assetId') ?? '',
+    assetId: assetIdSaisi(formData),
+    assetKind: (formData.get('assetKind') as string | null) ?? undefined,
     note: formData.get('note') ?? '',
   })
   if (!parsed.success) return firstIssues(parsed.error)
@@ -98,6 +101,39 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     return { ok: false, message: fournisseur.message, fieldErrors: { vendorId: fournisseur.message } }
   }
 
+  /*
+    L'actif qu'on inscrit en meme temps que l'outil.
+    Une passerelle d'appels IA applique les regles ET traite les donnees : elle
+    est les deux. Mais elle n'existe pas encore au registre au moment ou on la
+    declare comme outil — la question « est-ce aussi un actif ? » n'avait donc
+    aucune reponse possible. Il fallait sortir, inscrire, revenir.
+    Il herite du nom du produit et du fournisseur qu'on vient de choisir ; le
+    reste se complete sur sa fiche, au registre des actifs.
+  */
+  let assetId = d.assetId || null
+  let actifCree: string | null = null
+  if (formData.get('assetId') === NOUVEL_ACTIF) {
+    const { data: actif, error: actifError } = await supabase
+      .from('ai_asset')
+      .insert({
+        tenant_id: organization.tenant_id,
+        organization_id: d.organizationId,
+        kind: d.assetKind ?? 'ai_system',
+        name: d.product,
+        vendor_id: fournisseur.vendorId,
+      })
+      .select('id')
+      .single()
+    if (actifError) {
+      return {
+        ok: false,
+        message: `${d.product} n’a pas pu être inscrit au registre des actifs : ${explain(actifError)}`,
+      }
+    }
+    assetId = actif.id
+    actifCree = d.product
+  }
+
   const row = {
     tenant_id: organization.tenant_id,
     organization_id: d.organizationId,
@@ -105,8 +141,8 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     product: d.product,
     vendor_id: fournisseur.vendorId,
     // Déduit, jamais deviné : rattaché à un actif, l'outil est les deux.
-    role: d.assetId ? 'both' : d.role,
-    asset_id: d.assetId || null,
+    role: assetId ? 'both' : d.role,
+    asset_id: assetId,
     note: d.note || null,
   }
 
@@ -121,12 +157,16 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     ? await supabase.from('organization_tooling').update(row).eq('id', d.toolingId).select('id').single()
     : await supabase.from('organization_tooling').insert(row).select('id').single()
   if (error) {
-    // Le tiers a pu naitre avant l'echec : le taire ferait chercher un
-    // fournisseur qu'on croirait perdu, et le recreer en double.
+    // Le tiers et l'actif ont pu naitre avant l'echec : les taire ferait
+    // chercher ce qu'on croirait perdu, et le recreer en double.
+    const nes = [
+      fournisseur.cree ? `le tiers ${fournisseur.cree}` : null,
+      actifCree ? `l’actif ${actifCree}` : null,
+    ].filter(Boolean)
     return {
       ok: false,
-      message: fournisseur.cree
-        ? `${explain(error)} Le tiers ${fournisseur.cree} a bien été créé : reprenez en le choisissant dans la liste.`
+      message: nes.length
+        ? `${explain(error)} En revanche ${nes.join(' et ')} ${nes.length > 1 ? 'ont' : 'a'} bien été créé${nes.length > 1 ? 's' : ''} : reprenez en les choisissant dans les listes.`
         : explain(error),
     }
   }
@@ -138,9 +178,13 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
   return {
     ok: true,
     toolingId: outil.id,
-    message: fournisseur.cree
-      ? `${d.product} enregistré, et le tiers ${fournisseur.cree} créé — sa revue reste à ouvrir. Il est coché ci-dessus : « Retenir » l'attache à ce contrôle.`
-      : `${d.product} enregistré et coché ci-dessus : « Retenir » l’attache à ce contrôle.`,
+    message: [
+      `${d.product} enregistré et coché ci-dessus : « Retenir » l’attache à ce contrôle.`,
+      actifCree ? `Il est aussi inscrit au registre des actifs d’IA : vous le gouvernez, et vous gouvernez avec.` : null,
+      fournisseur.cree ? `Le tiers ${fournisseur.cree} est créé — sa revue reste à ouvrir.` : null,
+    ]
+      .filter(Boolean)
+      .join(' '),
   }
 }
 

@@ -2,9 +2,10 @@
 
 import { useActionState, useState, useTransition } from 'react'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
-import { VendorPicker } from '@/components/governance/registry-forms'
+import { ASSET_KINDS, VendorPicker } from '@/components/governance/registry-forms'
 import { Modal } from '@/components/modal'
 import { removeTooling, retainTooling, saveTooling, type FormState } from '@/lib/actions/tooling'
+import { NOUVEL_ACTIF } from '@/lib/domain/saisie'
 
 /**
  * Declarer avec quoi l'organisation tient ses controles, et retenir ce qui
@@ -258,8 +259,32 @@ export function ToolingFields({
               {assets.map((a) => (
                 <option key={a.id} value={a.id}>{a.business_ref} — {a.name}</option>
               ))}
+              {/*
+                La passerelle d'appels IA du script de demo n'existait nulle
+                part : elle se declare comme outil, et c'est la qu'on apprend
+                qu'elle est aussi un actif. La question n'avait alors aucune
+                reponse possible — il fallait sortir, l'inscrire au registre,
+                revenir. On l'inscrit d'ici, comme le fournisseur.
+              */}
+              <option value={NOUVEL_ACTIF}>+ L’inscrire au registre des actifs d’IA…</option>
             </select>
           </Field>
+
+          {actif === NOUVEL_ACTIF ? (
+            <Field
+              label="De quelle nature ?"
+              htmlFor={`asset-kind-${idSuffix}`}
+              error={errors.assetKind}
+              hint="Il portera le nom du produit et le fournisseur saisis ci-dessus ; le reste se complète sur sa fiche, au registre."
+            >
+              <select id={`asset-kind-${idSuffix}`} name="assetKind" defaultValue="ai_system" className={FIELD}>
+                {ASSET_KINDS.map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+            </Field>
+          ) : null}
+
           <p className="-mt-2 text-xs leading-relaxed text-ink-500">
             {actif
               ? 'Il sera déclaré « instrument et ressource » : vous le gouvernez, et vous gouvernez avec.'

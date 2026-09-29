@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { NOUVEAU_FOURNISSEUR, vendorIdSaisi } from '@/lib/domain/vendors'
+import { NOUVEAU_FOURNISSEUR, vendorIdSaisi } from '@/lib/domain/saisie'
 
 /**
  * Saisie du registre : fournisseurs, actifs d'IA, supervision humaine,
