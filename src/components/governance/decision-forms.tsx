@@ -687,6 +687,8 @@ export function DecisionRulingForm({
   rationale,
   conditions,
   awaiting,
+  effectiveFrom = null,
+  reviewDueAt = null,
   evidenceGap = [],
   evidenceGapStatement = null,
 }: {
@@ -697,6 +699,14 @@ export function DecisionRulingForm({
   decisionType: string
   rationale: string | null
   conditions: string | null
+  /**
+   * Ce que celui qui a soumis avait prevu. Les deux champs s'ouvraient vides :
+   * on retapait des dates deja posees, ou l'on en posait d'autres sans le
+   * vouloir — la revue s'etait retrouvee au jour meme au lieu d'un an plus
+   * tard. Ce sont des propositions : celui qui se prononce les corrige.
+   */
+  effectiveFrom?: string | null
+  reviewDueAt?: string | null
   /** L'écart figé à la soumission, tel qu'il a été notifié (0098). */
   evidenceGap?: { control_id: string; code: string; name: string; is_mandatory: boolean }[]
   /** Ce que l'AI Governance Officer en a dit. */
@@ -831,6 +841,7 @@ export function DecisionRulingForm({
                 <input
                   id={`eff-${decisionId}`}
                   name="effectiveFrom"
+                  defaultValue={effectiveFrom ?? ''}
                   type="date"
                   required
                   className={FIELD}
@@ -841,7 +852,13 @@ export function DecisionRulingForm({
                 htmlFor={`rev-${decisionId}`}
                 optional={!NEEDS_REVIEW.includes(decisionType)}
               >
-                <input id={`rev-${decisionId}`} name="reviewDueAt" type="date" className={FIELD} />
+                <input
+                id={`rev-${decisionId}`}
+                name="reviewDueAt"
+                type="date"
+                defaultValue={reviewDueAt ?? ''}
+                className={FIELD}
+              />
               </Field>
             </div>
           ) : null}

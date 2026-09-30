@@ -6436,6 +6436,28 @@ export type Database = {
       }
       criticality_signal: { Args: { p_use_case_id: string }; Returns: Json }
       current_organization: { Args: never; Returns: string }
+      decision_approvers: {
+        Args: {
+          p_organization_id: string
+          p_type:
+            | "use_case_authorization"
+            | "pilot_approval"
+            | "go_production"
+            | "risk_acceptance"
+            | "policy_exception"
+            | "significant_change"
+            | "suspension"
+            | "retirement"
+          p_use_case_id?: string
+        }
+        Returns: {
+          arbitre: boolean
+          name: string
+          propose: boolean
+          roles: string[]
+          user_id: string
+        }[]
+      }
       decisions_and_changes: {
         Args: { p_organization_id: string; p_use_case_id?: string }
         Returns: Json

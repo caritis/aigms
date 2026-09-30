@@ -15,7 +15,7 @@ import { TransitionModal } from '@/components/governance/transition-modal'
 import { IncidentTicket } from '@/components/governance/incident-ticket'
 import { EvidenceDepositModal } from '@/components/governance/evidence-deposit-modal'
 import type { ControlChoice, TypologyChoice } from '@/components/governance/evidence-forms'
-import { describePerson, organizationPeople } from '@/lib/governance/people'
+import { describePerson, organizationPeople, ROLE_LABELS } from '@/lib/governance/people'
 import { unlinkAssetFromUseCase } from '@/lib/actions/registry'
 import { resolveTab, SuiviSwitch, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
 import {
@@ -502,6 +502,8 @@ export default async function UseCasePage({
       rationale: string | null
       conditions: string | null
       status: string
+      effective_from: string | null
+      review_due_at: string | null
       evidence_gap: EvidenceGap[] | null
       evidence_gap_statement: string | null
       evidence_gap_acknowledged_at: string | null
@@ -627,11 +629,36 @@ export default async function UseCasePage({
     .filter((a) => a.organization_id === useCase.organization_id)
     .map((a) => ({ id: a.id, name: a.name, business_ref: a.business_ref }))
 
-  // Les personnes qui peuvent se prononcer sur une decision.
-  const reviewers = (await organizationPeople(useCase.organization_id, true)).map((p) => ({
-    userId: p.userId,
-    label: describePerson(p),
-  }))
+  /*
+    Les personnes qui peuvent se prononcer, et laquelle TIENT l'arbitrage.
+
+    La liste alignait les noms sans le dire : on proposait la DSI sur une mise
+    en production de criticité elevee, elle recevait l'alerte, remplissait son
+    verdict — et decouvrait a l'enregistrement qu'elle n'avait pas qualite. Le
+    refus etait bon ; le proposer ne l'etait pas.
+  */
+  const { data: approverRows } = await supabase.rpc('decision_approvers', {
+    p_organization_id: useCase.organization_id,
+    p_type: 'go_production',
+    p_use_case_id: id,
+  })
+  const approvers = (approverRows ?? []) as {
+    user_id: string
+    name: string
+    roles: string[]
+    arbitre: boolean
+    propose: boolean
+  }[]
+  const reviewers = approvers.length
+    ? approvers.map((p) => ({
+        userId: p.user_id,
+        label: `${p.name} — ${p.roles.map((r) => ROLE_LABELS[r] ?? r).join(', ')}${p.arbitre ? ' · arbitre les cas critiques' : ''}`,
+      }))
+    : (await organizationPeople(useCase.organization_id, true)).map((p) => ({
+        userId: p.userId,
+        label: describePerson(p),
+      }))
+  const arbitreDefaut = approvers.find((p) => p.propose)?.user_id
 
   const people = (memberships ?? [])
     .map((m) => m.user as unknown as { id: string; full_name: string | null; email: string; job_title: string | null } | null)
@@ -739,7 +766,7 @@ export default async function UseCasePage({
             evidence={validatedEvidence ?? []}
             evidenceGap={evidenceGap}
             useCaseName={useCase.name}
-            defaultApproverUserId={useCase.accountable_user_id ?? undefined}
+            defaultApproverUserId={arbitreDefaut ?? useCase.accountable_user_id ?? undefined}
             /*
               Le dossier, tel qu'il est au moment ou l'on decide. L'officer ne
               doit pas retrouver de tete ce qu'il a saisi il y a dix minutes :
@@ -2018,6 +2045,8 @@ export default async function UseCasePage({
                             rationale={gapByDecision.get(e.id)!.rationale}
                             conditions={gapByDecision.get(e.id)!.conditions}
                             awaiting={['draft', 'submitted'].includes(gapByDecision.get(e.id)!.status)}
+                            effectiveFrom={gapByDecision.get(e.id)!.effective_from}
+                            reviewDueAt={gapByDecision.get(e.id)!.review_due_at}
                             evidenceGap={(gapByDecision.get(e.id)!.evidence_gap ?? []) as EvidenceGap[]}
                             evidenceGapStatement={gapByDecision.get(e.id)!.evidence_gap_statement}
                           />

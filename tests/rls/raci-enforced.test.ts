@@ -51,6 +51,46 @@ describe('RACI — validation des preuves', () => {
 })
 
 describe('RACI — arbitrage critique', () => {
+  /*
+   * 0119 : la personne proposee tient l'arbitrage. On proposait la DSI sur une
+   * mise en production de criticite elevee : elle recevait l'alerte,
+   * remplissait son verdict, et decouvrait a l'enregistrement qu'elle n'avait
+   * pas qualite. Le refus etait bon ; le proposer ne l'etait pas.
+   */
+  it('propose le Comité de direction dès que l’arbitrage est critique', async () => {
+    const r = await asUser(db, DEMO.officerA, async (c) => {
+      await c.query("update public.ai_use_case set criticality = 'high' where id = $1", [
+        DEMO.useCasePilot,
+      ])
+      const { rows } = await c.query<{ name: string; arbitre: boolean; propose: boolean }>(
+        `select name, arbitre, propose
+           from public.decision_approvers($1, 'go_production', $2)`,
+        [DEMO.orgA, DEMO.useCasePilot],
+      )
+      return rows
+    })
+
+    const propose = r.find((p) => p.propose)!
+    expect(propose.arbitre).toBe(true)
+    // Et il vient en tête : celui qui tient l'arbitrage se lit en premier.
+    expect(r[0]!.propose).toBe(true)
+  })
+
+  it('propose l’Administrateur client sur une mise en production ordinaire', async () => {
+    const r = await asUser(db, DEMO.officerA, async (c) => {
+      await c.query("update public.ai_use_case set criticality = 'moderate' where id = $1", [
+        DEMO.useCasePilot,
+      ])
+      const { rows } = await c.query<{ name: string; roles: string[]; propose: boolean }>(
+        `select name, roles, propose from public.decision_approvers($1, 'go_production', $2)`,
+        [DEMO.orgA, DEMO.useCasePilot],
+      )
+      return rows
+    })
+
+    expect(r.find((p) => p.propose)!.roles).toContain('client_admin')
+  })
+
   it('une mise en production d’un cas d’usage élevé ne s’approuve que par le Comité de direction', async () => {
     const r = await asUser(db, DEMO.officerA, async (c) => {
       const { rows } = await c.query<{ id: string }>(

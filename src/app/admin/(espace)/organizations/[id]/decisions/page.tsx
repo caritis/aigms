@@ -426,6 +426,8 @@ export default async function DecisionsPage({
                         rationale={decision.rationale}
                         conditions={decision.conditions}
                         awaiting={['draft', 'submitted'].includes(decision.status)}
+                        effectiveFrom={decision.effective_from}
+                        reviewDueAt={decision.review_due_at}
                         evidenceGap={(decision.evidence_gap ?? []) as EvidenceGap[]}
                         evidenceGapStatement={decision.evidence_gap_statement}
                       />

@@ -45,7 +45,7 @@ Mot de passe commun : `Demo!Passw0rd`
 | `devsecops@aigms.eu` | Dominique Etchart | Porteur de l'IA | Accepte les risques résiduels |
 | `risk-comity@aigms.eu` | Sacha Belarbi | Comité des risques | Répond du risque coté |
 | `rssi@aigms.eu` | Yann Cazaux | Expert métier (DPO / RSSI) | Cité, non sollicité |
-| `direction@aigms.eu` | Élodie Marchetti | Comité de direction | Citée, non sollicitée |
+| `direction@aigms.eu` | Élodie Marchetti | Comité de direction | **Arbitre la mise en production du cas critique — étape 8c** |
 | `audit@aigms.eu` | Noa Lasserre | Auditeur | Cité, non sollicité |
 
 > **Ce sont les mêmes personnes que sur l'autre organisation de démonstration.**
@@ -1104,8 +1104,18 @@ est :
 > *« Charte signée le 12/11. Console Enterprise livrée, option de rétention
 > désactivée. Passerelle DLP en recette, bascule prévue le 30/11. »*
 
-La personne appelée à se prononcer est **Marc Lecomte**, proposé par défaut :
-c'est la DSI côté client qui met en service. **Et vous ne pouvez pas vous
+**La personne appelée à se prononcer n'est pas celle qu'on croit.** Sur un cas
+d'usage de criticité **élevée ou critique**, la mise en production relève de
+l'**arbitrage du Comité de direction** — la base refuse l'approbation de
+quiconque ne tient pas ce rôle. L'écran le propose donc d'office, et la liste
+dit qui tient quoi :
+
+> *Élodie Marchetti — Comité de direction · **arbitre les cas critiques***
+
+> **À dire.** « Sur un usage courant, c'est la DSI qui met en service. Sur
+> celui-ci — données personnelles, décision commerciale engageante, criticité
+> élevée — ce n'est plus son arbitrage. **L'outil ne me laisse pas le découvrir
+> au moment de signer** : il me propose la bonne personne, et il dit pourquoi. » **Et vous ne pouvez pas vous
 prononcer vous-même** : sur une mise en production, une acceptation de risque ou
 une exception de politique, la base refuse que l'auteur approuve son propre
 acte.
@@ -1121,13 +1131,32 @@ remédiation.
 > **C'est le moment de la démonstration.** Laissez le silence s'installer.
 > « Ce n'est pas une maquette. Ce message est parti il y a quinze secondes. »
 
-#### Puis connectez-vous en `dsi-admin@aigms.eu`
+#### Puis connectez-vous au compte de la personne désignée
 
 - *Mes alertes* → la décision l'attend
-- Il lit l'écart et la parole de l'officer
+- Il lit l'écart de preuve, l'écart de jalon, et la parole de l'officer
 - Il coche **« J'ai pris connaissance de cet écart de preuve et l'assume en
   approuvant »**
-- Il approuve
+
+**La fenêtre « Se prononcer sur la décision », champ par champ** :
+
+| Champ | À saisir |
+|---|---|
+| **Verdict** | **Approuver** *(ou « Approuver sous conditions », qui exige alors des conditions)* |
+| **Motif du verdict** | `Écart assumé : la charte est validée, la bascule DLP est datée au 30/11 et l'action de relecture est confiée. Je mets en service sous ces réserves.` |
+| **Date d'effet** | **déjà proposée** — celle que l'officer avait posée |
+| **Date de revue** | **déjà proposée** — celle que l'officer avait posée |
+
+> **Les deux dates sont reprises de la décision.** Elles s'ouvraient vides : on
+> retapait ce qui était déjà posé, ou l'on posait sans le vouloir une revue au
+> jour même au lieu d'un an plus tard. Ce sont des propositions — celui qui se
+> prononce les corrige s'il l'entend autrement, et **c'est sa date qui vaut**.
+
+> **Le motif du verdict n'est pas la justification de l'officer.** L'un a
+> demandé, l'autre accorde. Les deux restent au dossier, côte à côte, et c'est
+> ce qu'un auditeur vient lire.
+
+Il approuve.
 
 > **Insistez pour finir.** « Sans cette case, la **base** refuse l'approbation —
 > pas l'écran, la base. Et l'écart reste au dossier, figé tel qu'il était au
