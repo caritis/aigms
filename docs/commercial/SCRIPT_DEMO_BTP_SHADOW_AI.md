@@ -837,6 +837,18 @@ Et dans la colonne de droite, le pavé **Preuve** porte un bouton : **« Dépose
 l'export comme preuve »**. Un clic — l'export `.docx` au format du modèle part
 au registre des preuves, *à valider*, et l'action se solde.
 
+**Le bouton disparaît alors**, et la pièce prend sa place : *« Déposée. Une
+étude ne se dépose qu'une fois par achèvement. »* Pour en verser une autre
+version, il faut **rouvrir l'étude en disant pourquoi**, la réviser, la faire
+viser et accepter de nouveau. La nouvelle pièce **remplace** alors la
+précédente — et le remplacement ne prend effet qu'à **sa** validation :
+jusque-là, l'ancienne reste ce qui vaut.
+
+> **Si on vous demande pourquoi.** « Une étude d'impact, ce n'est pas un fichier
+> qu'on redépose quand on veut. C'est un acte daté, visé et accepté. Le seul
+> chemin vers une deuxième version passe par une réouverture motivée — et ce
+> motif reste au dossier. »
+
 > **La phrase de fin d'étape.** « Le rapport d'étude d'impact n'est pas un
 > fichier sur un partage réseau qu'on retrouvera peut-être. Il est une pièce du
 > registre, horodatée, avec son empreinte, rattachée à son cas d'usage — et

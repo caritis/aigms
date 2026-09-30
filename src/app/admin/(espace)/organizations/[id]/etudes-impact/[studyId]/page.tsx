@@ -30,7 +30,13 @@ import {
 } from '@/lib/domain/impact'
 import { CRITICALITY_LABELS, type Criticality } from '@/lib/domain/criticality'
 import { CLASSIFICATION_FLAG_LABELS, ORGANIZATION_ROLE_LABELS } from '@/lib/domain/classification'
-import { ACTION_STATUS_LABELS, AUTONOMY_LABELS, formatDate, formatDateTime } from '@/lib/domain/governance'
+import {
+  ACTION_STATUS_LABELS,
+  AUTONOMY_LABELS,
+  EVIDENCE_VALIDATION_LABELS,
+  formatDate,
+  formatDateTime,
+} from '@/lib/domain/governance'
 import { organizationPeople } from '@/lib/governance/people'
 
 /**
@@ -76,6 +82,8 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
   const flags = (uc.classification?.flags ?? []).map((f) => CLASSIFICATION_FLAG_LABELS[f] ?? f)
   const adverseSevere = study.findings.filter((f) => f.is_adverse && ['significant', 'severe'].includes(f.severity))
   const remediation = study.findings.filter((f) => f.is_adverse && f.mitigation?.trim())
+  // Une piece non rejetee porte deja cette etude : le depot n'a plus lieu.
+  const deposee = study.evidence.some((e) => e.validation_status !== 'rejected')
 
   /*
     Ce que chaque rubrique repliee doit dire d'elle-meme. Une rubrique fermee
@@ -419,6 +427,12 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
             )}
           </Card>
 
+          {/*
+            Le bouton restait actif apres le depot : chaque clic ouvrait une
+            piece de plus au registre — le meme fichier, a valider trois fois.
+            Une etude achevee se depose une fois ; ce qui la porte deja se lit
+            a sa place.
+          */}
           <Card title="Preuve" subtitle="L’export au format du modèle, déposé au registre.">
             {study.evidence.length ? (
               <ul className="mb-3 space-y-1 text-sm">
@@ -427,7 +441,9 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
                     <Link href={`/admin/organizations/${id}/preuves?preuve=${e.id}`} className="text-brand-600 hover:underline">
                       {e.business_ref} {e.title}
                     </Link>
-                    <span className="ml-2 text-xs text-ink-400">{e.validation_status}</span>
+                    <span className="ml-2 text-xs text-ink-400">
+                      {EVIDENCE_VALIDATION_LABELS[e.validation_status] ?? e.validation_status}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -437,10 +453,15 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
                 Action ouverte : {study.pending_action.business_ref} — {study.pending_action.title}
               </p>
             ) : null}
-            {study.status === 'completed' ? (
-              <DepositExportButton studyId={studyId} />
-            ) : (
+            {study.status !== 'completed' ? (
               <p className="text-xs text-ink-500">Se dépose une fois l’étude achevée.</p>
+            ) : deposee ? (
+              <p className="text-xs leading-relaxed text-ink-500">
+                Déposée. Une étude ne se dépose qu’une fois par achèvement — rouvrez-la et
+                achevez-la de nouveau pour en verser une autre version, qui remplacera celle-ci.
+              </p>
+            ) : (
+              <DepositExportButton studyId={studyId} />
             )}
           </Card>
 

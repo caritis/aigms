@@ -432,6 +432,47 @@ export async function depositImpactStudyExport(studyId: string): Promise<FormSta
     .maybeSingle()
   if (!organization) return { ok: false, message: 'Organisation introuvable.' }
 
+  /*
+    Une etude ne se depose qu'une fois par achevement.
+
+    Le bouton restait actif apres le depot : chaque clic reconstruisait le meme
+    document et ouvrait une piece de plus au registre — EVD-0007, 0008, 0009,
+    le meme fichier, a valider trois fois. Un auditeur y aurait lu trois
+    versions la ou il n'y a qu'une etude.
+
+    La regle se dit par la date : une piece deposee DEPUIS le dernier achevement
+    vaut. L'etude rouverte, revisee et achevee de nouveau se redepose — et la
+    nouvelle piece remplace alors l'ancienne, comme un renouvellement.
+  */
+  const source = `Étude d’impact ${study.business_ref} (AIGMS)`
+  const { data: deposees } = await supabase
+    .from('evidence')
+    .select('id, business_ref, validation_status, created_at')
+    .eq('source', source)
+    .order('created_at', { ascending: false })
+
+  const anterieures = (deposees ?? []) as {
+    id: string
+    business_ref: string
+    validation_status: string
+    created_at: string
+  }[]
+  const courante = anterieures.find(
+    (e) =>
+      e.validation_status !== 'rejected' &&
+      (!study.completed_at || e.created_at >= study.completed_at),
+  )
+  if (courante) {
+    return {
+      ok: false,
+      message: `${courante.business_ref} porte déjà cette étude — ${
+        courante.validation_status === 'validated' ? 'validée' : 'en attente de validation'
+      }. Une étude ne se dépose qu’une fois par achèvement : rouvrez-la et achevez-la de nouveau pour en déposer une autre version.`,
+    }
+  }
+  // Ce qu'on remplace, s'il y a lieu : la chaine des versions reste lisible.
+  const remplacee = anterieures.find((e) => e.validation_status !== 'rejected')
+
   const { buildImpactStudyDocx } = await import('@/lib/impact/docx')
   const { EVIDENCE_BUCKET } = await import('@/lib/storage/evidence')
   const { createHash } = await import('node:crypto')
@@ -452,7 +493,8 @@ export async function depositImpactStudyExport(studyId: string): Promise<FormSta
     organization_id: study.organization_id,
     title: `Étude d’impact IA — ${study.use_case.name} (${study.business_ref})`,
     evidence_type: 'document',
-    source: `Étude d’impact ${study.business_ref} (AIGMS)`,
+    source,
+    replaces_evidence_id: remplacee?.id ?? null,
     valid_until: study.next_review_at,
     storage_bucket: EVIDENCE_BUCKET,
     storage_path: storagePath,

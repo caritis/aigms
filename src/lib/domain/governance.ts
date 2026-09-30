@@ -145,6 +145,14 @@ export function isBlocking(check: GateCheck): boolean {
   return (check.severity ?? 'blocking') === 'blocking'
 }
 
+/** L'etat d'une piece au registre, tel qu'un lecteur le lit. */
+export const EVIDENCE_VALIDATION_LABELS: Record<string, string> = {
+  pending: 'à valider',
+  validated: 'validée',
+  rejected: 'rejetée',
+  superseded: 'remplacée',
+}
+
 export type GateResult = {
   use_case_id: string
   target_status: UseCaseStatus

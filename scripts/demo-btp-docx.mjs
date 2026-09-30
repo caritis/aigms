@@ -505,6 +505,8 @@ const doc = new Document({
       h('Ce qui se produit à la seconde où l’étude est achevée', HeadingLevel.HEADING_3),
       p('Sans que vous demandiez quoi que ce soit, une action s’ouvre : « Déposer la preuve de l’évaluation d’impact IA-… », confiée à qui l’a conduite, échéance à trente jours. Le libellé cite l’AIPD si elle est requise.'),
       p('Et dans la colonne de droite, le pavé Preuve porte un bouton : « Déposer l’export comme preuve ». Un clic — l’export .docx au format du modèle part au registre des preuves, à valider, et l’action se solde.'),
+      p('Le bouton disparaît alors, et la pièce prend sa place : « Déposée. Une étude ne se dépose qu’une fois par achèvement. » Pour en verser une autre version, il faut rouvrir l’étude en disant pourquoi, la réviser, la faire viser et accepter de nouveau. La nouvelle pièce remplace alors la précédente — et le remplacement ne prend effet qu’à sa validation : jusque-là, l’ancienne reste ce qui vaut.'),
+      insister('Une étude d’impact, ce n’est pas un fichier qu’on redépose quand on veut. C’est un acte daté, visé et accepté. Le seul chemin vers une deuxième version passe par une réouverture motivée — et ce motif reste au dossier.'),
       insister('Le rapport d’étude d’impact n’est pas un fichier sur un partage réseau qu’on retrouvera peut-être. Il est une pièce du registre, horodatée, avec son empreinte, rattachée à son cas d’usage — et l’outil vient de m’ouvrir l’obligation de la déposer.'),
       p(''),
 
