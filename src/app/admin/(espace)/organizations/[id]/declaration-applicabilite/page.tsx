@@ -90,10 +90,10 @@ export default async function StatementOfApplicabilityPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ ecart?: string; objectif?: string; exigence?: string }>
+  searchParams: Promise<{ ecart?: string; objectif?: string; exigence?: string; couverture?: string }>
 }) {
   const { id } = await params
-  const { ecart, objectif, exigence } = await searchParams
+  const { ecart, objectif, exigence, couverture } = await searchParams
   const supabase = await createClient()
 
   const [{ data: organization }, { data: rows }, { data: readinessData }, { data: requirementRows }] =
@@ -185,12 +185,38 @@ export default async function StatementOfApplicabilityPage({
     })),
   ]
 
+  /*
+    Les quatre compteurs filtrent ce qu'ils comptent.
+
+    « 32 non couvertes » sur trente-huit invite a les voir : on parcourait les
+    neuf objectifs pour les retrouver une par une. Le chiffre ouvre desormais
+    sur sa propre liste, et se reclique pour l'oter.
+  */
+  const COUVERTURES: Record<string, (r: SoaRow) => boolean> = {
+    prouvees: (r) => r.coverage === 'evidenced',
+    partielles: (r) => r.coverage === 'declared' || r.coverage === 'operating_without_evidence',
+    'non-couvertes': (r) => r.coverage === 'uncovered',
+    'sans-decision': (r) => r.soa_status === null,
+  }
+  const filtreCouverture = couverture ? COUVERTURES[couverture] : undefined
+
   const soa = all.filter((row) => {
     if (objectif && row.objective_code !== objectif) return false
+    if (filtreCouverture && !filtreCouverture(row)) return false
     if (!ecart) return true
     if (ecart === 'conformes') return row.gap === null
     return row.gap === ecart
   })
+
+  // Le lien d'un compteur garde les autres filtres, et se reclique pour l'oter.
+  const lienCouverture = (cle: string) => {
+    const p = new URLSearchParams()
+    if (ecart) p.set('ecart', ecart)
+    if (objectif) p.set('objectif', objectif)
+    if (couverture !== cle) p.set('couverture', cle)
+    const q = p.toString()
+    return `/admin/organizations/${id}/declaration-applicabilite${q ? `?${q}` : ''}`
+  }
   const byObjective = new Map<string, SoaRow[]>()
   for (const row of soa) {
     const list = byObjective.get(row.objective_code) ?? []
@@ -247,14 +273,37 @@ export default async function StatementOfApplicabilityPage({
       }
     >
       <StatStrip>
-        <Stat label="Couvertes et prouvées" value={covered} total={all.length} tone="ok" />
-        <Stat label="Partiellement couvertes" value={partial} total={all.length} tone="warn" />
-        <Stat label="Non couvertes" value={uncovered} total={all.length} tone="stop" />
+        <Stat
+          label="Couvertes et prouvées"
+          value={covered}
+          total={all.length}
+          tone="ok"
+          href={lienCouverture('prouvees')}
+          active={couverture === 'prouvees'}
+        />
+        <Stat
+          label="Partiellement couvertes"
+          value={partial}
+          total={all.length}
+          tone="warn"
+          href={lienCouverture('partielles')}
+          active={couverture === 'partielles'}
+        />
+        <Stat
+          label="Non couvertes"
+          value={uncovered}
+          total={all.length}
+          tone="stop"
+          href={lienCouverture('non-couvertes')}
+          active={couverture === 'non-couvertes'}
+        />
         <Stat
           label="Sans décision portée"
           value={readiness.undecided ?? 0}
           total={all.length}
           tone="stop"
+          href={lienCouverture('sans-decision')}
+          active={couverture === 'sans-decision'}
         />
       </StatStrip>
 
@@ -297,7 +346,7 @@ export default async function StatementOfApplicabilityPage({
           param="ecart"
           basePath={`/admin/organizations/${id}/declaration-applicabilite`}
           selected={ecart}
-          current={{ objectif }}
+          current={{ objectif, couverture }}
           options={gapFilters}
         />
         <SegmentedFilter
@@ -305,7 +354,7 @@ export default async function StatementOfApplicabilityPage({
           param="objectif"
           basePath={`/admin/organizations/${id}/declaration-applicabilite`}
           selected={objectif}
-          current={{ ecart }}
+          current={{ ecart, couverture }}
           options={objectiveFilters}
         />
       </div>

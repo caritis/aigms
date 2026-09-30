@@ -1141,6 +1141,11 @@ exigence du référentiel, ce qui la couvre **chez ce client** et dans quel éta
 | **Contrôle déclaré** *(ambre)* | Un contrôle est rattaché, sans être encore opérant |
 | **Non couverte** *(rouge)* | Aucun contrôle ne répond à cette exigence |
 
+**Les quatre compteurs filtrent ce qu'ils comptent.** Cliquez sur **32 non
+couvertes** : la liste se réduit à celles-là, le compteur se cerne de noir, et
+un second clic l'ôte. Les filtres se combinent — *non couvertes* **et** objectif
+*A.9*, par exemple — et l'adresse les porte : le lien se partage tel quel.
+
 > **Le geste qui porte.** « Personne n'a rempli cette page. Chaque ligne est le
 > reflet de ce que nous avons fait depuis dix minutes : le contrôle retenu à
 > l'étape 5 l'a fait passer de *non couverte* à *contrôle déclaré*, la preuve

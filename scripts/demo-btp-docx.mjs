@@ -674,6 +674,7 @@ const doc = new Document({
         ligne(['Non couverte (rouge)', 'Aucun contrôle ne répond à cette exigence']),
       ]),
       p(''),
+      p('Les quatre compteurs filtrent ce qu’ils comptent. Cliquez sur « 32 non couvertes » : la liste se réduit à celles-là, le compteur se cerne de noir, et un second clic l’ôte. Les filtres se combinent — non couvertes ET objectif A.9, par exemple — et l’adresse les porte : le lien se partage tel quel.'),
       insister('Personne n’a rempli cette page. Chaque ligne est le reflet de ce que nous avons fait depuis dix minutes : le contrôle retenu à l’étape 5 l’a fait passer de « non couverte » à « contrôle déclaré », la preuve déposée à l’étape 6 l’a fait passer au vert. Une exigence sans couverture s’affiche comme telle — une ligne vide serait plus trompeuse qu’un aveu.'),
 
       h('La règle d’or, écrite en tête de page', HeadingLevel.HEADING_3),

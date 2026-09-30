@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { ReactNode } from 'react'
 
 type Tone = 'neutral' | 'ok' | 'warn' | 'stop' | 'info'
@@ -86,12 +87,24 @@ export function Stat({
   value,
   total,
   tone = 'neutral',
+  href,
+  active = false,
 }: {
   label: string
   value: number
   /** Affiche « value / total » lorsque la part compte plus que le nombre. */
   total?: number
   tone?: 'neutral' | 'ok' | 'warn' | 'stop'
+  /**
+   * Rend le chiffre cliquable : il filtre la liste qu'il compte.
+   *
+   * « 32 non couvertes » sur trente-huit invite a les voir, et l'on parcourait
+   * les neuf objectifs pour les retrouver une par une. Un compteur qui n'ouvre
+   * sur rien laisse son lecteur devant un constat.
+   */
+  href?: string
+  /** Vrai quand ce filtre est celui qui s'applique. */
+  active?: boolean
 }) {
   const color =
     value === 0 || tone === 'neutral'
@@ -102,8 +115,8 @@ export function Stat({
           ? 'text-warn-600'
           : 'text-stop-600'
 
-  return (
-    <div className="rounded-lg border border-ink-200 bg-white px-4 py-3">
+  const corps = (
+    <>
       <p className={`text-2xl font-semibold tabular-nums ${color}`}>
         {value}
         {total !== undefined ? (
@@ -111,7 +124,26 @@ export function Stat({
         ) : null}
       </p>
       <p className="mt-0.5 text-xs text-ink-600">{label}</p>
-    </div>
+    </>
+  )
+
+  if (!href) {
+    return <div className="rounded-lg border border-ink-200 bg-white px-4 py-3">{corps}</div>
+  }
+
+  return (
+    <Link
+      href={href}
+      aria-pressed={active}
+      className={`block rounded-lg border bg-white px-4 py-3 transition-colors hover:bg-ink-50 ${
+        active ? 'border-night-900 ring-1 ring-inset ring-night-900' : 'border-ink-200'
+      }`}
+    >
+      {corps}
+      <span className="mt-1 block text-[11px] text-brand-600">
+        {active ? 'Filtre actif — cliquer pour l’ôter' : 'Voir ces exigences'}
+      </span>
+    </Link>
   )
 }
 

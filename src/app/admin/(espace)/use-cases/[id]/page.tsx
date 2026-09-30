@@ -439,7 +439,9 @@ export default async function UseCasePage({
   // Deposer sans quitter la fiche : les controles qui attendent une preuve,
   // restreints a ceux du cas d'usage, et les typologies de la matrice.
   const [{ data: awaitingData }, { data: typologyData }] =
-    tab === 'supervision' || tab === 'controles'
+    // « Suivi » en a besoin depuis que l'action de depot s'y solde en fenetre,
+    // sans passer par le registre.
+    tab === 'supervision' || tab === 'controles' || tab === 'suivi'
       ? await Promise.all([
           supabase.rpc('controls_awaiting_evidence', { p_organization_id: useCase.organization_id }),
           supabase.rpc('evidence_typologies', { p_organization_id: useCase.organization_id }),
@@ -1133,13 +1135,22 @@ export default async function UseCasePage({
                         </span>
                       </div>
                       <span className="flex shrink-0 items-center gap-2">
+                        {/*
+                          La piece se depose ICI. Le lien menait au registre :
+                          on quittait la liste des actions pour y revenir, et
+                          l'on perdait de vue les autres. Le depot solde
+                          l'action sans changer de page.
+                        */}
                         {a.source === 'impact_finding' && !['done', 'cancelled'].includes(a.status) ? (
-                          <Link
-                            href={`/admin/organizations/${useCase.organization_id}/preuves/deposer?cas-d-usage=${id}&action=${a.id}`}
-                            className="text-xs font-medium text-brand-600 hover:underline"
-                          >
-                            Déposer
-                          </Link>
+                          <EvidenceDepositModal
+                            organizationId={useCase.organization_id}
+                            controls={depositControls}
+                            typologies={depositTypologies}
+                            useCaseId={id}
+                            closesActionId={a.id}
+                            trigger="Déposer"
+                            triggerClassName="text-xs font-medium text-brand-600 hover:underline"
+                          />
                         ) : null}
                         <ActionStatusForm
                           organizationId={useCase.organization_id}

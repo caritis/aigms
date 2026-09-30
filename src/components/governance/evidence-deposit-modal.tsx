@@ -17,6 +17,7 @@ export function EvidenceDepositModal({
   typologies,
   defaultControlId,
   useCaseId,
+  closesActionId,
   trigger = 'Déposer une preuve',
   triggerClassName,
 }: {
@@ -25,6 +26,14 @@ export function EvidenceDepositModal({
   typologies: TypologyChoice[]
   defaultControlId?: string
   useCaseId?: string
+  /**
+   * L'action que ce depot solde.
+   *
+   * Une action « deposer la preuve de l'evaluation d'impact » se cloturait en
+   * passant par le registre, qui la recevait en parametre d'adresse. La fenetre
+   * la porte aussi : le geste se termine la ou il a commence.
+   */
+  closesActionId?: string
   trigger?: string
   triggerClassName?: string
 }) {
@@ -33,7 +42,11 @@ export function EvidenceDepositModal({
       trigger={trigger}
       triggerClassName={triggerClassName}
       title="Déposer une preuve"
-      description="Un dépôt n’est pas une validation : la pièce arrivera « à valider »."
+      description={
+        closesActionId
+          ? 'Un dépôt n’est pas une validation : la pièce arrivera « à valider », et l’action se soldera.'
+          : 'Un dépôt n’est pas une validation : la pièce arrivera « à valider ».'
+      }
     >
       {() =>
         controls.length || typologies.length ? (
@@ -43,6 +56,7 @@ export function EvidenceDepositModal({
             typologies={typologies}
             defaultControlId={defaultControlId}
             useCaseId={useCaseId}
+            closesActionId={closesActionId}
           />
         ) : (
           <p className="text-sm text-ink-600">Aucun contrôle auquel rattacher une preuve pour l’instant.</p>
