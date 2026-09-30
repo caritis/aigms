@@ -162,13 +162,30 @@ export function TransitionModal({
               </p>
             </div>
             <div>
-              <p className="font-medium text-ink-800">Prévoir un changement du système</p>
+              <p className="font-medium text-ink-800">Déclarer un changement du système</p>
               <p>
                 Modèle, données, finalité, fournisseur, autonomie, population… à une date prévue.{' '}
                 <strong className="font-medium text-ink-800">Le statut ne bouge pas</strong> : ce
                 n’est pas un jalon, c’est un fait. Le moteur de réévaluation le lit, dit ce qu’il
-                rouvre — qualification, risques, contrôles, étude d’impact — et si une décision
-                s’impose, il l’ouvre.
+                rouvre — qualification, risques, contrôles, étude d’impact — et{' '}
+                <strong className="font-medium text-ink-800">s’il conclut à une réévaluation, il
+                ouvre la décision lui-même</strong>, rédigée à partir de ce que vous venez de
+                déclarer : les natures touchées, les faits cochés, l’écart d’autonomie chiffré, et
+                la date prévue, qui devient sa date d’effet.
+              </p>
+              <p className="mt-1.5">
+                <strong className="font-medium text-ink-800">C’est pourquoi « changement
+                significatif » ne figure plus parmi les décisions qu’on soumet.</strong> Il doublait
+                cette porte, dans l’ordre inverse — s’engager, puis analyser. On ne sait pas d’avance
+                si un changement engage : c’est la réévaluation qui le dit.
+              </p>
+              <p className="mt-1.5">
+                <strong className="font-medium text-ink-800">Qui se prononcera.</strong> Le
+                Responsable redevable est proposé d’office, parce qu’il répond du cas d’usage. Vous
+                pouvez en désigner un autre — un changement arrêté en réunion, que le Porteur
+                déclare et fait trancher par la DSI, par exemple. Dans ce cas,{' '}
+                <strong className="font-medium text-ink-800">le redevable en est informé quand
+                même</strong> : il ne l’apprend pas après coup.
               </p>
             </div>
             <p className="text-ink-500">
@@ -266,7 +283,13 @@ export function TransitionModal({
                 ouvre la décision lui-même</strong>, déjà rédigée, qu’il ne restera qu’à trancher.
                 Le changement ne s’approuve pas sans elle.
               </p>
-              <ChangeRequestFields organizationId={organizationId} useCaseId={useCaseId} currentAutonomy={currentAutonomy} />
+              <ChangeRequestFields
+                organizationId={organizationId}
+                useCaseId={useCaseId}
+                currentAutonomy={currentAutonomy}
+                people={people}
+                defaultApproverUserId={defaultApproverUserId}
+              />
             </div>
           ) : (
             <p className="text-sm text-ink-500">Choisir ce que l’on veut faire.</p>

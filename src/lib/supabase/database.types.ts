@@ -1931,6 +1931,7 @@ export type Database = {
           changes_vendor: boolean
           created_at: string
           description: string
+          expected_approver_user_id: string | null
           id: string
           implemented_at: string | null
           increases_autonomy: boolean
@@ -1977,6 +1978,7 @@ export type Database = {
           changes_vendor?: boolean
           created_at?: string
           description: string
+          expected_approver_user_id?: string | null
           id?: string
           implemented_at?: string | null
           increases_autonomy?: boolean
@@ -2023,6 +2025,7 @@ export type Database = {
           changes_vendor?: boolean
           created_at?: string
           description?: string
+          expected_approver_user_id?: string | null
           id?: string
           implemented_at?: string | null
           increases_autonomy?: boolean
@@ -2050,6 +2053,13 @@ export type Database = {
           verified_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "change_request_expected_approver_user_id_fkey"
+            columns: ["expected_approver_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "change_request_organization_id_fkey"
             columns: ["organization_id"]

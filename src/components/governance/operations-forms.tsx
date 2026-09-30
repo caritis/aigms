@@ -743,10 +743,23 @@ export function ChangeRequestFields({
   organizationId,
   useCaseId,
   currentAutonomy,
+  people = [],
+  defaultApproverUserId,
 }: {
   organizationId: string
   useCaseId: string
   currentAutonomy: string
+  /** Les personnes habilitées de l'organisation. */
+  people?: { userId: string; label: string }[]
+  /**
+   * Le Responsable redevable, propose d'office.
+   *
+   * La decision que le moteur ouvrira naissait adressee a personne : elle
+   * n'apparaissait dans la file d'aucun ecran et n'envoyait aucune alerte. On
+   * designe donc ici qui se prononcera — et si ce n'est pas le redevable, il
+   * en est informe quand meme, parce qu'il repond du cas d'usage.
+   */
+  defaultApproverUserId?: string
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
     submitChangeRequest,
@@ -823,9 +836,45 @@ export function ChangeRequestFields({
         </div>
       </fieldset>
 
-      <Field label="Prévu le" htmlFor="chg-planned" optional>
+      <Field
+        label="Prévu le"
+        htmlFor="chg-planned"
+        optional
+        hint="La date de mise en œuvre. Elle devient la date d’effet de la décision que ce changement appellera."
+      >
         <input id="chg-planned" name="plannedAt" type="date" className={FIELD} />
       </Field>
+
+      {people.length ? (
+        <Field
+          label="Qui se prononcera, si une décision s’impose"
+          htmlFor="chg-approver"
+          optional
+          hint={
+            defaultApproverUserId
+              ? 'Le Responsable redevable est proposé. Si vous en désignez un autre — un changement arrêté en réunion, par exemple — il en sera informé quand même.'
+              : 'Aucun Responsable redevable n’est désigné sur la fiche : sans personne choisie ici, la décision n’appellera personne.'
+          }
+        >
+          <select
+            id="chg-approver"
+            name="expectedApproverUserId"
+            defaultValue={
+              defaultApproverUserId && people.some((p) => p.userId === defaultApproverUserId)
+                ? defaultApproverUserId
+                : ''
+            }
+            className={FIELD}
+          >
+            <option value="">— Personne désignée plus tard</option>
+            {people.map((person) => (
+              <option key={person.userId} value={person.userId}>
+                {person.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+      ) : null}
 
       <FormFeedback state={state} />
       <Submit pending={pending} idle="Soumettre et qualifier" />

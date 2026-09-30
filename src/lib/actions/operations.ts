@@ -503,6 +503,8 @@ const changeSchema = z
     changesDataset: z.boolean(),
     securityRelevant: z.boolean(),
     plannedAt: z.string().trim().optional().or(z.literal('')),
+    // Qui se prononcera sur la decision que le moteur ouvrira, s'il en ouvre une.
+    expectedApproverUserId: z.string().uuid().optional().or(z.literal('')),
   })
   .refine((v) => !v.increasesAutonomy || Boolean(v.newAutonomyLevel), {
     message: 'Indiquer le niveau d’autonomie visé.',
@@ -530,6 +532,7 @@ export async function submitChangeRequest(
     changesDataset: formData.get('changesDataset') === 'on',
     securityRelevant: formData.get('securityRelevant') === 'on',
     plannedAt: formData.get('plannedAt') ?? '',
+    expectedApproverUserId: formData.get('expectedApproverUserId') ?? '',
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -562,6 +565,7 @@ export async function submitChangeRequest(
       status: 'DRAFT',
       requested_by: userId,
       planned_at: input.plannedAt || null,
+      expected_approver_user_id: input.expectedApproverUserId || null,
     })
     .select('id')
     .single()
