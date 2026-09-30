@@ -249,19 +249,23 @@ export async function submitDecision(
   }
 
   /*
-   * L'avertissement part maintenant, pas demain matin.
+   * L'avertissement part maintenant, pas demain matin — pour TOUTE decision.
    *
    * `decision_to_approve` ne rejoint pas la synthese (0086), mais la tache
-   * planifiee ne tourne qu'une fois par jour : une mise en production soumise
-   * a 8 h attendrait vingt-trois heures. `claim_decision_notices` (0100) rend
-   * les messages ET les marque comme partis — la tache ne les renverra pas.
+   * planifiee ne tourne qu'une fois par jour : une decision soumise a 8 h
+   * attendrait vingt-trois heures. `claim_decision_notices` (0100) rend les
+   * messages ET les marque comme partis — la tache ne les renverra pas.
+   *
+   * L'envoi etait reserve a la mise en production, au motif qu'elle est la
+   * plus tendue. Mais une decision qu'on a soumise ATTEND quelqu'un : aucune
+   * ne gagne a dormir jusqu'au lendemain, et sur un environnement ou la tache
+   * planifiee ne tourne pas — une Preview — elles ne partaient jamais. Ce
+   * qu'on adresse nommement a quelqu'un part quand on l'adresse.
    *
    * L'envoi reste une commodite : s'il echoue, l'alerte demeure lisible dans
    * « Mes alertes ». On ne fait donc pas echouer la soumission pour cela.
    */
-  if (input.decisionType === 'go_production') {
-    await notifyProductionDecision(supabase, decision.id)
-  }
+  await notifyDecision(supabase, decision.id)
 
   // Les pieces rattachees des la soumission : c'est sur elles qu'on se
   // prononcera, et c'est ce qu'un auditeur lira.
@@ -503,14 +507,14 @@ export async function linkDecisionEvidence(
 }
 
 /**
- * Envoie sans attendre les avertissements d'une decision de mise en
- * production : celui qui doit se prononcer, et l'officer en copie.
+ * Envoie sans attendre les avertissements d'une decision soumise : celui qui
+ * doit se prononcer, et — sur une mise en production — l'ecart de preuve.
  *
  * Volontairement silencieuse en cas d'echec — courrier non configure, adresse
  * refusee. Une alerte qui n'a pas pu partir reste lisible dans l'application,
- * et une mise en production ne se refuse pas parce qu'un courriel a echoue.
+ * et une decision ne se refuse pas parce qu'un courriel a echoue.
  */
-async function notifyProductionDecision(
+async function notifyDecision(
   supabase: Awaited<ReturnType<typeof createClient>>,
   decisionId: string,
 ): Promise<void> {

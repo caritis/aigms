@@ -1066,17 +1066,27 @@ Toutes les alertes ne partent pas au même moment, et c'est délibéré.
 
 | Événement | Alerte dans l'application | Courriel |
 |---|---|---|
-| **Décision de mise en production soumise** | oui | **sur-le-champ**, pendant la démonstration |
+| **Toute décision soumise** — autorisation, pilote, production, retrait… | oui | **sur-le-champ**, pendant la démonstration |
+| Écart de preuve sur une mise en production | oui | **sur-le-champ**, avec les codes des contrôles |
 | Étude visée → le Porteur doit accepter | oui | au passage suivant de la tâche planifiée |
 | **Risques résiduels acceptés** (étape 7) | oui — l'officer la voit dans sa cloche | au passage suivant |
 | Étude renvoyée à l'étude | oui | au passage suivant |
 | Action en retard, preuve qui expire, revue due | oui | dans la **synthèse**, à la cadence de chacun |
 
+> **Ce qui part tout de suite : ce qui attend quelqu'un.** Une décision soumise
+> est adressée nommément à une personne qui doit se prononcer — elle ne gagne
+> rien à dormir jusqu'au lendemain matin. Le reste rejoint la tâche planifiée,
+> qui passe une fois par jour, ou la synthèse.
+
 > **Ne promettez donc pas un courriel à l'étape 7.** Après l'acceptation de
 > Dominique Etchart, l'officer reçoit bien *« Risques résiduels acceptés »* —
-> **dans sa cloche, tout de suite ; par courriel, au prochain envoi.** Le seul
-> message qui part pendant la démonstration est celui de la décision de mise en
-> production : c'est celui qui retient un jalon, et il n'attend pas.
+> **dans sa cloche, tout de suite ; par courriel, au prochain envoi.**
+
+> **Avertissement sur l'environnement de démonstration.** La tâche planifiée
+> **ne tourne que sur la production**. Sur `demo.aigms.eu`, qui est une
+> Preview, seuls les courriels envoyés **sur-le-champ** partent — c'est-à-dire
+> ceux des décisions. Tout le reste reste lisible dans « Mes alertes », et rien
+> n'est perdu : il ne faut simplement pas l'annoncer devant un prospect.
 
 ---
 
