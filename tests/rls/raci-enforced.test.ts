@@ -143,7 +143,7 @@ describe('RACI — arbitrage critique', () => {
             set status = 'approved', approver_user_id = $2, approved_at = now(), effective_from = current_date, review_due_at = current_date + 180,
                 -- 0098 : une décision qui porte un écart de preuve ne s'approuve
                 -- pas sans que son signataire déclare l'avoir lu.
-                evidence_gap_acknowledged_at = now()
+                evidence_gap_acknowledged_at = now(), milestone_gap_acknowledged_at = now()
           where id = $1`,
         [id, REVIEWER_A],
       )
@@ -163,7 +163,7 @@ describe('RACI — arbitrage critique', () => {
             set status = 'approved', approver_user_id = $2, approved_at = now(), effective_from = current_date, review_due_at = current_date + 180,
                 -- 0098 : une décision qui porte un écart de preuve ne s'approuve
                 -- pas sans que son signataire déclare l'avoir lu.
-                evidence_gap_acknowledged_at = now()
+                evidence_gap_acknowledged_at = now(), milestone_gap_acknowledged_at = now()
           where id = $1`,
         [id, DEMO.boardA],
       )
@@ -200,7 +200,7 @@ describe('RACI — arbitrage critique', () => {
             set status = 'approved', approver_user_id = $2, approved_at = now(), effective_from = current_date, review_due_at = current_date + 180,
                 -- 0098 : une décision qui porte un écart de preuve ne s'approuve
                 -- pas sans que son signataire déclare l'avoir lu.
-                evidence_gap_acknowledged_at = now()
+                evidence_gap_acknowledged_at = now(), milestone_gap_acknowledged_at = now()
           where id = $1`,
         [rows[0]!.id, REVIEWER_A],
       )

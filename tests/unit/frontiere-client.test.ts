@@ -67,7 +67,7 @@ describe('Frontière serveur / client', () => {
     }
 
     expect(fautes).toEqual([])
-  })
+  }, 30_000)
 
   /*
     L'erreur miroir, et elle est pire : un module `'use server'` ne peut

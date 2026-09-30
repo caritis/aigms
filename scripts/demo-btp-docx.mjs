@@ -657,7 +657,8 @@ const doc = new Document({
       h('Puis connectez-vous au compte de la personne désignée', HeadingLevel.HEADING_2),
       puce('Mes alertes → la décision l’attend'),
       puce('Il lit l’écart et la parole de l’officer'),
-      puce('Il coche « J’ai pris connaissance de cet écart de preuve et l’assume en approuvant »'),
+      puce('Il coche DEUX cases : « J’ai pris connaissance de cet écart de preuve et l’assume en approuvant », puis « J’ai pris connaissance de cet écart de jalon et l’assume en approuvant »'),
+      insister('Le second encadré, en rouge, dit ce qui l’attend : n précondition(s) n’étaient pas réunies, approuver ne mettra donc RIEN en service, le jalon attendra qu’elles le soient. Suivent les préconditions une par une, et la phrase de l’officer. Il approuve en sachant que ça ne met rien en production — c’est exactement ce qu’on veut : un accord de principe, tracé, qui n’ouvre pas la porte.'),
       p(''),
       p('La fenêtre « Se prononcer sur la décision », champ par champ :', { bold: true }),
       table([

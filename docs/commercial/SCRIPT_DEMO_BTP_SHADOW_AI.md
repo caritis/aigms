@@ -1142,8 +1142,18 @@ remédiation.
 
 - *Mes alertes* → la décision l'attend
 - Il lit l'écart de preuve, l'écart de jalon, et la parole de l'officer
-- Il coche **« J'ai pris connaissance de cet écart de preuve et l'assume en
-  approuvant »**
+- Il coche **deux** cases, et c'est délibéré :
+  - **« J'ai pris connaissance de cet écart de preuve et l'assume en approuvant »**
+  - **« J'ai pris connaissance de cet écart de jalon et l'assume en approuvant »**
+
+> **Le second encadré, en rouge, dit ce qui l'attend.** *« n précondition(s)
+> n'étaient pas réunies. Approuver ne mettra donc **rien en service** : le jalon
+> attendra qu'elles le soient. »* Suivent les préconditions, une par une, et la
+> phrase de l'officer.
+>
+> « Il approuve en sachant **que ça ne met rien en production**. C'est
+> exactement ce qu'on veut : un accord de principe, tracé, qui n'ouvre pas la
+> porte. »
 
 **La fenêtre « Se prononcer sur la décision », champ par champ** :
 

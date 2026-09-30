@@ -86,6 +86,7 @@ import {
   APPLICABILITY_LABELS,
   evidenceFreshness,
   type EvidenceGap,
+  type MilestoneGap,
   DECISION_STATUS_LABELS,
   INCIDENT_STATUS_LABELS,
   DECISION_TYPE_LABELS,
@@ -257,7 +258,7 @@ export default async function UseCasePage({
     supabase
       .from('governance_decision')
       .select(
-        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, evidence_gap, evidence_gap_statement, evidence_gap_acknowledged_at',
+        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, evidence_gap, evidence_gap_statement, evidence_gap_acknowledged_at, milestone_gap, milestone_gap_statement',
       )
       .eq('use_case_id', id)
       .order('approved_at', { ascending: false, nullsFirst: false }),
@@ -507,6 +508,8 @@ export default async function UseCasePage({
       evidence_gap: EvidenceGap[] | null
       evidence_gap_statement: string | null
       evidence_gap_acknowledged_at: string | null
+      milestone_gap: MilestoneGap[] | null
+      milestone_gap_statement: string | null
     }[]).map((d) => [d.id, d]),
   )
 
@@ -2049,6 +2052,8 @@ export default async function UseCasePage({
                             reviewDueAt={gapByDecision.get(e.id)!.review_due_at}
                             evidenceGap={(gapByDecision.get(e.id)!.evidence_gap ?? []) as EvidenceGap[]}
                             evidenceGapStatement={gapByDecision.get(e.id)!.evidence_gap_statement}
+                            milestoneGap={(gapByDecision.get(e.id)!.milestone_gap ?? []) as MilestoneGap[]}
+                            milestoneGapStatement={gapByDecision.get(e.id)!.milestone_gap_statement}
                           />
                         ) : null}
                       </div>

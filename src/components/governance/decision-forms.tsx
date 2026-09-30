@@ -691,6 +691,8 @@ export function DecisionRulingForm({
   reviewDueAt = null,
   evidenceGap = [],
   evidenceGapStatement = null,
+  milestoneGap = [],
+  milestoneGapStatement = null,
 }: {
   organizationId: string
   decisionId: string
@@ -711,6 +713,15 @@ export function DecisionRulingForm({
   evidenceGap?: { control_id: string; code: string; name: string; is_mandatory: boolean }[]
   /** Ce que l'AI Governance Officer en a dit. */
   evidenceGapStatement?: string | null
+  /**
+   * Les preconditions du jalon non reunies a la soumission, figees (0118).
+   *
+   * Elles partaient dans l'alerte et le courriel, et la fenetre ne les montrait
+   * pas : on approuvait sans les avoir sous les yeux. Elles disent que la mise
+   * en service n'aura pas lieu — au moins aussi lourd qu'une preuve manquante.
+   */
+  milestoneGap?: { code: string; label: string; detail?: string }[]
+  milestoneGapStatement?: string | null
   /**
    * Vrai tant que la decision attend un verdict. Le composant reste monte
    * apres l'acte : la revalidation retire le declencheur, et la confirmation
@@ -784,6 +795,51 @@ export function DecisionRulingForm({
                   J’ai pris connaissance de cet écart de preuve et l’assume en approuvant.
                   {errors.gapAcknowledged ? (
                     <span className="block text-[13px] text-stop-600">{errors.gapAcknowledged}</span>
+                  ) : null}
+                </span>
+              </label>
+            </div>
+          ) : null}
+
+          {milestoneGap.length ? (
+            <div className="rounded-md border border-stop-600/30 bg-stop-600/5 p-4">
+              <p className="text-sm font-medium text-ink-900">
+                Écart de jalon constaté à la soumission
+              </p>
+              <p className="mt-1 text-xs text-ink-600">
+                {milestoneGap.length} précondition(s) n’étaient pas réunies. Approuver ne mettra
+                donc <strong className="font-medium text-ink-900">rien en service</strong> : le
+                jalon attendra qu’elles le soient.
+              </p>
+              <ul className="mt-2 flex flex-col gap-1">
+                {milestoneGap.map((g) => (
+                  <li key={g.code} className="text-xs text-ink-700">
+                    <span className="mr-1.5 text-stop-600" aria-hidden>
+                      !
+                    </span>
+                    <span className="font-medium text-ink-900">{g.label}</span>
+                    {g.detail ? <span className="block pl-4 text-ink-500">{g.detail}</span> : null}
+                  </li>
+                ))}
+              </ul>
+              {milestoneGapStatement ? (
+                <p className="mt-2.5 rounded-md bg-white px-3 py-2 text-xs leading-relaxed text-ink-700">
+                  <span className="font-medium text-ink-900">Ce qu’en dit l’AI Governance Officer : </span>
+                  {milestoneGapStatement}
+                </p>
+              ) : null}
+              <label className="mt-3 flex items-start gap-2.5 text-sm text-ink-800">
+                <input
+                  type="checkbox"
+                  name="milestoneAcknowledged"
+                  className="mt-0.5 size-4 rounded border-ink-300"
+                />
+                <span>
+                  J’ai pris connaissance de cet écart de jalon et l’assume en approuvant.
+                  {errors.milestoneAcknowledged ? (
+                    <span className="block text-[13px] text-stop-600">
+                      {errors.milestoneAcknowledged}
+                    </span>
                   ) : null}
                 </span>
               </label>

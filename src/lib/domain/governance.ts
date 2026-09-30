@@ -133,6 +133,17 @@ export type GateCheck = {
 }
 
 /** Un contrôle applicable qu'aucune preuve validée ne démontre (0097). */
+/**
+ * Une precondition du jalon non reunie a la soumission, telle qu'elle a ete
+ * figee sur la decision (0118). C'est une verification du gate, reduite a ce
+ * qui se lit : ce qu'elle exige, et ce qu'elle a constate.
+ */
+export type MilestoneGap = {
+  code: string
+  label: string
+  detail?: string
+}
+
 export type EvidenceGap = {
   control_id: string
   code: string

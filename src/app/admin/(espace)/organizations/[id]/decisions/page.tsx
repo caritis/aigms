@@ -10,7 +10,7 @@ import {
   DecisionRulingForm,
 } from '@/components/governance/decision-forms'
 import { describePerson, organizationPeople } from '@/lib/governance/people'
-import type { EvidenceGap } from '@/lib/domain/governance'
+import type { EvidenceGap, MilestoneGap } from '@/lib/domain/governance'
 import { EvidenceGapNotice } from '@/components/governance/evidence-gap-notice'
 import {
   CHANGE_STATUS_LABELS,
@@ -42,6 +42,8 @@ type Decision = {
   status: string
   effective_from: string | null
   review_due_at: string | null
+  milestone_gap: MilestoneGap[] | null
+  milestone_gap_statement: string | null
   approved_at: string | null
   applied_at: string | null
   submitted_at: string | null
@@ -89,7 +91,7 @@ export default async function DecisionsPage({
     supabase
       .from('governance_decision')
       .select(
-        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, applied_at, submitted_at, use_case_id, expected_approver_user_id, evidence_gap, evidence_gap_statement, evidence_gap_acknowledged_at',
+        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, applied_at, submitted_at, use_case_id, expected_approver_user_id, evidence_gap, evidence_gap_statement, evidence_gap_acknowledged_at, milestone_gap, milestone_gap_statement',
       )
       .eq('organization_id', id)
       .order('submitted_at', { ascending: false, nullsFirst: false }),
@@ -430,6 +432,8 @@ export default async function DecisionsPage({
                         reviewDueAt={decision.review_due_at}
                         evidenceGap={(decision.evidence_gap ?? []) as EvidenceGap[]}
                         evidenceGapStatement={decision.evidence_gap_statement}
+                        milestoneGap={(decision.milestone_gap ?? []) as MilestoneGap[]}
+                        milestoneGapStatement={decision.milestone_gap_statement}
                       />
                       <DecisionLinkForm
                         organizationId={id}

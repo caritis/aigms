@@ -408,6 +408,8 @@ const rulingSchema = z
     reviewDueAt: z.string().trim().optional().or(z.literal('')),
     /** « J'ai pris connaissance de l'écart de preuve » (0098). */
     gapAcknowledged: z.boolean().optional().default(false),
+    /** L'ecart de jalon, assume de la meme facon (0121). */
+    milestoneAcknowledged: z.boolean().optional().default(false),
   })
   .refine((v) => v.verdict !== 'approved_with_conditions' || (v.conditions ?? '').length >= 10, {
     message: 'Une approbation sous conditions énonce ses conditions.',
@@ -428,6 +430,7 @@ export async function ruleOnDecision(
     effectiveFrom: formData.get('effectiveFrom') ?? '',
     reviewDueAt: formData.get('reviewDueAt') ?? '',
     gapAcknowledged: formData.get('gapAcknowledged') === 'on',
+    milestoneAcknowledged: formData.get('milestoneAcknowledged') === 'on',
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -456,6 +459,9 @@ export async function ruleOnDecision(
       ...(approving && input.gapAcknowledged
         ? { evidence_gap_acknowledged_at: new Date().toISOString(), evidence_gap_acknowledged_by: user.id }
         : {}),
+      ...(approving && input.milestoneAcknowledged
+        ? { milestone_gap_acknowledged_at: new Date().toISOString(), milestone_gap_acknowledged_by: user.id }
+        : {}),
     })
     .eq('id', input.decisionId)
     .select('id')
@@ -468,6 +474,14 @@ export async function ruleOnDecision(
         message:
           'Cette décision porte un écart de preuve : déclarez en avoir pris connaissance avant d’approuver.',
         fieldErrors: { gapAcknowledged: 'À cocher.' },
+      }
+    }
+    if (error.message.includes('précondition(s) du jalon')) {
+      return {
+        ok: false,
+        message:
+          'Cette décision laisse des préconditions du jalon non réunies : déclarez en avoir pris connaissance avant d’approuver.',
+        fieldErrors: { milestoneAcknowledged: 'À cocher.' },
       }
     }
     if (error.message.includes('Séparation des rôles')) {

@@ -3203,6 +3203,8 @@ export type Database = {
           expected_approver_user_id: string | null
           id: string
           milestone_gap: Json | null
+          milestone_gap_acknowledged_at: string | null
+          milestone_gap_acknowledged_by: string | null
           milestone_gap_statement: string | null
           options_considered: string | null
           organization_id: string
@@ -3251,6 +3253,8 @@ export type Database = {
           expected_approver_user_id?: string | null
           id?: string
           milestone_gap?: Json | null
+          milestone_gap_acknowledged_at?: string | null
+          milestone_gap_acknowledged_by?: string | null
           milestone_gap_statement?: string | null
           options_considered?: string | null
           organization_id: string
@@ -3299,6 +3303,8 @@ export type Database = {
           expected_approver_user_id?: string | null
           id?: string
           milestone_gap?: Json | null
+          milestone_gap_acknowledged_at?: string | null
+          milestone_gap_acknowledged_by?: string | null
           milestone_gap_statement?: string | null
           options_considered?: string | null
           organization_id?: string
@@ -3339,6 +3345,13 @@ export type Database = {
           {
             foreignKeyName: "governance_decision_expected_approver_user_id_fkey"
             columns: ["expected_approver_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_decision_milestone_gap_acknowledged_by_fkey"
+            columns: ["milestone_gap_acknowledged_by"]
             isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
