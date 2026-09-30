@@ -511,6 +511,11 @@ reste en **faible**. Un développeur de modèles verrait un tout autre classemen
 > prouver l'équité d'un modèle que vous n'entraînez pas ; on vous demandera de
 > prouver que vous surveillez sa dérive. »
 
+Chaque typologie s'ancre sur des exigences du référentiel, et ce sont elles qui
+la relient aux contrôles de l'organisation. La carte **« Preuves attendues »**
+du registre des preuves le montre, typologie par typologie — on y revient à
+l'étape 9.
+
 **« Nature »**, juste en dessous, est la **forme matérielle** de la pièce :
 document, capture d'écran, extrait de journal, attestation, résultat de test,
 configuration, ou *déclarative — aucune pièce jointe*.
@@ -1144,6 +1149,26 @@ ce rôle, chaque exigence appelle :
 > vous demandera pas de prouver l'équité d'un modèle que vous n'avez pas fait.
 > **Ce n'est pas de l'indulgence, c'est de la pertinence** — et c'est ce qui rend
 > l'exercice tenable. »
+
+#### Avant de trancher : la carte « Preuves attendues » dit ce qui sert quoi
+
+**Registres → Preuves**, en haut de la colonne de droite. C'est le pendant de la
+Déclaration, vu depuis les preuves : les huit typologies techniques, triées par
+la criticité que le rôle de l'organisation leur donne — et, **sous chacune, ce
+qui la sert**.
+
+| Ce qu'on lit | Ce que ça veut dire | Ce que l'écran propose |
+|---|---|---|
+| *Servie par AIGMS-MON-004 · A.6.2.6, A.6.2.8* | Un contrôle la porte, il manque la pièce | **Déposer** |
+| *Aucun contrôle ne la sert* | Rien ne la porte : déposer n'y suffira pas | **Retenir un contrôle** |
+
+> **Le geste qui porte.** Montrez **« Surveillance continue et dérive »**,
+> critique pour un utilisateur métier. « L'outil ne me dit pas seulement qu'on
+> attend une preuve. Il me dit **par quel contrôle elle passe** — la détection
+> de la dérive — et **sur quelle exigence** elle s'ancre. Si rien ne la sert, il
+> ne me propose pas de déposer un document : il me renvoie à la Déclaration pour
+> **retenir le contrôle qui manque**. Une preuve sans contrôle à démontrer ne
+> démontre rien. »
 
 #### Trancher : le geste, et ce qu'on écrit
 

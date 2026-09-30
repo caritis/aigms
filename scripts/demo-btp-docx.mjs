@@ -341,6 +341,7 @@ const doc = new Document({
       p('« Typologie de preuve » ne propose PAS des catégories documentaires. Elle porte les huit typologies techniques de la matrice des preuves AIGMS, adossées à ISO/IEC 42001 : isolation et souveraineté, intégrité des données, éthique et équité, explicabilité (XAI), alignement et garde-fous, cybersécurité spécifique à l’IA, surveillance et dérive, empreinte environnementale. Chacune dit ce qu’il faut consigner et quels livrables font preuve — l’écran l’affiche dès que vous en choisissez une.'),
       p('Le préfixe de criticité n’est pas décoratif. BATIVAL est déclarée utilisateur métier : l’écran classe donc Surveillance continue et dérive en critique, explicabilité et cybersécurité IA en modéré, et le reste en faible. Un développeur de modèles verrait un tout autre classement — équité, alignement, XAI passeraient en critique.'),
       insister('Regardez l’ordre de cette liste. Il n’est pas alphabétique : il est trié par ce que votre rôle vis-à-vis de l’IA rend exigeant. Vous exploitez des systèmes achetés — on ne vous demandera pas de prouver l’équité d’un modèle que vous n’entraînez pas ; on vous demandera de prouver que vous surveillez sa dérive.'),
+      p('Chaque typologie s’ancre sur des exigences du référentiel, et ce sont elles qui la relient aux contrôles de l’organisation. La carte « Preuves attendues » du registre des preuves le montre, typologie par typologie — on y revient à l’étape 9.'),
       p('« Nature », juste en dessous, est la forme matérielle de la pièce : document, capture d’écran, extrait de journal, attestation, résultat de test, configuration, ou déclarative — aucune pièce jointe.'),
       p('Pour une charte : aucune typologie technique, nature Document. Les deux champs se remplissent alors sans hésitation — et vous venez de montrer que l’outil sait distinguer une preuve d’organisation d’une preuve d’ingénierie.'),
       insister('Faites remarquer l’icône qui passe au vert et le compte qui descend à 4 sans preuve. Le contrôle n’est pas tenu parce qu’on l’a déclaré opérant : il est tenu parce qu’une pièce validée et non échue le démontre. C’est la même règle partout dans l’outil.'),
@@ -677,6 +678,17 @@ const doc = new Document({
       ]),
       p(''),
       insister('Le même référentiel ne demande pas la même chose à un hébergeur et à une PME qui achète un assistant. Vous n’entraînez pas de modèle : on ne vous demandera pas de prouver l’équité d’un modèle que vous n’avez pas fait. Ce n’est pas de l’indulgence, c’est de la pertinence — et c’est ce qui rend l’exercice tenable.'),
+
+      h('Avant de trancher : la carte « Preuves attendues » dit ce qui sert quoi', HeadingLevel.HEADING_3),
+      p('Registres → Preuves, en haut de la colonne de droite. C’est le pendant de la Déclaration, vu depuis les preuves : les huit typologies techniques, triées par la criticité que le rôle de l’organisation leur donne — et, sous chacune, ce qui la sert.'),
+      table([
+        ligne(['Ce qu’on lit', 'Ce que ça veut dire', 'Ce que l’écran propose'], { header: true }),
+        ligne(['Servie par AIGMS-MON-004 · A.6.2.6, A.6.2.8', 'Un contrôle la porte, il manque la pièce', 'Déposer']),
+        ligne(['Aucun contrôle ne la sert', 'Rien ne la porte : déposer n’y suffira pas', 'Retenir un contrôle']),
+      ]),
+      p(''),
+      insister('Montrez « Surveillance continue et dérive », critique pour un utilisateur métier. L’outil ne dit pas seulement qu’on attend une preuve : il dit par quel contrôle elle passe — la détection de la dérive — et sur quelle exigence elle s’ancre. Si rien ne la sert, il ne propose pas de déposer un document : il renvoie à la Déclaration pour retenir le contrôle qui manque. Une preuve sans contrôle à démontrer ne démontre rien.'),
+      p(''),
 
       h('Trancher : le geste, et ce qu’on écrit', HeadingLevel.HEADING_3),
       p('Le filtre « Filtrer par écart » isole ce qui appelle une décision :'),

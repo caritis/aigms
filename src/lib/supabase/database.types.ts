@@ -6895,10 +6895,13 @@ export type Database = {
         Args: { p_organization_id: string }
         Returns: {
           code: string
+          control_count: number
+          controls: string[]
           criticality: "negligible" | "low" | "moderate" | "high" | "critical"
           evidence_total: number
           evidence_valid: number
           name: string
+          refs: string[]
         }[]
       }
       use_case_assets: { Args: { p_use_case_id: string }; Returns: Json }

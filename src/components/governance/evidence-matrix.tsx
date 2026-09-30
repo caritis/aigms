@@ -26,6 +26,11 @@ export type TypologyCoverage = {
   criticality: EvidenceCriticality | null
   evidence_total: number
   evidence_valid: number
+  /** Les contrôles de l'organisation rattachés aux exigences qui l'ancrent. */
+  control_count: number
+  controls: string[]
+  /** Ces exigences, telles que la Déclaration d'Applicabilité les nomme. */
+  refs: string[]
 }
 
 export type MatrixGap = {
@@ -64,6 +69,14 @@ export function EvidenceMatrixCard({
     (r) => r.criticality === 'critical' || r.criticality === 'high',
   )
   const missing = demanding.filter((r) => r.evidence_valid === 0)
+  /*
+    Deux silences que la carte confondait.
+
+    « Un contrôle la sert, il manque la pièce » se solde en déposant. « Rien ne
+    la sert » ne se solde pas en déposant : il manque le contrôle, et le bouton
+    « Déposer » menait alors à un formulaire qu'on ne savait pas remplir.
+  */
+  const unserved = demanding.filter((r) => r.control_count === 0)
 
   return (
     <Card
@@ -78,6 +91,19 @@ export function EvidenceMatrixCard({
         </p>
       ) : null}
 
+      {unserved.length ? (
+        <p className="mb-3 rounded-md border border-warn-600/40 bg-warn-600/5 px-3.5 py-2.5 text-sm leading-relaxed text-ink-700">
+          <strong className="font-medium text-ink-900">
+            {unserved.length === 1 ? 'Une typologie exigeante' : `${unserved.length} typologies exigeantes`} que
+            rien ne sert
+          </strong>{' '}
+          — {unserved.map((u) => u.name).join(', ')}. Aucun contrôle de cette organisation ne répond
+          aux exigences qui les portent : <strong className="font-medium text-ink-900">déposer une
+          pièce n’y suffira pas</strong>, il faut d’abord retenir un contrôle. La Déclaration
+          d’Applicabilité dit lesquelles, et laisse les trancher.
+        </p>
+      ) : null}
+
       <ul className="flex flex-col divide-y divide-ink-100">
         {rows.map((row) => (
           <li key={row.code} className="py-2.5 first:pt-0 last:pb-0">
@@ -87,14 +113,26 @@ export function EvidenceMatrixCard({
                 {row.name}
               </span>
               <span className="flex items-center gap-2">
+                {/*
+                  « Déposer » ne s'offre que si un contrôle porte la typologie :
+                  sans lui, la piece n'aurait rien a demontrer.
+                */}
                 {organizationId &&
                 row.evidence_valid === 0 &&
+                row.control_count > 0 &&
                 (row.criticality === 'critical' || row.criticality === 'high') ? (
                   <Link
                     href={`/admin/organizations/${organizationId}/preuves/deposer?typologie=${row.code}`}
                     className="text-xs font-medium text-brand-600 hover:underline"
                   >
                     Déposer
+                  </Link>
+                ) : organizationId && row.control_count === 0 && row.refs.length ? (
+                  <Link
+                    href={`/admin/organizations/${organizationId}/declaration-applicabilite?exigence=${encodeURIComponent(row.refs[0]!)}`}
+                    className="text-xs font-medium text-warn-600 hover:underline"
+                  >
+                    Retenir un contrôle
                   </Link>
                 ) : null}
                 <span
@@ -110,6 +148,17 @@ export function EvidenceMatrixCard({
                 </Badge>
               </span>
             </div>
+            {/*
+              Ce qui la sert, nomme. Une typologie qui n'annonce qu'un compteur
+              de preuves laisse chercher OU deposer ; celle-ci dit par quel
+              controle elle passe, et sur quelle exigence elle s'ancre.
+            */}
+            <p className="mt-0.5 text-xs text-ink-400">
+              {row.control_count
+                ? `Servie par ${row.controls.slice(0, 4).join(', ')}${row.control_count > 4 ? `, +${row.control_count - 4}` : ''}`
+                : 'Aucun contrôle ne la sert'}
+              {row.refs.length ? ` · ${row.refs.join(', ')}` : ''}
+            </p>
           </li>
         ))}
       </ul>

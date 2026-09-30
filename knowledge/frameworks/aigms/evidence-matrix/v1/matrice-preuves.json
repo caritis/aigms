@@ -51,16 +51,6 @@
       ],
       "references": [
         {
-          "framework": "ISO_IEC_42001",
-          "version": "2023",
-          "reference": "A.7.3"
-        },
-        {
-          "framework": "ISO_IEC_42001",
-          "version": "2023",
-          "reference": "A.7.4"
-        },
-        {
           "framework": "ISO_IEC_27001",
           "version": "2022",
           "reference": "A.11"
@@ -69,6 +59,11 @@
           "framework": "ISO_IEC_27001",
           "version": "2022",
           "reference": "A.12"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.4.5"
         }
       ],
       "criticality": {
@@ -89,6 +84,11 @@
       ],
       "references": [
         {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Art. 10"
+        },
+        {
           "framework": "ISO_IEC_42001",
           "version": "2023",
           "reference": "A.7.2"
@@ -97,11 +97,6 @@
           "framework": "ISO_IEC_42001",
           "version": "2023",
           "reference": "A.7.5"
-        },
-        {
-          "framework": "EU_AI_ACT",
-          "version": "2024/1689",
-          "reference": "Art. 10"
         }
       ],
       "criticality": {
@@ -122,14 +117,19 @@
       ],
       "references": [
         {
-          "framework": "ISO_IEC_42001",
-          "version": "2023",
-          "reference": "A.7.2"
-        },
-        {
           "framework": "EU_AI_ACT",
           "version": "2024/1689",
           "reference": "Art. 10"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.5.4"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.7.2"
         }
       ],
       "criticality": {
@@ -150,19 +150,19 @@
       ],
       "references": [
         {
-          "framework": "ISO_IEC_42001",
-          "version": "2023",
-          "reference": "A.10.2"
-        },
-        {
-          "framework": "ISO_IEC_42001",
-          "version": "2023",
-          "reference": "A.10.4"
-        },
-        {
           "framework": "EU_AI_ACT",
           "version": "2024/1689",
           "reference": "Art. 13"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.7"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.8.2"
         }
       ],
       "criticality": {
@@ -183,14 +183,19 @@
       ],
       "references": [
         {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Sécurité IA"
+        },
+        {
           "framework": "ISO_IEC_42001",
           "version": "2023",
           "reference": "6.1.2"
         },
         {
-          "framework": "EU_AI_ACT",
-          "version": "2024/1689",
-          "reference": "Sécurité IA"
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.4"
         }
       ],
       "criticality": {
@@ -211,6 +216,11 @@
       ],
       "references": [
         {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Art. 15"
+        },
+        {
           "framework": "ISO_IEC_42001",
           "version": "2023",
           "reference": "A.6.2.2"
@@ -218,12 +228,7 @@
         {
           "framework": "ISO_IEC_42001",
           "version": "2023",
-          "reference": "A.6.2.3"
-        },
-        {
-          "framework": "EU_AI_ACT",
-          "version": "2024/1689",
-          "reference": "Art. 15"
+          "reference": "A.6.2.4"
         }
       ],
       "criticality": {
@@ -244,16 +249,6 @@
       ],
       "references": [
         {
-          "framework": "ISO_IEC_42001",
-          "version": "2023",
-          "reference": "A.10.5"
-        },
-        {
-          "framework": "ISO_IEC_42001",
-          "version": "2023",
-          "reference": "A.10.6"
-        },
-        {
           "framework": "EU_AI_ACT",
           "version": "2024/1689",
           "reference": "Art. 14"
@@ -262,6 +257,16 @@
           "framework": "EU_AI_ACT",
           "version": "2024/1689",
           "reference": "Art. 61"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.6"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.8"
         }
       ],
       "criticality": {
@@ -282,14 +287,14 @@
       ],
       "references": [
         {
-          "framework": "ISO_IEC_42001",
-          "version": "2023",
-          "reference": "A.8.4"
-        },
-        {
           "framework": "EU_AI_ACT",
           "version": "2024/1689",
           "reference": "Art. 40"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.4.5"
         }
       ],
       "criticality": {
@@ -352,20 +357,6 @@
     },
     {
       "typology": "DRIFT",
-      "framework": "ISO_IEC_42001",
-      "version": "2023",
-      "reference": "A.10.5",
-      "reason": "L'Annexe A chargée s'arrête à A.10.4 : cette référence n'y existe pas."
-    },
-    {
-      "typology": "DRIFT",
-      "framework": "ISO_IEC_42001",
-      "version": "2023",
-      "reference": "A.10.6",
-      "reason": "L'Annexe A chargée s'arrête à A.10.4 : cette référence n'y existe pas."
-    },
-    {
-      "typology": "DRIFT",
       "framework": "EU_AI_ACT",
       "version": "2024/1689",
       "reference": "Art. 61",
@@ -379,11 +370,79 @@
       "reason": "Seuls les articles 14 et 50 du règlement sont chargés."
     }
   ],
-  "reference_warnings": [
+  "reference_warnings": [],
+  "reference_corrections": [
+    {
+      "typology": "DRIFT",
+      "removed": [
+        "A.10.5",
+        "A.10.6"
+      ],
+      "added": [
+        "A.6.2.6",
+        "A.6.2.8"
+      ],
+      "reason": "A.10 « Relations avec les tiers et les clients » s'arrête à A.10.4 : ces deux références n'existent pas dans l'annexe A. A.6.2.6 « Exploitation et surveillance » nomme explicitement la dérive de performance ; A.6.2.8 porte le journal des arbitrages humains."
+    },
+    {
+      "typology": "XAI",
+      "removed": [
+        "A.10.2",
+        "A.10.4"
+      ],
+      "added": [
+        "A.6.2.7",
+        "A.8.2"
+      ],
+      "reason": "A.10.2 « Répartition des responsabilités » et A.10.4 « Clients » traitent des relations contractuelles. L'explicabilité se démontre par la documentation technique (A.6.2.7) et par l'information due à l'utilisateur (A.8.2)."
+    },
+    {
+      "typology": "ISOL",
+      "removed": [
+        "A.7.3",
+        "A.7.4"
+      ],
+      "added": [
+        "A.4.5"
+      ],
+      "reason": "L'acquisition et la qualité des données ne disent rien du cloisonnement des calculs. A.4.5 « Ressources système et de calcul » porte l'infrastructure, sa localisation et ses conditions d'exploitation."
+    },
     {
       "typology": "GREEN",
-      "reference": "A.8.4",
-      "reason": "La référence se résout, mais A.8.4 porte dans l'Annexe A chargée la communication des incidents, non l'empreinte environnementale. Rapprochement à confirmer par un relecteur."
+      "removed": [
+        "A.8.4"
+      ],
+      "added": [
+        "A.4.5"
+      ],
+      "reason": "Avertissement déjà porté par la matrice : A.8.4 traite de la communication des incidents. L'empreinte énergétique se mesure sur les ressources de calcul, A.4.5."
+    },
+    {
+      "typology": "CYBER",
+      "removed": [
+        "A.6.2.3"
+      ],
+      "added": [
+        "A.6.2.4"
+      ],
+      "reason": "La documentation de conception consigne des choix ; elle ne démontre pas qu'on a testé la résistance aux attaques. A.6.2.4 « Vérification et validation » le fait."
+    },
+    {
+      "typology": "ALIGN",
+      "removed": [],
+      "added": [
+        "A.6.2.4"
+      ],
+      "reason": "La clause 6.1.2 pose le traitement des risques ; l'alignement se démontre par la validation avant mise en service."
+    },
+    {
+      "typology": "FAIR",
+      "removed": [],
+      "added": [
+        "A.5.4"
+      ],
+      "reason": "L'équité ne se juge pas seulement sur les données mais sur les personnes affectées : A.5.4 « Impacts sur les personnes et les groupes »."
     }
-  ]
+  ],
+  "reference_corrections_note": "Corrections portées le 30 septembre 2026, migration 0112. La matrice d'origine, produite par assistance, citait des références inexistantes ou hors sujet : la jointure typologie -> exigence -> contrôle ne trouvait rien et se taisait. « Surveillance continue et dérive », critique pour un utilisateur métier, n'était rattachée à aucun contrôle alors qu'AIGMS-MON-004 la sert. Une relecture humaine reste un préalable à tout usage commercial."
 }

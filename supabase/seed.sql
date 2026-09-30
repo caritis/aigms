@@ -1203,10 +1203,16 @@ from (values
   -- Sélectionnée sans aucun contrôle rattaché.
   ('A.7.3', 'selected',
    'L''acquisition des données d''entrée relève de nos clients ; nous encadrons contractuellement leur licéité. Procédure à formaliser.'),
-  -- Exclusion contestée : la matrice attend une preuve organisationnelle pour
-  -- ce profil. L''écran le dira, sans effacer la décision.
+  -- Exclusion sans écart : depuis que la matrice est ancrée sur A.4.5 (0112),
+  -- la qualité des données d''entraînement ne porte plus de typologie pour ce
+  -- profil. La décision reste, et rien ne la conteste.
   ('A.7.4', 'excluded',
    'Nous n''entraînons aucun modèle : la qualité des jeux de données d''entraînement ne nous concerne pas.'),
+  -- Exclusion CONTESTÉE : pour un hébergeur, la matrice attend une preuve
+  -- technique sur les ressources de calcul — isolation ET empreinte. L''écran
+  -- le dira, sans effacer la décision.
+  ('A.4.5', 'excluded',
+   'L''infrastructure est fournie par notre hébergeur : sa documentation vaut la nôtre.'),
   -- Exclusion sur une exigence que la matrice ne couvre pas : aucun écart.
   ('A.5.5', 'excluded',
    'Nos systèmes n''ont pas d''effet sociétal identifiable au-delà de leurs utilisateurs directs : aucun usage à destination du public ni de traitement de données ouvertes.')
