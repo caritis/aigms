@@ -87,3 +87,55 @@ export function blockingGateChecks<T extends { code?: string; satisfied: boolean
   const apportee = GATE_CHECK_SATISFIED_BY[decisionType]
   return checks.filter((c) => !c.satisfied && isBlocking(c) && c.code !== apportee)
 }
+
+/**
+ * Ou l'on va corriger ce qu'une precondition reproche.
+ *
+ * Le refus nommait six preconditions a la suite, separees par des
+ * points-virgules. On lisait ce qui manquait sans savoir ou aller le corriger :
+ * l'ecran disait « Revue fournisseur close pour chaque tiers impliqué » et
+ * laissait chercher dans quel registre les revues se closent.
+ *
+ * Chaque precondition se solde quelque part, et c'est toujours le meme endroit.
+ * La table le dit une fois pour toutes.
+ */
+export type GateRemedy = { label: string; href: (useCaseId: string, organizationId: string) => string }
+
+export const GATE_REMEDIES: Record<string, GateRemedy> = {
+  CLASSIFICATION_COMPLETE: {
+    label: 'Réviser la qualification',
+    href: (uc) => `/admin/use-cases/${uc}?onglet=avancement`,
+  },
+  RISKS_TREATED: {
+    label: 'Traiter ou accepter les risques',
+    href: (uc) => `/admin/use-cases/${uc}?onglet=risques`,
+  },
+  IMPACT_ASSESSMENT: {
+    label: 'Conduire l’étude d’impact',
+    href: (_uc, org) => `/admin/organizations/${org}/etudes-impact`,
+  },
+  VENDOR_REVIEW: {
+    label: 'Clore les revues fournisseurs',
+    href: (_uc, org) => `/admin/organizations/${org}/actifs`,
+  },
+  HUMAN_OVERSIGHT: {
+    label: 'Statuer la supervision humaine',
+    href: (uc) => `/admin/use-cases/${uc}?onglet=supervision`,
+  },
+  MANDATORY_CONTROLS: {
+    label: 'Statuer les contrôles obligatoires',
+    href: (uc) => `/admin/use-cases/${uc}?onglet=controles`,
+  },
+  EVIDENCE_COMPLETE: {
+    label: 'Déposer les preuves manquantes',
+    href: (uc) => `/admin/use-cases/${uc}?onglet=controles`,
+  },
+  BLOCKING_ACTIONS: {
+    label: 'Solder les actions bloquantes',
+    href: (uc) => `/admin/use-cases/${uc}?onglet=suivi&vue=actions`,
+  },
+  PRODUCTION_DECISION: {
+    label: 'C’est cette décision',
+    href: (uc) => `/admin/use-cases/${uc}?onglet=decisions`,
+  },
+}

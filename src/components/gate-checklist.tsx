@@ -1,4 +1,6 @@
+import Link from 'next/link'
 import { isBlocking, type GateResult } from '@/lib/domain/governance'
+import { GATE_REMEDIES } from '@/lib/domain/transitions'
 import { Badge } from '@/components/ui'
 
 /**
@@ -12,7 +14,19 @@ import { Badge } from '@/components/ui'
  * ferait croire a un refus ; separe, il se lit pour ce qu'il est : un ecart
  * que quelqu'un devra assumer nommement.
  */
-export function GateChecklist({ gate }: { gate: GateResult }) {
+export function GateChecklist({
+  gate,
+  useCaseId,
+  organizationId,
+}: {
+  gate: GateResult
+  /*
+    Renseignes, chaque precondition non satisfaite porte le lien de l'ecran ou
+    elle se solde. Sans eux, la liste dit ce qui manque et laisse chercher ou.
+  */
+  useCaseId?: string
+  organizationId?: string
+}) {
   const blocking = gate.checks.filter(isBlocking)
   const warnings = gate.checks.filter((c) => !isBlocking(c) && !c.satisfied)
 
@@ -65,6 +79,16 @@ export function GateChecklist({ gate }: { gate: GateResult }) {
                   </span>
                 </p>
                 <p className="text-xs text-ink-600">{check.detail}</p>
+                {/* Ou cela se solde. Sans le lien, on lit ce qui manque et
+                    l'on cherche dans quel registre aller le corriger. */}
+                {!check.satisfied && useCaseId && organizationId && GATE_REMEDIES[check.code] ? (
+                  <Link
+                    href={GATE_REMEDIES[check.code]!.href(useCaseId, organizationId)}
+                    className="mt-1 inline-block text-xs font-medium text-brand-600 hover:underline"
+                  >
+                    {GATE_REMEDIES[check.code]!.label} →
+                  </Link>
+                ) : null}
                 {/*
                   Ce que la verification a constate, nomme. Un compteur se
                   survole ; une liste de codes se verifie.

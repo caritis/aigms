@@ -738,6 +738,21 @@ export default async function UseCasePage({
             evidenceGap={evidenceGap}
             useCaseName={useCase.name}
             defaultApproverUserId={useCase.accountable_user_id ?? undefined}
+            /*
+              Le dossier, tel qu'il est au moment ou l'on decide. L'officer ne
+              doit pas retrouver de tete ce qu'il a saisi il y a dix minutes :
+              la fenetre lui en propose la reprise, qu'il relit et corrige.
+            */
+            dossier={{
+              purpose: useCase.purpose,
+              criticality: useCase.criticality
+                ? CRITICALITY_LABELS[useCase.criticality as Criticality].toLowerCase()
+                : null,
+              applicableControls: applicableControls.length,
+              mandatoryUndecided,
+              unsettledRisks,
+              impactRef: latestImpact?.status === 'completed' ? latestImpact.business_ref : null,
+            }}
           />
         </div>
       }

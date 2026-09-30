@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { isBlocking, type GateCheck } from '@/lib/domain/governance'
+import { isBlocking, type GateCheck, type GateResult } from '@/lib/domain/governance'
 import { blockingGateChecks, MILESTONE_OF_DECISION } from '@/lib/domain/transitions'
 import { publicEnv } from '@/lib/env'
 import { isMailerConfigured, sendSystemEmail } from '@/lib/email/mailer'
@@ -34,7 +34,21 @@ import { immediateEmail } from '@/lib/email/notifications'
 
 export type FormState =
   | { ok: true; message: string }
-  | { ok: false; message: string; fieldErrors?: Record<string, string> }
+  | {
+      ok: false
+      message: string
+      fieldErrors?: Record<string, string>
+      /**
+       * Le jalon, tel que la base l'a evalue.
+       *
+       * Le refus tenait en une phrase ou six preconditions se suivaient,
+       * separees par des points-virgules : on lisait ce qui manquait sans
+       * savoir ou aller le corriger, ni ce que chacune avait constate. Rendu
+       * ici, il se relit comme la liste qu'il est — avec son detail, ses codes
+       * de controle, et le lien vers l'ecran qui solde.
+       */
+      gate?: GateResult
+    }
 
 function firstIssues(error: z.ZodError): FormState {
   const fieldErrors: Record<string, string> = {}
@@ -185,11 +199,12 @@ export async function submitDecision(
     if (g) {
       // Une vérification d'avertissement ne retient pas la soumission : elle
       // s'assume à l'approbation (0097).
-      const missing = blockingGateChecks(input.decisionType, g.checks, isBlocking).map((c) => c.label)
+      const missing = blockingGateChecks(input.decisionType, g.checks, isBlocking)
       if (missing.length) {
         return {
           ok: false,
-          message: `Le jalon n’est pas prêt : ${missing.join(' ; ')}. La décision se soumettra quand les préconditions seront réunies.`,
+          message: `Le jalon n’est pas prêt : ${missing.length} précondition(s) manquent. La décision se soumettra quand elles seront réunies.`,
+          gate: gate as GateResult,
         }
       }
     }

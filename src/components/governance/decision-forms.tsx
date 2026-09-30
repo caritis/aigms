@@ -9,6 +9,7 @@ import {
 } from '@/lib/actions/decisions'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
+import { GateChecklist } from '@/components/gate-checklist'
 import { CHANGE_FACTS, CHANGE_TYPE_LABELS } from '@/components/governance/operations-forms'
 
 /**
@@ -40,6 +41,69 @@ const SEPARATED = ['go_production', 'risk_acceptance', 'policy_exception']
 /** Types qui portent un changement sur le systeme. */
 const CHANGE_DECISIONS = ['significant_change', 'suspension', 'retirement']
 
+/**
+ * Ce que le dossier dit deja, au moment ou l'on decide.
+ *
+ * Neuf champs, dont trois recits, et l'officer venait de passer dix minutes a
+ * poser precisement ces faits : la finalite, la criticite, les controles
+ * statues, l'etude d'impact achevee. Les lui redemander en prose etait une
+ * gymnastique — retrouver de tete, reformuler, esperer n'avoir rien oublie.
+ *
+ * La fenetre propose donc la REPRISE du dossier, et le dit. Ce ne sont pas des
+ * champs remplis a sa place : ce sont ses propres reponses, remises en phrase,
+ * qu'il relit, corrige et signe.
+ */
+export type DecisionDossier = {
+  purpose: string | null
+  criticality: string | null
+  applicableControls: number
+  mandatoryUndecided: number
+  unsettledRisks: number
+  /** La reference de l'etude d'impact, si elle est achevee. */
+  impactRef: string | null
+}
+
+/** Ce qui est decide, selon le type — une phrase qui s'assume telle quelle. */
+function enonce(type: string, nom: string | undefined): string {
+  const quoi = nom ? `« ${nom} »` : 'ce cas d’usage'
+  switch (type) {
+    case 'use_case_authorization':
+      return `Autoriser l’usage de ${quoi}, sous les contrôles retenus et les mesures arrêtées.`
+    case 'pilot_approval':
+      return `Ouvrir un pilote de ${quoi}, sur un périmètre restreint et pour une durée déterminée.`
+    case 'go_production':
+      return `Mettre ${quoi} en production, sous les contrôles retenus, les mesures de l’étude d’impact et les conditions énoncées.`
+    case 'suspension':
+      return `Suspendre ${quoi} jusqu’à reprise ou retrait.`
+    case 'retirement':
+      return `Retirer ${quoi} du service, définitivement.`
+    case 'significant_change':
+      return `Acter un changement significatif sur ${quoi}.`
+    case 'risk_acceptance':
+      return `Accepter le risque résiduel qui demeure sur ${quoi}.`
+    case 'policy_exception':
+      return `Accorder une exception à la politique pour ${quoi}.`
+    default:
+      return ''
+  }
+}
+
+/** Ce qui fonde la decision : des faits comptes, pas une appreciation. */
+function fondements(d: DecisionDossier): string {
+  const faits = [
+    d.criticality ? `Criticité ${d.criticality}` : null,
+    d.applicableControls
+      ? `${d.applicableControls} contrôle(s) statué(s) applicable(s)`
+      : 'aucun contrôle statué applicable à ce jour',
+    d.mandatoryUndecided ? `${d.mandatoryUndecided} contrôle(s) obligatoire(s) encore à statuer` : null,
+    d.unsettledRisks
+      ? `${d.unsettledRisks} risque(s) ni traité(s) ni accepté(s)`
+      : 'aucun risque ouvert',
+    d.impactRef ? `étude d’impact ${d.impactRef} achevée et ses risques résiduels acceptés` : null,
+  ].filter(Boolean)
+  return `${faits.join(' ; ')}.`
+}
+
 /** Le jour, a N jours d'ici, au format que lit un champ `date`. */
 function jour(dans: number): string {
   return new Date(Date.now() + dans * 86_400_000).toISOString().slice(0, 10)
@@ -64,6 +128,7 @@ export function DecisionForm({
   evidence = [],
   evidenceGap = [],
   framed = false,
+  dossier,
   useCaseName,
   defaultApproverUserId,
 }: {
@@ -94,6 +159,8 @@ export function DecisionForm({
    * cadre.
    */
   framed?: boolean
+  /** Ce que le dossier dit déjà : la fenêtre en propose la reprise. */
+  dossier?: DecisionDossier
   /** Le nom du cas d'usage : il fait l'objet, personne ne le retape. */
   useCaseName?: string
   /**
@@ -113,6 +180,7 @@ export function DecisionForm({
     : DECISION_TYPES
   const [type, setType] = useState<string>(types[0]?.[0] ?? 'use_case_authorization')
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+  const refus = state && !state.ok ? state : null
 
   /*
     Ce que le dossier sait deja, on ne le redemande pas.
@@ -125,6 +193,9 @@ export function DecisionForm({
   */
   const libelleType = DECISION_TYPES.find(([value]) => value === type)?.[1] ?? ''
   const objetPropose = useCaseName ? `${libelleType} — ${useCaseName}` : libelleType
+  const enoncePropose = dossier ? enonce(type, useCaseName) : ''
+  const fondementsProposes = dossier ? fondements(dossier) : ''
+  const contextePropose = dossier?.purpose ?? ''
   // Lire l'horloge pendant le rendu n'est pas pur : on la lit une fois, au
   // montage, et les deux dates ne bougent plus tant que la fenetre est ouverte.
   const [[aujourdHui, dansUnAn]] = useState(() => [jour(0), jour(365)])
@@ -137,6 +208,20 @@ export function DecisionForm({
     >
       <div className={framed ? 'flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1' : 'contents'}>
       <input type="hidden" name="organizationId" value={organizationId} />
+
+      {/*
+        On dit que c'est une proposition. Un champ pre-rempli qu'on ne signale
+        pas se signe sans etre lu — et celui-ci porte le nom de qui decide.
+      */}
+      {dossier ? (
+        <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+          <strong className="font-medium text-ink-800">Reprise du dossier.</strong> L’objet, ce qui
+          est décidé, la justification et le contexte sont proposés d’après ce que vous avez déjà
+          posé : la finalité de la fiche, la criticité, les contrôles statués, l’étude d’impact.
+          <strong className="font-medium text-ink-800"> Relisez-les</strong> — c’est votre nom qui
+          les portera, et ce sont ces phrases qu’un auditeur lira.
+        </p>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Type de décision" htmlFor="dec-type" hint={MILESTONE_HINTS[type]}>
@@ -241,7 +326,7 @@ export function DecisionForm({
         error={errors.decisionStatement}
         hint="L’énoncé de la décision, pas la demande qui y conduit. C’est cette phrase qui sera lue dans deux ans."
       >
-        <textarea id="dec-statement" name="decisionStatement" rows={3} required className={FIELD} />
+        <textarea key={type} id="dec-statement" name="decisionStatement" rows={3} required defaultValue={enoncePropose} className={FIELD} />
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -251,7 +336,7 @@ export function DecisionForm({
           error={errors.rationale}
           hint="Pourquoi cette décision, au vu de quoi. C’est ce qu’un auditeur lit en premier."
         >
-          <textarea id="dec-rationale" name="rationale" rows={3} required className={FIELD} />
+          <textarea key={type} id="dec-rationale" name="rationale" rows={3} required defaultValue={fondementsProposes} className={FIELD} />
         </Field>
 
         <Field
@@ -260,7 +345,7 @@ export function DecisionForm({
           error={errors.context}
           hint="Ce qui amène à décider : la situation, ce qui a changé, ce qui presse. Exigé."
         >
-          <textarea id="dec-context" name="context" rows={3} required className={FIELD} />
+          <textarea id="dec-context" name="context" rows={3} required defaultValue={contextePropose} className={FIELD} />
         </Field>
       </div>
 
@@ -469,6 +554,26 @@ export function DecisionForm({
       ) : null}
 
       </div>
+
+      {/*
+        Le jalon refuse : on montre la liste, pas la phrase.
+
+        Six preconditions separees par des points-virgules ne se lisent pas —
+        et surtout, elles ne disent pas ou aller. Chacune porte desormais son
+        detail, ce qu'elle a constate, et le lien de l'ecran qui la solde.
+      */}
+      {refus?.gate ? (
+        <div className={framed ? '-mx-5 mt-3 max-h-64 overflow-y-auto border-t border-ink-100 bg-warn-600/5 px-5 py-4' : 'rounded-md border border-warn-600/40 bg-warn-600/5 p-4'}>
+          <p className="mb-2 text-sm font-medium text-ink-900">
+            Le jalon n’est pas prêt. Ce qui le retient, et où le corriger :
+          </p>
+          <GateChecklist gate={refus.gate} useCaseId={fixedUseCaseId} organizationId={organizationId} />
+          <p className="mt-2 text-xs leading-relaxed text-ink-600">
+            La décision se soumettra quand elles seront réunies. Rien de ce que vous venez d’écrire
+            n’est perdu : la fenêtre reste ouverte.
+          </p>
+        </div>
+      ) : null}
 
       {framed ? (
         <div className="-mx-5 -mb-5 mt-3 flex flex-col gap-2 border-t border-ink-100 bg-white px-5 py-3.5">

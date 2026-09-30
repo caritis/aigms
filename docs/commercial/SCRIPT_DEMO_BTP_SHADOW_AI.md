@@ -984,7 +984,26 @@ propre nom — on ne lit pas « Approuvé » là où il est écrit « sous condi
 
 **`officer@aigms.eu` → *Faire évoluer* → *Décider* → *Mise en production***
 
-**Les mêmes neuf champs**, plus trois choses que ce type-là seul appelle.
+**Les mêmes neuf champs — et quatre d'entre eux sont déjà rédigés.** La fenêtre
+s'ouvre sur un bandeau gris : *« Reprise du dossier. L'objet, ce qui est décidé,
+la justification et le contexte sont proposés d'après ce que vous avez déjà
+posé : la finalité de la fiche, la criticité, les contrôles statués, l'étude
+d'impact. Relisez-les — c'est votre nom qui les portera. »*
+
+| Champ | Ce qui est proposé | D'où ça vient |
+|---|---|---|
+| **Ce qui est décidé** | *« Mettre « Génération de devis par IA générative » en production, sous les contrôles retenus, les mesures de l'étude d'impact et les conditions énoncées. »* | le type de décision et le nom de la fiche |
+| **Justification** | *« Criticité élevée ; 5 contrôle(s) statué(s) applicable(s) ; aucun risque ouvert ; étude d'impact IA-2026-0003 achevée et ses risques résiduels acceptés. »* | des faits **comptés**, pas une appréciation |
+| **Contexte** | la **finalité** de la fiche, mot pour mot | l'étape 1 |
+| **Objet** · **dates** · **approbateur** | voir 8b | — |
+
+> **Le geste qui porte.** « Je n'ai rien à retrouver de mémoire. L'outil me rend
+> ce que j'ai posé il y a dix minutes, remis en phrases — **et il me dit que ce
+> sont des propositions**. Je relis, je corrige ce qui mérite de l'être, et je
+> signe. La différence entre un formulaire et un dossier, c'est que le dossier
+> se souvient. »
+
+**Plus trois choses que ce type-là seul appelle.**
 
 | Champ | Ce qui change sur une mise en production |
 |---|---|
@@ -1010,6 +1029,12 @@ le « ◆ » de la frise ouvre leur liste. Montrez-la : c'est le cœur du produi
 | 6 | Applicabilité statuée pour tous les contrôles obligatoires | étape **5** |
 | 7 | Décision GO production approuvée et en vigueur | **c'est celle que vous soumettez** |
 | 8 | Aucune action bloquante ouverte | le préjudice **grave** de l'étape 7 en a ouvert une |
+
+> **Si le jalon refuse, l'écran ne vous laisse pas devant une phrase.** Les huit
+> préconditions s'affichent en liste — cochées en vert, manquantes en rouge —
+> chacune avec **ce qu'elle a constaté** et **le lien de l'écran qui la solde** :
+> *« Clore les revues fournisseurs → »*, *« Solder les actions bloquantes → »*.
+> Ce que vous venez d'écrire reste dans la fenêtre : rien n'est perdu.
 
 > **Deux d'entre elles vont vous arrêter, et c'est voulu.** La **revue du
 > fournisseur Open.AI** n'est pas close, et l'**action bloquante** née du

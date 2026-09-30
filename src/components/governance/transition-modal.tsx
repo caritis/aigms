@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Modal } from '@/components/modal'
 import { InfoTip } from '@/components/info-tip'
 import { TransitionPanel } from '@/components/transition-panel'
-import { DecisionForm } from '@/components/governance/decision-forms'
+import { DecisionForm, type DecisionDossier } from '@/components/governance/decision-forms'
 import { ChangeRequestFields } from '@/components/governance/operations-forms'
 import { USE_CASE_STATUS_LABELS, type UseCaseStatus } from '@/lib/domain/governance'
 
@@ -39,6 +39,7 @@ export function TransitionModal({
   evidenceGap = [],
   useCaseName,
   defaultApproverUserId,
+  dossier,
 }: {
   useCaseId: string
   organizationId: string
@@ -63,6 +64,8 @@ export function TransitionModal({
   useCaseName?: string
   /** Le Responsable redevable : approbateur propose. */
   defaultApproverUserId?: string
+  /** Ce que le dossier dit deja, pour en proposer la reprise. */
+  dossier?: DecisionDossier
 }) {
   const steps = targets.filter((t) => !ENGAGING.includes(t))
   const engaging = targets.filter((t) => ENGAGING.includes(t))
@@ -229,6 +232,7 @@ export function TransitionModal({
               evidenceGap={evidenceGap}
               useCaseName={useCaseName}
               defaultApproverUserId={defaultApproverUserId}
+              dossier={dossier}
               framed
             />
           ) : intent === 'change' ? (
