@@ -23,6 +23,21 @@ export const UI_TRANSITIONS: Record<UseCaseStatus, UseCaseStatus[]> = {
 }
 
 /**
+ * Les jalons qui ENGAGENT l'organisation : ils ne se franchissent pas, ils se
+ * decident. Le partage n'est pas « en avant / en arriere » — c'est ce que la
+ * fenetre laissait croire — mais « ce qui instruit / ce qui engage ».
+ */
+export const ENGAGING_STATUSES: UseCaseStatus[] = [
+  'APPROVED',
+  'CONDITIONAL_APPROVAL',
+  'REJECTED',
+  'PILOT',
+  'PRODUCTION',
+  'SUSPENDED',
+  'RETIRED',
+]
+
+/**
  * Les types de decision qui ont un sens depuis un jalon : ceux qui font
  * franchir le suivant, et ceux qui s'appliquent en service. L'acceptation de
  * risque se prend depuis le risque ; l'exception de politique, partout.
@@ -35,10 +50,24 @@ export const DECISION_TYPES_BY_STATUS: Record<UseCaseStatus, string[]> = {
   APPROVED: ['pilot_approval', 'go_production', 'policy_exception', 'retirement'],
   CONDITIONAL_APPROVAL: ['pilot_approval', 'policy_exception', 'retirement'],
   REJECTED: ['use_case_authorization', 'retirement'],
-  PILOT: ['go_production', 'suspension', 'significant_change', 'policy_exception', 'retirement'],
-  PRODUCTION: ['suspension', 'significant_change', 'policy_exception', 'retirement'],
-  MONITORING: ['suspension', 'significant_change', 'policy_exception', 'retirement'],
-  SUSPENDED: ['go_production', 'significant_change', 'policy_exception', 'retirement'],
+  /*
+    « Changement significatif » ne figure plus parmi les types qu'on soumet.
+
+    Il s'offrait au meme rang que la mise en production, alors qu'il double une
+    porte voisine : « Declarer un changement du systeme ». Les deux menaient au
+    meme endroit, dans l'ordre INVERSE — decider puis qualifier, ou declarer
+    puis laisser le moteur conclure. Le second est le bon : on ne sait pas
+    d'avance si un changement engage, c'est la reevaluation qui le dit.
+
+    Le type reste dans l'enum et dans le registre : le moteur ouvre lui-meme
+    cette decision, redigee, des qu'une reevaluation n'est pas nulle (0063), et
+    la base refuse d'approuver le changement sans elle. Ce qu'on retire, c'est
+    la possibilite de s'engager avant d'avoir analyse.
+  */
+  PILOT: ['go_production', 'suspension', 'policy_exception', 'retirement'],
+  PRODUCTION: ['suspension', 'policy_exception', 'retirement'],
+  MONITORING: ['suspension', 'policy_exception', 'retirement'],
+  SUSPENDED: ['go_production', 'policy_exception', 'retirement'],
   RETIRED: [],
 }
 

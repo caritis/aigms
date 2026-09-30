@@ -21,13 +21,22 @@ import { CHANGE_FACTS, CHANGE_TYPE_LABELS } from '@/components/governance/operat
  * personne — l'ecran ne l'anticipe pas, il presente le refus.
  */
 
+/*
+  Les types qu'on SOUMET.
+
+  « Changement significatif » n'en est plus : il doublait « Déclarer un
+  changement du système », dans l'ordre inverse — décider puis qualifier au lieu
+  de déclarer puis conclure. Le moteur de réévaluation ouvre lui-même cette
+  décision, rédigée, dès qu'une réévaluation n'est pas nulle (0063) ; elle se
+  lit et se tranche au registre comme les autres. Ce qu'on retire, c'est la
+  possibilité de s'engager avant d'avoir analysé.
+*/
 const DECISION_TYPES = [
   ['use_case_authorization', 'Autorisation d’usage'],
   ['pilot_approval', 'Approbation de pilote'],
   ['go_production', 'Mise en production'],
   ['risk_acceptance', 'Acceptation de risque'],
   ['policy_exception', 'Exception de politique'],
-  ['significant_change', 'Changement significatif'],
   ['suspension', 'Suspension'],
   ['retirement', 'Retrait'],
 ] as const

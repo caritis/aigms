@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import { InfoTip } from '@/components/info-tip'
 import {
+  DIRECTION_SIGNS,
+  directionOf,
   GATED_STEPS,
   LIFECYCLE_STEPS,
   OFF_PATH_ANCHOR,
@@ -28,8 +30,11 @@ import {
 export function Lifecycle({
   status,
   gates = {},
+  openings = [],
 }: {
   status: UseCaseStatus
+  /** Ce qui s'ouvre depuis ce statut : vers ou, et par quelle porte. */
+  openings?: { status: UseCaseStatus; engageant: boolean }[]
   /**
    * Pour chaque jalon, ce qu'on montre en infobulle : la liste de ses
    * preconditions, evaluees en continu. Le jalon dit ainsi lui-meme ce qui
@@ -38,6 +43,7 @@ export function Lifecycle({
   gates?: Partial<Record<UseCaseStatus, { summary: string; satisfied: boolean | null; content: ReactNode }>>
 }) {
   const anchor = OFF_PATH_ANCHOR[status]
+  const ouvertures = openings.map((o) => ({ ...o, direction: directionOf(status, o.status) }))
   const currentIndex = LIFECYCLE_STEPS.indexOf(anchor ? anchor.step : status)
   const offPath = currentIndex === -1
 
@@ -69,6 +75,17 @@ export function Lifecycle({
           const gate = gates[step]
           return (
             <li key={step} className="flex items-center gap-1">
+              {/*
+                Le chevron dit le sens de la marche. Huit pastilles alignees
+                sans rien entre elles se lisaient comme une liste d'etats, pas
+                comme un parcours — et l'on ne voyait pas que Revue precede
+                Approuve, ni qu'on peut y revenir.
+              */}
+              {index > 0 ? (
+                <span aria-hidden className="mr-0.5 text-xs text-ink-300">
+                  ›
+                </span>
+              ) : null}
               <span
                 aria-current={current ? 'step' : undefined}
                 title={gated ? 'Jalon obligatoire : passage évalué côté serveur' : undefined}
@@ -110,6 +127,25 @@ export function Lifecycle({
           Statut courant hors parcours nominal : {USE_CASE_STATUS_LABELS[status]}.
         </p>
       ) : null}
+      {/*
+        Ce qui s'ouvre d'ici, et par quelle porte. La frise disait ou l'on en
+        est ; elle ne disait pas ou l'on peut aller, ni si cela se franchit ou
+        se decide.
+      */}
+      {ouvertures.length ? (
+        <p className="mt-2 text-xs text-ink-600">
+          D’ici :{' '}
+          {ouvertures.map((o, i) => (
+            <span key={o.status}>
+              {i > 0 ? ' · ' : ''}
+              <span aria-hidden className="text-ink-400">{DIRECTION_SIGNS[o.direction]}</span>{' '}
+              {USE_CASE_STATUS_LABELS[o.status]}
+              <span className="text-ink-400">{o.engageant ? ' (se décide)' : ' (se franchit)'}</span>
+            </span>
+          ))}
+        </p>
+      ) : null}
+
       {anchor ? (
         <p className={`mt-2 text-xs ${anchor.tone === 'warn' ? 'text-warn-600' : 'text-stop-600'}`}>
           {status === 'CONDITIONAL_APPROVAL'

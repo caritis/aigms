@@ -6,7 +6,12 @@ import { InfoTip } from '@/components/info-tip'
 import { TransitionPanel } from '@/components/transition-panel'
 import { DecisionForm, type DecisionDossier } from '@/components/governance/decision-forms'
 import { ChangeRequestFields } from '@/components/governance/operations-forms'
-import { USE_CASE_STATUS_LABELS, type UseCaseStatus } from '@/lib/domain/governance'
+import {
+  DIRECTION_SIGNS,
+  directionOf,
+  USE_CASE_STATUS_LABELS,
+  type UseCaseStatus,
+} from '@/lib/domain/governance'
 
 /**
  * « Faire évoluer », la porte unique — a trois intentions.
@@ -71,18 +76,27 @@ export function TransitionModal({
   const engaging = targets.filter((t) => ENGAGING.includes(t))
   const [intent, setIntent] = useState<Intent | null>(null)
 
+  /*
+    Trois portes, trois questions.
+
+    « Franchir un jalon » disait un mouvement ; on le lisait comme « avancer ».
+    Or le partage n'est pas la : depuis le pilote, TOUT ce qui avance engage, et
+    il ne reste a franchir que le retour en arriere. Les trois intitules disent
+    desormais la question a laquelle chacune repond :
+      ou en est le dossier ? — a quoi s'engage-t-on ? — qu'est-ce qui change ?
+  */
   const INTENTS: { key: Intent; title: string; body: string; available: boolean }[] = [
     {
       key: 'step',
-      title: 'Franchir un jalon',
+      title: 'Faire avancer l’instruction',
       body: steps.length
-        ? `Vers ${steps.map((t) => USE_CASE_STATUS_LABELS[t]).join(', ')} — tout de suite, avec un motif. Le gate de Revue reste le juge.`
-        : 'Aucun jalon simple depuis ce statut : les suivants se décident.',
+        ? `${steps.map((t) => `${DIRECTION_SIGNS[directionOf(status, t)]} ${USE_CASE_STATUS_LABELS[t]}`).join(', ')} — tout de suite, avec un motif. Les passerelles restent juges.`
+        : 'Rien à franchir d’ici : tout ce qui reste engage l’organisation, et se décide.',
       available: steps.length > 0,
     },
     {
       key: 'decide',
-      title: 'Décider',
+      title: 'Décider — ce qui engage',
       body: engaging.length || decisionTypes.length
         ? `Approuvé, pilote, production, suspension, retrait — un acte de gouvernance : approuvée, la décision franchit le jalon à sa date d’effet.${engaging.length ? ` D’ici : ${engaging.map((t) => USE_CASE_STATUS_LABELS[t]).join(', ')}.` : ''}`
         : 'Rien à décider depuis ce statut.',
@@ -91,8 +105,8 @@ export function TransitionModal({
     // La troisieme intention s'ajoute apres, pour garder l'ordre a l'ecran.
     {
       key: 'change',
-      title: 'Prévoir un changement du système',
-      body: 'Modèle, données, finalité, fournisseur, autonomie, population… à une date prévue. Le moteur dit ce qu’il rouvre, et si une décision s’impose. Le statut ne bouge pas.',
+      title: 'Déclarer un changement du système',
+      body: 'Modèle, données, finalité, fournisseur, autonomie, population… à une date prévue. Le moteur dit ce qu’il rouvre, et s’il conclut à une réévaluation, il ouvre la décision lui-même. Le statut ne bouge pas.',
       available: status !== 'RETIRED',
     },
   ]
@@ -216,6 +230,7 @@ export function TransitionModal({
             <div className="min-h-0 flex-1 overflow-y-auto pr-1">
             <TransitionPanel
               useCaseId={useCaseId}
+              from={status}
               targets={steps}
               unsettledRisks={unsettledRisks}
               unassessedRisks={unassessedRisks}
@@ -237,6 +252,20 @@ export function TransitionModal({
             />
           ) : intent === 'change' ? (
             <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+              {/*
+                Ce qui suit la declaration, dit avant de la faire. « Changement
+                significatif » a quitte la liste des decisions : on ne s'engage
+                plus avant d'avoir analyse.
+              */}
+              <p className="mb-3 rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+                <strong className="font-medium text-ink-800">Vous déclarez un fait, pas une
+                décision.</strong>{' '}
+                Le moteur de réévaluation le qualifie, dit ce qu’il rouvre — qualification, risques,
+                contrôles, étude d’impact — et{' '}
+                <strong className="font-medium text-ink-800">s’il conclut à une réévaluation, il
+                ouvre la décision lui-même</strong>, déjà rédigée, qu’il ne restera qu’à trancher.
+                Le changement ne s’approuve pas sans elle.
+              </p>
               <ChangeRequestFields organizationId={organizationId} useCaseId={useCaseId} currentAutonomy={currentAutonomy} />
             </div>
           ) : (

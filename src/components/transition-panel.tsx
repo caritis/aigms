@@ -3,7 +3,11 @@
 import { useActionState, useState } from 'react'
 import { transitionUseCase, type ActionState } from '@/lib/actions/use-case'
 import {
+  DIRECTION_LABELS,
+  DIRECTION_SIGNS,
+  directionOf,
   USE_CASE_STATUS_LABELS,
+  type Direction,
   type UseCaseStatus,
 } from '@/lib/domain/governance'
 import { GateChecklist } from '@/components/gate-checklist'
@@ -27,11 +31,14 @@ const SERVICE_TARGETS: UseCaseStatus[] = ['PRODUCTION', 'MONITORING']
 
 export function TransitionPanel({
   useCaseId,
+  from,
   targets,
   unsettledRisks = 0,
   unassessedRisks = 0,
 }: {
   useCaseId: string
+  /** Le statut courant : il donne le sens de chaque transition proposee. */
+  from?: UseCaseStatus
   targets: UseCaseStatus[]
   /** Risques ni traites, ni acceptes, ni clos. */
   unsettledRisks?: number
@@ -58,6 +65,11 @@ export function TransitionPanel({
           <label htmlFor="target" className="block text-xs font-medium text-ink-600">
             Transition demandée
           </label>
+          {/*
+            Les cibles se rangent par SENS. La liste alignait « Revue » et
+            « Surveillance » sans dire que l'une revient et l'autre avance : on
+            demandait un retour en arriere en croyant progresser.
+          */}
           <select
             id="target"
             name="target"
@@ -65,12 +77,33 @@ export function TransitionPanel({
             value={target}
             onChange={(event) => setTarget(event.target.value as UseCaseStatus)}
           >
-            {targets.map((t) => (
-              <option key={t} value={t}>
-                {USE_CASE_STATUS_LABELS[t]}
-              </option>
-            ))}
+            {from
+              ? (['avant', 'arriere', 'sortie'] as Direction[]).map((sens) => {
+                  const dedans = targets.filter((t) => directionOf(from, t) === sens)
+                  if (!dedans.length) return null
+                  return (
+                    <optgroup key={sens} label={`${DIRECTION_SIGNS[sens]} ${DIRECTION_LABELS[sens]}`}>
+                      {dedans.map((t) => (
+                        <option key={t} value={t}>
+                          {USE_CASE_STATUS_LABELS[t]}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )
+                })
+              : targets.map((t) => (
+                  <option key={t} value={t}>
+                    {USE_CASE_STATUS_LABELS[t]}
+                  </option>
+                ))}
           </select>
+          {from && target ? (
+            <p className="mt-1 text-xs text-ink-500">
+              {DIRECTION_SIGNS[directionOf(from, target)]}{' '}
+              {DIRECTION_LABELS[directionOf(from, target)].toLowerCase()} — de{' '}
+              {USE_CASE_STATUS_LABELS[from]} vers {USE_CASE_STATUS_LABELS[target]}.
+            </p>
+          ) : null}
         </div>
 
         <div>

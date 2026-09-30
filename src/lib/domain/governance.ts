@@ -63,6 +63,41 @@ export const LIFECYCLE_STEPS: UseCaseStatus[] = [
 ]
 
 /**
+ * Le sens de la marche, d'un statut vers un autre.
+ *
+ * La frise alignait huit pastilles sans rien entre elles, et la fenetre
+ * « Faire evoluer » proposait « Revue » sans dire qu'on y REVIENT. Depuis le
+ * pilote, tout ce qui avance engage — donc se decide — et il ne reste a
+ * franchir que le retour en arriere : on lisait « franchir un jalon » en
+ * croyant progresser.
+ */
+export type Direction = 'avant' | 'arriere' | 'sortie'
+
+export function directionOf(from: UseCaseStatus, to: UseCaseStatus): Direction {
+  const rang = (s: UseCaseStatus) => {
+    const anchor = OFF_PATH_ANCHOR[s]
+    return LIFECYCLE_STEPS.indexOf(anchor ? anchor.step : s)
+  }
+  // Retrait et refus ne sont pas des reculs : ce sont des sorties.
+  if (to === 'RETIRED' || to === 'REJECTED') return 'sortie'
+  const [a, b] = [rang(from), rang(to)]
+  if (a === -1 || b === -1) return 'avant'
+  return b >= a ? 'avant' : 'arriere'
+}
+
+export const DIRECTION_LABELS: Record<Direction, string> = {
+  avant: 'Poursuivre l’instruction',
+  arriere: 'Revenir en arrière',
+  sortie: 'Sortir du parcours',
+}
+
+export const DIRECTION_SIGNS: Record<Direction, string> = {
+  avant: '→',
+  arriere: '↩',
+  sortie: '⨯',
+}
+
+/**
  * Ou se tiennent les statuts qui ne sont pas des etapes.
  *
  * « Approuve sous conditions », « Refuse », « Suspendu » ne figurent pas dans

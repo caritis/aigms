@@ -53,7 +53,7 @@ import {
   IncidentForm,
   IncidentProgressForm,
 } from '@/components/governance/operations-forms'
-import { DECISION_TYPES_BY_STATUS, UI_TRANSITIONS } from '@/lib/domain/transitions'
+import { DECISION_TYPES_BY_STATUS, ENGAGING_STATUSES, UI_TRANSITIONS } from '@/lib/domain/transitions'
 import {
   AcceptRiskForm,
   ClassificationPanel,
@@ -828,7 +828,14 @@ export default async function UseCasePage({
         <div className="grid gap-5 lg:grid-cols-3">
           <div className="space-y-5 lg:col-span-2">
             <div className="rounded-lg border border-ink-200 bg-white p-5">
-              <Lifecycle status={status} gates={{ REVIEW: gateTip(reviewGate), PRODUCTION: gateTip(gate) }} />
+              <Lifecycle
+                status={status}
+                gates={{ REVIEW: gateTip(reviewGate), PRODUCTION: gateTip(gate) }}
+                openings={UI_TRANSITIONS[status].map((t) => ({
+                  status: t,
+                  engageant: ENGAGING_STATUSES.includes(t),
+                }))}
+              />
               <p className="mt-3 border-t border-ink-100 pt-3 text-xs text-ink-400">
                 Dernier changement de statut : {formatDateTime(useCase.status_changed_at)}
                 {useCase.next_review_at
