@@ -533,6 +533,22 @@ l'outil sait distinguer une preuve d'organisation d'une preuve d'ingénierie.
 > pièce arrive **« à valider »**. Celui qui fournit la pièce n'atteste pas
 > lui-même de sa recevabilité.
 
+#### Valider la pièce — un second acte, et il n'est pas facultatif
+
+**Registres → Preuves → filtre « À valider »**
+
+La charte y attend. Ouvrez-la, et cliquez **« Valider en mon nom »**.
+
+> **Le geste qui porte.** « Deux actes, deux moments. Quelqu'un dépose ; quelqu'un
+> d'autre atteste que la pièce vaut. Tant que ce second acte n'a pas eu lieu, la
+> preuve **existe mais ne démontre rien** — et c'est exactement ce que l'outil
+> en fait. »
+
+> **Ne sautez pas cette étape.** Une mise en production s'appuie sur **au moins
+> une pièce validée** : sans cette validation, l'étape 8c s'arrêtera net, et
+> l'écran vous renverra ici. C'est cohérent, mais ça ne se découvre pas en
+> direct devant un prospect.
+
 ---
 
 ### Étape 7 — Conduire l'étude d'impact
@@ -1008,7 +1024,7 @@ d'impact. Relisez-les — c'est votre nom qui les portera. »*
 | Champ | Ce qui change sur une mise en production |
 |---|---|
 | **Date de revue** | **devient exigée** — *« rien ne doit dormir »* |
-| **Preuves sur lesquelles la décision se fonde** | **au moins une preuve validée** : cochez la charte déposée à l'étape 6 |
+| **Preuves sur lesquelles la décision se fonde** | **au moins une preuve validée** : cochez la charte **validée** à l'étape 6 — non pas seulement déposée |
 | **Ce que vous en dites** | apparaît *si* des contrôles applicables n'ont aucune preuve — et devient exigé |
 
 **Depuis « Approuvé sous conditions », passez d'abord par le pilote** : décision

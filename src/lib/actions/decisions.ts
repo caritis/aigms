@@ -211,18 +211,26 @@ export async function submitDecision(
     la phrase ; ici on la presente, la premiere fois.
   */
   const milestone = MILESTONE_OF_DECISION[input.decisionType]
-  if (milestone && input.useCaseId && !input.milestoneGapStatement.trim()) {
+  let jalon: GateResult | null = null
+  if (milestone && input.useCaseId) {
     const { data: gate } = await supabase.rpc('evaluate_gate', { p_use_case_id: input.useCaseId, p_target: milestone })
     const g = gate as { satisfied: boolean; checks: GateCheck[] } | null
     if (g) {
       // Une vérification d'avertissement ne retient pas la soumission : elle
       // s'assume à l'approbation (0097).
       const missing = blockingGateChecks(input.decisionType, g.checks, isBlocking)
-      if (missing.length) {
+      /*
+        Le jalon accompagne TOUT refus de cette décision, pas seulement le
+        sien. Rendu au seul refus qui le concerne, il disparaissait dès que la
+        soumission suivante échouait sur autre chose — une preuve manquante —
+        et emportait avec lui la phrase qu'on venait d'écrire.
+      */
+      if (missing.length) jalon = gate as GateResult
+      if (jalon && !input.milestoneGapStatement.trim()) {
         return {
           ok: false,
           message: '',
-          gate: gate as GateResult,
+          gate: jalon,
           fieldErrors: { milestoneGapStatement: 'Dire ce qu’il en est avant de soumettre.' },
         }
       }
@@ -232,8 +240,10 @@ export async function submitDecision(
   if (input.decisionType === 'go_production' && !input.evidenceIds.length) {
     return {
       ok: false,
-      message: 'Une mise en production s’appuie sur au moins une preuve validée : rattachez-la à la décision.',
+      message:
+        'Une mise en production s’appuie sur au moins une preuve validée : rattachez-la à la décision. Si le registre n’en porte aucune, c’est qu’une pièce déposée attend d’être validée — un dépôt n’est pas une validation.',
       fieldErrors: { evidenceIds: 'Au moins une preuve validée.' },
+      ...(jalon ? { gate: jalon } : {}),
     }
   }
 

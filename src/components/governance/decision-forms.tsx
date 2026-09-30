@@ -7,6 +7,7 @@ import {
   submitDecision,
   type FormState,
 } from '@/lib/actions/decisions'
+import Link from 'next/link'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
 import { GateChecklist } from '@/components/gate-checklist'
@@ -191,14 +192,25 @@ export function DecisionForm({
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
   const refus = state && !state.ok ? state : null
 
+  // Le serveur rend le jalon avec TOUT refus de cette decision (0118) : le bloc
+  // ne disparait plus parce que la soumission a echoue sur autre chose.
+  const jalon = refus?.gate ?? null
+
+  /*
+    Ce qu'on ecrit survit au refus suivant. Un champ non controle perd sa valeur
+    au demontage du bloc qui le porte — et l'on retapait le meme texte.
+  */
+  const [motJalon, setMotJalon] = useState('')
+  const [motPreuve, setMotPreuve] = useState('')
+
   /*
     Le refus s'affiche en tete, et l'on est en bas — sur le bouton qu'on vient
     de cliquer. Sans cela, la fenetre parait n'avoir rien fait.
   */
   const zone = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (refus?.gate) zone.current?.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [refus?.gate])
+    if (refus) zone.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [refus])
 
   /*
     Ce que le dossier sait deja, on ne le redemande pas.
@@ -236,12 +248,12 @@ export function DecisionForm({
         par le trou d'une serrure. Elle se lit ou l'on entre, et c'est la que
         sont les liens de correction.
       */}
-      {refus?.gate ? (
+      {jalon ? (
         <div className="rounded-md border border-warn-600/40 bg-warn-600/5 p-4">
           <p className="mb-2 text-sm font-medium text-ink-900">
             Ce jalon n’est pas prêt. AIGMS ne l’interdit pas : il vous demande de le dire.
           </p>
-          <GateChecklist gate={refus.gate} useCaseId={fixedUseCaseId} organizationId={organizationId} />
+          <GateChecklist gate={jalon} useCaseId={fixedUseCaseId} organizationId={organizationId} />
           <div className="mt-3 border-t border-warn-600/20 pt-3">
             <Field
               label="Ce que vous en dites"
@@ -254,6 +266,8 @@ export function DecisionForm({
                 name="milestoneGapStatement"
                 rows={3}
                 required
+                value={motJalon}
+                onChange={(event) => setMotJalon(event.target.value)}
                 className={FIELD}
               />
             </Field>
@@ -480,7 +494,28 @@ export function DecisionForm({
             ))}
           </div>
         ) : (
-          <p className="text-xs text-ink-400">Aucune preuve validée au registre pour l’instant.</p>
+          /*
+            L'impasse, dite. « Aucune preuve validee » sous une exigence d'au
+            moins une preuve validee laissait devant un mur sans porte : un
+            depot n'est pas une validation, et rien ne le rappelait ici.
+          */
+          <p className="text-xs leading-relaxed text-ink-500">
+            Aucune preuve validée au registre pour l’instant.
+            {type === 'go_production' ? (
+              <>
+                {' '}
+                Une mise en production s’appuie sur au moins une pièce validée —{' '}
+                <strong className="font-medium text-ink-700">un dépôt n’est pas une
+                validation</strong> : une pièce déposée attend qu’une personne la valide en son nom.{' '}
+                <Link
+                  href={`/admin/organizations/${organizationId}/preuves?etat=a-valider`}
+                  className="font-medium text-brand-600 hover:underline"
+                >
+                  Voir les pièces à valider →
+                </Link>
+              </>
+            ) : null}
+          </p>
         )}
         {errors.evidenceIds ? (
           <p role="alert" className="mt-1.5 text-[13px] text-stop-600">{errors.evidenceIds}</p>
@@ -524,7 +559,15 @@ export function DecisionForm({
               error={errors.evidenceGapStatement}
               hint="Remédiation en cours, pièce non encore présentée par l’organisation, échéance visée. Ce texte part tel quel dans l’avertissement et figure sur la décision remise."
             >
-              <textarea id="dec-gap-statement" name="evidenceGapStatement" rows={3} required className={FIELD} />
+              <textarea
+                id="dec-gap-statement"
+                name="evidenceGapStatement"
+                rows={3}
+                required
+                value={motPreuve}
+                onChange={(event) => setMotPreuve(event.target.value)}
+                className={FIELD}
+              />
             </Field>
           </div>
         </div>
@@ -613,7 +656,7 @@ export function DecisionForm({
             Quand le refus porte une liste, le pied se tait : le meme message a
             dix centimetres d'intervalle ne se lit pas deux fois, il agace.
           */}
-          {refus?.gate ? (
+          {refus && !refus.message ? (
             <p className="text-xs text-warn-600">
               Ce qui retient le jalon est listé en haut de la fenêtre, avec où le corriger.
             </p>
@@ -624,7 +667,7 @@ export function DecisionForm({
         </div>
       ) : (
         <>
-          {refus?.gate ? null : <FormFeedback state={state} />}
+          {refus && !refus.message ? null : <FormFeedback state={state} />}
           <Submit pending={pending} idle="Soumettre la décision" />
         </>
       )}

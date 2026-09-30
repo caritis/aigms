@@ -346,6 +346,11 @@ const doc = new Document({
       p('Pour une charte : aucune typologie technique, nature Document. Les deux champs se remplissent alors sans hésitation — et vous venez de montrer que l’outil sait distinguer une preuve d’organisation d’une preuve d’ingénierie.'),
       insister('Faites remarquer l’icône qui passe au vert et le compte qui descend à 4 sans preuve. Le contrôle n’est pas tenu parce qu’on l’a déclaré opérant : il est tenu parce qu’une pièce validée et non échue le démontre. C’est la même règle partout dans l’outil.'),
       p('Un dépôt n’est pas une validation. Le bandeau de la fenêtre le dit, et la pièce arrive « à valider » : celui qui fournit la pièce n’atteste pas lui-même de sa recevabilité.'),
+      h('Valider la pièce — un second acte, et il n’est pas facultatif', HeadingLevel.HEADING_3),
+      p('Registres → Preuves → filtre « À valider ». La charte y attend. Ouvrez-la, et cliquez « Valider en mon nom ».'),
+      insister('Deux actes, deux moments. Quelqu’un dépose ; quelqu’un d’autre atteste que la pièce vaut. Tant que ce second acte n’a pas eu lieu, la preuve existe mais ne démontre rien — et c’est exactement ce que l’outil en fait.'),
+      insister('Ne sautez pas cette étape. Une mise en production s’appuie sur au moins une pièce validée : sans cette validation, l’étape 8c s’arrêtera net et l’écran vous renverra ici. C’est cohérent, mais ça ne se découvre pas en direct devant un prospect.'),
+      p(''),
       p(''),
 
       ...etape('7', 'Conduire l’étude d’impact', '4 min',
@@ -630,7 +635,7 @@ const doc = new Document({
       table([
         ligne(['Champ', 'Ce qui change sur une mise en production'], { header: true }),
         ligne(['Date de revue', 'devient exigée — « rien ne doit dormir »']),
-        ligne(['Preuves sur lesquelles la décision se fonde', 'au moins une preuve validée : cochez la charte déposée à l’étape 6']),
+        ligne(['Preuves sur lesquelles la décision se fonde', 'au moins une preuve VALIDÉE : cochez la charte validée à l’étape 6 — non pas seulement déposée']),
         ligne(['Ce que vous en dites', 'apparaît si des contrôles applicables n’ont aucune preuve — et devient exigé']),
       ]),
       p(''),
