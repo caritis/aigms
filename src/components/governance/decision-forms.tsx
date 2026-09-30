@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useRef, useState } from 'react'
 import {
   linkDecisionEvidence,
   ruleOnDecision,
@@ -192,6 +192,15 @@ export function DecisionForm({
   const refus = state && !state.ok ? state : null
 
   /*
+    Le refus s'affiche en tete, et l'on est en bas — sur le bouton qu'on vient
+    de cliquer. Sans cela, la fenetre parait n'avoir rien fait.
+  */
+  const zone = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (refus?.gate) zone.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [refus?.gate])
+
+  /*
     Ce que le dossier sait deja, on ne le redemande pas.
 
     L'objet se deduit du type et du nom de la fiche ; la date d'effet est le
@@ -215,8 +224,42 @@ export function DecisionForm({
       action={formAction}
       className={framed ? 'flex max-h-[68vh] min-h-0 flex-col' : 'flex flex-col gap-4'}
     >
-      <div className={framed ? 'flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1' : 'contents'}>
+      <div ref={zone} className={framed ? 'flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1' : 'contents'}>
       <input type="hidden" name="organizationId" value={organizationId} />
+
+      {/*
+        Le jalon qui n'est pas pret, EN TETE — dans le defilement du formulaire,
+        sans ascenseur propre.
+
+        La liste vivait au-dessus du pied, dans sa propre fenetre de trois
+        lignes : deux barres de defilement cote a cote, huit preconditions lues
+        par le trou d'une serrure. Elle se lit ou l'on entre, et c'est la que
+        sont les liens de correction.
+      */}
+      {refus?.gate ? (
+        <div className="rounded-md border border-warn-600/40 bg-warn-600/5 p-4">
+          <p className="mb-2 text-sm font-medium text-ink-900">
+            Ce jalon n’est pas prêt. AIGMS ne l’interdit pas : il vous demande de le dire.
+          </p>
+          <GateChecklist gate={refus.gate} useCaseId={fixedUseCaseId} organizationId={organizationId} />
+          <div className="mt-3 border-t border-warn-600/20 pt-3">
+            <Field
+              label="Ce que vous en dites"
+              htmlFor="dec-milestone-statement"
+              error={errors.milestoneGapStatement}
+              hint="Remédiation en cours, échéance visée, ce que vous attendez. Ce texte part tel quel à la personne appelée à se prononcer, et reste sur la décision. Le jalon, lui, ne sera franchi que lorsque ces préconditions seront réunies."
+            >
+              <textarea
+                id="dec-milestone-statement"
+                name="milestoneGapStatement"
+                rows={3}
+                required
+                className={FIELD}
+              />
+            </Field>
+          </div>
+        </div>
+      ) : null}
 
       {/*
         On dit que c'est une proposition. Un champ pre-rempli qu'on ne signale
@@ -564,34 +607,24 @@ export function DecisionForm({
 
       </div>
 
-      {/*
-        Le jalon refuse : on montre la liste, pas la phrase.
-
-        Six preconditions separees par des points-virgules ne se lisent pas —
-        et surtout, elles ne disent pas ou aller. Chacune porte desormais son
-        detail, ce qu'elle a constate, et le lien de l'ecran qui la solde.
-      */}
-      {refus?.gate ? (
-        <div className={framed ? '-mx-5 mt-3 max-h-64 overflow-y-auto border-t border-ink-100 bg-warn-600/5 px-5 py-4' : 'rounded-md border border-warn-600/40 bg-warn-600/5 p-4'}>
-          <p className="mb-2 text-sm font-medium text-ink-900">
-            Le jalon n’est pas prêt. Ce qui le retient, et où le corriger :
-          </p>
-          <GateChecklist gate={refus.gate} useCaseId={fixedUseCaseId} organizationId={organizationId} />
-          <p className="mt-2 text-xs leading-relaxed text-ink-600">
-            La décision se soumettra quand elles seront réunies. Rien de ce que vous venez d’écrire
-            n’est perdu : la fenêtre reste ouverte.
-          </p>
-        </div>
-      ) : null}
-
       {framed ? (
         <div className="-mx-5 -mb-5 mt-3 flex flex-col gap-2 border-t border-ink-100 bg-white px-5 py-3.5">
-          <FormFeedback state={state} />
+          {/*
+            Quand le refus porte une liste, le pied se tait : le meme message a
+            dix centimetres d'intervalle ne se lit pas deux fois, il agace.
+          */}
+          {refus?.gate ? (
+            <p className="text-xs text-warn-600">
+              Ce qui retient le jalon est listé en haut de la fenêtre, avec où le corriger.
+            </p>
+          ) : (
+            <FormFeedback state={state} />
+          )}
           <Submit form="decision-form" pending={pending} idle="Soumettre la décision" />
         </div>
       ) : (
         <>
-          <FormFeedback state={state} />
+          {refus?.gate ? null : <FormFeedback state={state} />}
           <Submit pending={pending} idle="Soumettre la décision" />
         </>
       )}

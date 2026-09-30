@@ -56,9 +56,11 @@ describe('RACI — arbitrage critique', () => {
       const { rows } = await c.query<{ id: string }>(
         `insert into public.governance_decision
            (tenant_id, organization_id, use_case_id, decision_type, subject, decision_statement, rationale,
-            status, submitted_by, submitted_at, expected_approver_user_id, evidence_gap_statement)
+            status, submitted_by, submitted_at, expected_approver_user_id, evidence_gap_statement,
+            milestone_gap_statement)
          values ($1, $2, $3, 'go_production', 'Mise en production du scoring', 'Mise en service.', 'Préconditions réunies.',
-                 'submitted', $4, now(), $5, 'Remédiation en cours : preuves attendues de l’organisation.') returning id`,
+                 'submitted', $4, now(), $5, 'Remédiation en cours : preuves attendues de l’organisation.',
+                 'Préconditions du jalon en cours de clôture.') returning id`,
         [DEMO.tenantA, DEMO.orgA, DEMO.useCasePilot, DEMO.officerA, REVIEWER_A],
       )
       const id = rows[0]!.id

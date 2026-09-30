@@ -303,10 +303,11 @@ describe('Registre de decisions', () => {
         `insert into public.governance_decision
            (tenant_id, organization_id, use_case_id, decision_type, subject,
             decision_statement, rationale, status, submitted_by,
-            expected_approver_user_id, evidence_gap_statement)
+            expected_approver_user_id, evidence_gap_statement, milestone_gap_statement)
          values ($1, $2, $3, 'go_production', 'Adressee au relecteur',
                  'Autorise', 'Justification', 'submitted', $4, $5,
-                 'Remédiation en cours : preuves attendues de l’organisation.')
+                 'Remédiation en cours : preuves attendues de l’organisation.',
+                 'Préconditions du jalon en cours de clôture : revue fournisseur et action bloquante soldées cette semaine.')
          returning expected_approver_user_id`,
         [DEMO.tenantA, DEMO.orgA, DEMO.useCasePilot, DEMO.officerA, DEMO.riskOwnerA],
       )

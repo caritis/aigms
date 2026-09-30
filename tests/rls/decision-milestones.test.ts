@@ -59,6 +59,67 @@ describe('Décision et jalon', () => {
     expect(r.after).toBe('RETIRED')
   })
 
+  /*
+   * 0118 : un jalon qui n'est pas pret n'interdit plus la soumission, il la
+   * fait assumer. Le franchissement, lui, reste tenu — c'est la que le gate
+   * agit, et il y agissait deja.
+   */
+  it('refuse une décision de jalon dont les préconditions manquent, tant que rien n’en est dit', async () => {
+    const echec = await asUser(db, DEMO.officerA, async (c) =>
+      expectFailure(
+        c,
+        `insert into public.governance_decision (tenant_id, organization_id, use_case_id, decision_type, subject,
+           context, decision_statement, rationale, status, submitted_by, submitted_at)
+         values ($1, $2, $3, 'go_production', 'Mise en production sans préconditions',
+                 'Contexte suffisamment long pour passer la contrainte de vingt caractères.',
+                 'Énoncé suffisamment long pour passer la contrainte de vingt caractères.',
+                 'Justification suffisamment longue pour passer la contrainte.',
+                 'submitted', $4, now())`,
+        [DEMO.tenantA, DEMO.orgA, DEMO.useCaseTriage, DEMO.officerA],
+      ),
+    )
+
+    expect(echec.message).toMatch(/jalon n’est pas prêt/)
+    expect(echec.message).toMatch(/Dire ce qu’il en est/)
+  })
+
+  it('accepte la même décision dès qu’on dit ce qu’il en est, et fige l’écart', async () => {
+    const d = await asUser(db, DEMO.officerA, async (c) => {
+      const { rows } = await c.query<{ milestone_gap: unknown[]; milestone_gap_statement: string }>(
+        `insert into public.governance_decision (tenant_id, organization_id, use_case_id, decision_type, subject,
+           context, decision_statement, rationale, status, submitted_by, submitted_at, milestone_gap_statement)
+         values ($1, $2, $3, 'go_production', 'Mise en production assumée',
+                 'Contexte suffisamment long pour passer la contrainte de vingt caractères.',
+                 'Énoncé suffisamment long pour passer la contrainte de vingt caractères.',
+                 'Justification suffisamment longue pour passer la contrainte.',
+                 'submitted', $4, now(),
+                 'Qualification en cours de revue juridique, close au 15/12. Les contrôles obligatoires se statuent cette semaine.')
+         returning milestone_gap, milestone_gap_statement`,
+        [DEMO.tenantA, DEMO.orgA, DEMO.useCaseTriage, DEMO.officerA],
+      )
+      return rows[0]!
+    })
+
+    // L'ecart est fige : ce que l'approbateur lira ne se reecrira pas.
+    expect(d.milestone_gap.length).toBeGreaterThan(0)
+    expect(d.milestone_gap_statement).toContain('revue juridique')
+  })
+
+  it('ne compte pas contre la décision la précondition qu’elle apporte elle-même', async () => {
+    const gap = await asUser(db, DEMO.officerA, async (c) => {
+      const { rows } = await c.query<{ codes: string[] }>(
+        `select coalesce(array_agg(g ->> 'code'), '{}') as codes
+           from jsonb_array_elements(app.decision_milestone_gap($1, 'go_production')) g`,
+        [DEMO.useCaseTriage],
+      )
+      return rows[0]!.codes
+    })
+
+    expect(gap).not.toContain('PRODUCTION_DECISION')
+    // Les autres, elles, comptent : le gate PRODUCTION en porte huit.
+    expect(gap.length).toBeGreaterThan(0)
+  })
+
   it('une mise en production ne s’approuve pas sans preuve validée rattachée', async () => {
     const r = await asUser(db, DEMO.officerA, async (c) => {
       const { rows } = await c.query<{ id: string }>(

@@ -1030,23 +1030,39 @@ le « ◆ » de la frise ouvre leur liste. Montrez-la : c'est le cœur du produi
 | 7 | Décision GO production approuvée et en vigueur | **c'est celle que vous soumettez** |
 | 8 | Aucune action bloquante ouverte | le préjudice **grave** de l'étape 7 en a ouvert une |
 
-> **Si le jalon refuse, l'écran ne vous laisse pas devant une phrase.** Les huit
-> préconditions s'affichent en liste — cochées en vert, manquantes en rouge —
-> chacune avec **ce qu'elle a constaté** et **le lien de l'écran qui la solde** :
-> *« Clore les revues fournisseurs → »*, *« Solder les actions bloquantes → »*.
-> Ce que vous venez d'écrire reste dans la fenêtre : rien n'est perdu.
+#### Le jalon n'est pas prêt — et c'est le meilleur moment de la démonstration
 
-> **Deux d'entre elles vont vous arrêter, et c'est voulu.** La **revue du
-> fournisseur Open.AI** n'est pas close, et l'**action bloquante** née du
-> préjudice grave est encore ouverte. « Regardez ce que l'outil refuse. Il ne
-> refuse pas parce qu'une case n'est pas cochée : il refuse parce que
-> **personne n'a encore répondu du fournisseur**, et parce qu'une mesure que
-> vous avez vous-même jugée nécessaire n'est pas faite. Fermez-les, et le jalon
-> s'ouvre. »
->
-> Pour la démonstration : soldez l'action *(Suivi d'actions → Terminée)* et
-> closez la revue fournisseur avant cette étape, ou assumez de montrer le refus
-> — **c'est souvent le plus convaincant des deux**.
+À la première soumission, la fenêtre remonte en haut et affiche, **en liste**,
+les huit préconditions : cochées en vert, manquantes en rouge, chacune avec **ce
+qu'elle a constaté** et **le lien de l'écran qui la solde** — *« Clore les revues
+fournisseurs → »*, *« Solder les actions bloquantes → »*.
+
+**Chez vous, plusieurs vont manquer** : la revue du fournisseur Open.AI n'est
+pas close, l'action bloquante née du préjudice grave est encore ouverte, la
+supervision humaine n'est pas statuée. C'est normal, et il ne faut surtout pas
+le cacher.
+
+**AIGMS ne vous arrête pas. Il vous demande de le dire.** Sous la liste, un
+champ apparaît — **« Ce que vous en dites »** — et il est exigé :
+
+> *« Revue Open.AI ouverte, clôture prévue au 15/12. La relecture humaine est
+> en place, l'action se solde cette semaine. Le plan de supervision est rédigé,
+> visa attendu vendredi. »*
+
+Soumettez. **La décision part**, le courriel aussi, et Marc Lecomte lit **ce qui
+manque en même temps que ce qu'on lui demande d'approuver**.
+
+> **La phrase qui emporte.** « Regardez bien ce qui vient de se passer. L'outil
+> ne m'a pas interdit de demander la mise en production — il m'a obligé à dire
+> devant tout le monde ce qui n'était pas fait, et il l'a envoyé à celui qui
+> doit signer. **Et même approuvée, cette décision ne mettra rien en
+> production** : le jalon reste tenu tant que ces préconditions ne sont pas
+> réunies, et AIGMS me le dira nommément. Interdire, n'importe quel outil sait
+> le faire. Faire assumer, c'est autre chose. »
+
+**Ce que la décision garde** : l'état du jalon **figé au moment de la
+soumission**. Une revue close demain ne réécrit pas ce que Marc a lu
+aujourd'hui.
 
 **La septième ne vous retient pas**, et il faut le dire si on vous le demande :
 la décision que vous soumettez est précisément celle que cette précondition

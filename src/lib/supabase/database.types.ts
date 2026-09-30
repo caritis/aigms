@@ -3202,6 +3202,8 @@ export type Database = {
           evidence_gap_statement: string | null
           expected_approver_user_id: string | null
           id: string
+          milestone_gap: Json | null
+          milestone_gap_statement: string | null
           options_considered: string | null
           organization_id: string
           rationale: string | null
@@ -3248,6 +3250,8 @@ export type Database = {
           evidence_gap_statement?: string | null
           expected_approver_user_id?: string | null
           id?: string
+          milestone_gap?: Json | null
+          milestone_gap_statement?: string | null
           options_considered?: string | null
           organization_id: string
           rationale?: string | null
@@ -3294,6 +3298,8 @@ export type Database = {
           evidence_gap_statement?: string | null
           expected_approver_user_id?: string | null
           id?: string
+          milestone_gap?: Json | null
+          milestone_gap_statement?: string | null
           options_considered?: string | null
           organization_id?: string
           rationale?: string | null

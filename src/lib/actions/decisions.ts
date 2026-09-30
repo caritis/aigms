@@ -125,6 +125,11 @@ const submitSchema = z.object({
    * (0098) ; ici on se contente de le transmettre.
    */
   evidenceGapStatement: z.string().trim().max(2000).optional().or(z.literal('')),
+  /**
+   * Ce que celui qui soumet dit des preconditions qui retiennent le jalon.
+   * La base l'exige des que l'ecart n'est pas vide (0118) ; ici on le transmet.
+   */
+  milestoneGapStatement: z.string().trim().max(2000).default(''),
   // Ce qui change — pour une decision de changement significatif, de
   // suspension ou de retrait : le changement est cree, lie, et qualifie.
   // Les pieces sur lesquelles la decision se fonde, des la soumission.
@@ -160,6 +165,7 @@ export async function submitDecision(
     effectiveFrom: formData.get('effectiveFrom') ?? '',
     reviewDueAt: formData.get('reviewDueAt') ?? '',
     evidenceGapStatement: formData.get('evidenceGapStatement') ?? '',
+    milestoneGapStatement: formData.get('milestoneGapStatement') ?? '',
     evidenceIds: formData.getAll('evidenceIds'),
     changeTypes: formData.getAll('changeTypes'),
     increasesAutonomy: formData.get('increasesAutonomy') === 'on',
@@ -189,11 +195,23 @@ export async function submitDecision(
     .maybeSingle()
   if (!organization) return { ok: false, message: 'Organisation introuvable.' }
 
-  // Une decision de jalon ne se soumet pas sur un jalon ferme : on ne fait pas
-  // voter sur ce qui sera refuse. Le gate dit ce qui manque, precondition par
-  // precondition (0065) — sauf celle que cette decision apporte elle-meme.
+  /*
+    Un jalon qui n'est pas pret n'interdit plus : il s'assume (0118).
+
+    La soumission etait refusee tant que les preconditions manquaient — « on ne
+    fait pas voter sur ce qui sera refuse ». Mais le jalon est deja tenu au bon
+    endroit : a l'approbation, la base reevalue le gate, ne franchit rien s'il
+    refuse, et le dit a qui a soumis. La barriere a la soumission etait une
+    seconde serrure sur la meme porte, et elle empechait tout le reste : pas de
+    decision, pas d'avertissement, pas d'approbation, aucune trace de ce qu'on
+    a voulu faire.
+
+    On montre donc ce qui manque, et l'on demande ce qu'on en dit — exactement
+    comme pour l'ecart de preuve. La base fige l'ecart sur la decision et exige
+    la phrase ; ici on la presente, la premiere fois.
+  */
   const milestone = MILESTONE_OF_DECISION[input.decisionType]
-  if (milestone && input.useCaseId) {
+  if (milestone && input.useCaseId && !input.milestoneGapStatement.trim()) {
     const { data: gate } = await supabase.rpc('evaluate_gate', { p_use_case_id: input.useCaseId, p_target: milestone })
     const g = gate as { satisfied: boolean; checks: GateCheck[] } | null
     if (g) {
@@ -203,8 +221,9 @@ export async function submitDecision(
       if (missing.length) {
         return {
           ok: false,
-          message: `Le jalon n’est pas prêt : ${missing.length} précondition(s) manquent. La décision se soumettra quand elles seront réunies.`,
+          message: '',
           gate: gate as GateResult,
+          fieldErrors: { milestoneGapStatement: 'Dire ce qu’il en est avant de soumettre.' },
         }
       }
     }
@@ -237,6 +256,7 @@ export async function submitDecision(
       effective_from: input.effectiveFrom || null,
       review_due_at: input.reviewDueAt || null,
       evidence_gap_statement: input.evidenceGapStatement || null,
+      milestone_gap_statement: input.milestoneGapStatement || null,
       status: 'submitted',
       submitted_by: user.id,
       submitted_at: new Date().toISOString(),
