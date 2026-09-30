@@ -38,7 +38,7 @@ expertise obligatoire · I reçoit l'information sans bloquer le flux.
 | 1. Déclaration et inventaire | A | R | R | C | — | — | I |
 | 2. Évaluation des risques | R | A | A | C | C | — | I |
 | 3. Validation des contrôles | I | R | R | A | A | — | I |
-| 4. Arbitrage IA critique | I | C | C | C | C | A | I |
+| 4. Arbitrage IA critique | I | C | **A** | C | C | A | I |
 | 5. Outillage des contrôles | I | R | R | C | I | — | I |
 | 6. Référentiel — contrôles-types et familles d'outillage | — | I | I | — | — | — | I |
 | 7. Audit de conformité | I | I | I | I | I | I | A |
@@ -72,14 +72,29 @@ migration 0055, les deux « A » qui n'étaient pas portés le sont :
   valide plus** : il attestait de sa propre pièce. L'Expert et le Comité, qui
   n'écrivent pas de preuve, n'obtiennent que l'acte de validation — rien
   d'autre ne bouge sur la ligne. La validation reste nominative.
-- **Arbitrage IA critique (étape 4)** — le **Comité de direction** se prononce
-  sur une décision soumise (approuver, sous conditions, rejeter) sans pouvoir
-  en soumettre ni en réécrire une (`app.roles_arbitrate`). Et l'arbitrage
-  critique lui revient : une mise en production (`go_production`) d'un cas
-  d'usage de criticité **élevée ou critique**, et toute **exception à une
-  politique** (`policy_exception`), ne s'approuvent que par une personne qui
-  tient ce rôle sur l'organisation. Une mise en production d'un cas d'usage
-  modéré reste du ressort des relecteurs.
+- **Arbitrage IA critique (étape 4)** — le **Comité de direction** et
+  l'**Administrateur client** s'y prononcent (approuver, sous conditions,
+  rejeter), et **eux seuls** (`app.roles_arbitrate`). Une mise en production
+  (`go_production`) d'un cas d'usage de criticité **élevée ou critique**, et
+  toute **exception à une politique** (`policy_exception`), ne s'approuvent que
+  par une personne qui tient l'un de ces deux rôles sur l'organisation. Une
+  mise en production d'un cas d'usage modéré reste du ressort des relecteurs.
+
+  **Pourquoi deux, depuis la migration 0120.** Le RACI d'origine réservait cet
+  « A » au seul Comité de direction. Dans une PME, ce comité se réunit rarement
+  et ne se distingue pas toujours de la direction : exiger sa signature pour
+  chaque mise en service faisait attendre le dossier pour une formalité — ou
+  poussait quelqu'un à s'attribuer le rôle pour avancer. **Une règle qu'on
+  contourne ne protège personne.** L'arbitrage passe donc d'une personne à
+  deux, toutes deux côté client, et **toutes deux distinctes de qui instruit** :
+  l'AI Governance Officer, qui prépare le dossier, ne l'obtient pas. La
+  **séparation des rôles** tient par ailleurs sans exception — l'auteur d'une
+  décision engageante ne l'approuve jamais lui-même, quel que soit son rôle.
+
+  **Ce qui est proposé par défaut** : l'Administrateur client sur une mise en
+  production — c'est lui qui met en service — et le Comité de direction sur une
+  exception de politique, parce qu'une exception à une règle qu'on s'est donnée
+  n'est pas une affaire d'exploitation. L'un comme l'autre se change d'un clic.
 
 Les deux règles portent sur l'**acte** fait par une personne authentifiée :
 une reprise de données ou un import CONNECT, sans utilisateur, verse des

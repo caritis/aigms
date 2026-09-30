@@ -45,7 +45,7 @@ Mot de passe commun : `Demo!Passw0rd`
 | `devsecops@aigms.eu` | Dominique Etchart | Porteur de l'IA | Accepte les risques résiduels |
 | `risk-comity@aigms.eu` | Sacha Belarbi | Comité des risques | Répond du risque coté |
 | `rssi@aigms.eu` | Yann Cazaux | Expert métier (DPO / RSSI) | Cité, non sollicité |
-| `direction@aigms.eu` | Élodie Marchetti | Comité de direction | **Arbitre la mise en production du cas critique — étape 8c** |
+| `direction@aigms.eu` | Élodie Marchetti | Comité de direction | Peut arbitrer le cas critique — la DSI le fait dans le script |
 | `audit@aigms.eu` | Noa Lasserre | Auditeur | Cité, non sollicité |
 
 > **Ce sont les mêmes personnes que sur l'autre organisation de démonstration.**
@@ -1104,18 +1104,25 @@ est :
 > *« Charte signée le 12/11. Console Enterprise livrée, option de rétention
 > désactivée. Passerelle DLP en recette, bascule prévue le 30/11. »*
 
-**La personne appelée à se prononcer n'est pas celle qu'on croit.** Sur un cas
-d'usage de criticité **élevée ou critique**, la mise en production relève de
-l'**arbitrage du Comité de direction** — la base refuse l'approbation de
-quiconque ne tient pas ce rôle. L'écran le propose donc d'office, et la liste
-dit qui tient quoi :
+**La personne appelée à se prononcer est proposée, et la liste dit qui tient
+quoi.** Sur un cas d'usage de criticité **élevée ou critique**, la mise en
+production relève de l'**arbitrage** — et **deux rôles seulement** le tiennent :
 
+> *Marc Lecomte — Administrateur client · **arbitre les cas critiques*** ← proposé
 > *Élodie Marchetti — Comité de direction · **arbitre les cas critiques***
 
-> **À dire.** « Sur un usage courant, c'est la DSI qui met en service. Sur
-> celui-ci — données personnelles, décision commerciale engageante, criticité
-> élevée — ce n'est plus son arbitrage. **L'outil ne me laisse pas le découvrir
-> au moment de signer** : il me propose la bonne personne, et il dit pourquoi. » **Et vous ne pouvez pas vous
+Retenez **Marc Lecomte** : c'est la DSI côté client, celle qui met en service.
+
+> **À dire, et c'est un argument PME.** « Deux personnes peuvent trancher
+> ceci : ma DSI et ma direction. **Ni moi**, qui ai monté le dossier, ni le
+> Porteur, ni l'auditeur. C'est court, et c'est vivable : dans une entreprise
+> de cette taille, un comité de direction ne se réunit pas pour chaque mise en
+> service. **Une règle qu'on contourne ne protège personne** — celle-ci se
+> tient. »
+
+> **Si on vous objecte que c'est peu.** « La garantie n'est pas dans le nombre
+> de signataires, elle est dans la séparation : **celui qui demande ne peut pas
+> accorder**. La base le refuse, quel que soit le rôle. » **Et vous ne pouvez pas vous
 prononcer vous-même** : sur une mise en production, une acceptation de risque ou
 une exception de politique, la base refuse que l'auteur approuve son propre
 acte.

@@ -57,41 +57,66 @@ describe('RACI — arbitrage critique', () => {
    * remplissait son verdict, et decouvrait a l'enregistrement qu'elle n'avait
    * pas qualite. Le refus etait bon ; le proposer ne l'etait pas.
    */
-  it('propose le Comité de direction dès que l’arbitrage est critique', async () => {
+  it('ne propose qu’une personne qui tient l’arbitrage, et les met en tête', async () => {
     const r = await asUser(db, DEMO.officerA, async (c) => {
       await c.query("update public.ai_use_case set criticality = 'high' where id = $1", [
         DEMO.useCasePilot,
       ])
-      const { rows } = await c.query<{ name: string; arbitre: boolean; propose: boolean }>(
-        `select name, arbitre, propose
+      const { rows } = await c.query<{
+        name: string
+        roles: string[]
+        arbitre: boolean
+        propose: boolean
+      }>(
+        `select name, roles, arbitre, propose
            from public.decision_approvers($1, 'go_production', $2)`,
         [DEMO.orgA, DEMO.useCasePilot],
       )
       return rows
     })
 
-    const propose = r.find((p) => p.propose)!
-    expect(propose.arbitre).toBe(true)
-    // Et il vient en tête : celui qui tient l'arbitrage se lit en premier.
-    expect(r[0]!.propose).toBe(true)
+    expect(r.find((p) => p.propose)!.arbitre).toBe(true)
+    // Les deux rôles arbitrent depuis 0120 : ils se lisent avant les autres.
+    const arbitres = r.filter((p) => p.arbitre)
+    expect(arbitres.flatMap((p) => p.roles).sort()).toEqual(['client_admin', 'executive_viewer'])
+    expect(r.slice(0, arbitres.length).every((p) => p.arbitre)).toBe(true)
   })
 
-  it('propose l’Administrateur client sur une mise en production ordinaire', async () => {
+  it('propose l’Administrateur client sur une mise en production, critique ou non', async () => {
+    // C'est la DSI du client qui met en service, et c'est elle qu'on trouve
+    // dans une PME. Le Comité de direction reste choisissable d'un clic.
+    for (const criticite of ['moderate', 'high']) {
+      const r = await asUser(db, DEMO.officerA, async (c) => {
+        await c.query('update public.ai_use_case set criticality = $2 where id = $1', [
+          DEMO.useCasePilot,
+          criticite,
+        ])
+        const { rows } = await c.query<{ roles: string[]; propose: boolean }>(
+          `select roles, propose from public.decision_approvers($1, 'go_production', $2)`,
+          [DEMO.orgA, DEMO.useCasePilot],
+        )
+        return rows
+      })
+
+      expect(r.find((p) => p.propose)!.roles).toContain('client_admin')
+    }
+  })
+
+  it('remonte une exception de politique à la direction', async () => {
     const r = await asUser(db, DEMO.officerA, async (c) => {
-      await c.query("update public.ai_use_case set criticality = 'moderate' where id = $1", [
-        DEMO.useCasePilot,
-      ])
-      const { rows } = await c.query<{ name: string; roles: string[]; propose: boolean }>(
-        `select name, roles, propose from public.decision_approvers($1, 'go_production', $2)`,
+      const { rows } = await c.query<{ roles: string[]; propose: boolean }>(
+        `select roles, propose from public.decision_approvers($1, 'policy_exception', $2)`,
         [DEMO.orgA, DEMO.useCasePilot],
       )
       return rows
     })
 
-    expect(r.find((p) => p.propose)!.roles).toContain('client_admin')
+    // Une exception à une règle qu'on s'est donnée n'est pas une affaire
+    // d'exploitation.
+    expect(r.find((p) => p.propose)!.roles).toContain('executive_viewer')
   })
 
-  it('une mise en production d’un cas d’usage élevé ne s’approuve que par le Comité de direction', async () => {
+  it('une mise en production d’un cas d’usage élevé ne s’approuve ni par l’officer ni par l’expert', async () => {
     const r = await asUser(db, DEMO.officerA, async (c) => {
       const { rows } = await c.query<{ id: string }>(
         `insert into public.governance_decision
