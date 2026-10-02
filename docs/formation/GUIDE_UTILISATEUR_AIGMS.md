@@ -1,6 +1,6 @@
 # AIGMS — Guide de l'utilisateur
 
-*Support de formation. Version 1 — 28 septembre 2026.*
+*Support de formation. Version 2 — 2 octobre 2026.*
 
 ---
 
@@ -21,7 +21,7 @@ selon votre rôle : commencez par là si vous êtes pressé.
 
 ---
 
-## 2. Les dix mots d'AIGMS
+## 2. Les treize mots d'AIGMS
 
 Ces mots ont un sens précis dans l'application. Les confondre fait perdre du
 temps, et parfois fausse un dossier.
@@ -38,6 +38,9 @@ temps, et parfois fausse un dossier.
 | **Criticité** | Combien d'effort de gouvernance ce cas d'usage mérite. Se pose au triage. | Le niveau de risque |
 | **Risque** | Un événement redouté, coté vraisemblance × gravité. | La criticité |
 | **Passerelle** *(gate)* | Ce que l'application vérifie avant d'autoriser un changement d'étape. | Une formalité |
+| **Décision** | Un acte de gouvernance : quelqu'un demande, quelqu'un d'autre accorde, et les deux restent au dossier. | Une validation par courriel |
+| **Changement** | Un **fait** à venir sur le système : le modèle change, l'autonomie augmente, une population nouvelle est touchée. | Une décision |
+| **Écart** | Ce qui manque au moment où l'on décide — une preuve, une précondition. Il se **déclare** et s'assume ; il n'interdit pas. | Un échec |
 
 > **Le piège le plus fréquent : actif d'IA contre outillage.** Un même produit
 > peut être les deux. Une passerelle d'appels IA est un **instrument de
@@ -78,6 +81,25 @@ l'organisation ouverte : le survol le précise.
 > *saisi*. L'auditeur, par exemple, n'en porte aucune : il constate, il ne
 > solde rien.
 
+### La frise d'avancement
+
+Sur la fiche d'un cas d'usage, huit pastilles reliées par des chevrons disent
+**où en est le dossier** et dans quel sens il va.
+
+- La pastille **pleine** est l'étape courante.
+- Un **◆** marque un jalon obligatoire : le passage est refusé côté serveur
+  tant que ses préconditions ne sont pas réunies, et le « i » du jalon les
+  liste, évaluées en continu.
+- Sous la frise, **ce qui s'ouvre d'ici** : chaque étape atteignable, le sens
+  — `→` en avant, `↩` en arrière, `⨯` sortie — et si elle **se franchit** ou
+  **se décide**.
+
+> **Les issues s'ancrent, elles ne s'ajoutent pas.** « Approuvé sous
+> conditions », « Refusé », « Suspendu » ne sont pas des étapes : ce sont des
+> **issues** d'une étape. La frise les montre à leur place, dans leur couleur
+> et **sous leur nom** — on ne lit pas « Approuvé » là où il est écrit « sous
+> conditions ».
+
 ### Le « i » et le « ! »
 
 Un rond **i** ouvre une explication : à quoi sert cet écran, ce qu'on s'y
@@ -94,11 +116,11 @@ que l'application applique, écrites en français.
 | Rôle | Ce dont vous répondez | Ce que la barre vous ouvre en premier |
 |---|---|---|
 | **AI Governance Officer** | Conduire le système de management : usages, risques, contrôles, preuves | Cas d'usage · Processus et risques |
-| **Administrateur client** | Les accès de votre organisation, et l'arbitrage quand il vous revient | Cas d'usage · Processus et risques |
+| **Administrateur client** | Les accès de votre organisation, la mise en service, et **l'arbitrage des cas critiques** — qu'il partage avec le Comité de direction | Cas d'usage · Processus et risques |
 | **Porteur de l'IA** | Déclarer l'usage, répondre de son fonctionnement, fournir les preuves | Cas d'usage · Processus et risques |
 | **Comité des risques** | Coter, traiter ou **accepter** un risque — en votre nom | Processus et risques |
 | **Expert métier (DPO / RSSI)** | Être consulté sur les contrôles et la conformité | Cas d'usage · Processus et risques |
-| **Comité de direction** | Trancher là où cela engage l'entreprise | **Pilotage** · Décisions |
+| **Comité de direction** | Trancher là où cela engage l'entreprise, et **arbitrer les cas critiques** — qu'il partage avec l'Administrateur client | **Pilotage** · Décisions |
 | **Auditeur** | Constater, sans rien modifier | **Pilotage** · Cas d'usage |
 | **Administration de la plateforme** | Ouvrir les accès et entretenir les référentiels — **elle ne gouverne rien** | Ses propres écrans |
 
@@ -227,7 +249,7 @@ et ne s'affectent à aucun cas d'usage — ils ne figurent donc dans aucune
 proposition de cas d'usage. Vous les retenez depuis **Registres → Contrôles et
 outillages → Proposer les contrôles d'organisation**.
 
-### Geste 6 — Produire une preuve
+### Geste 6 — Produire une preuve, puis la valider
 
 Sur la ligne d'un contrôle applicable, une **icône de pièce**. Sa couleur dit
 l'état : rouge quand rien ne démontre le contrôle, verte quand une pièce
@@ -235,31 +257,269 @@ validée et non échue le démontre.
 
 Deux filtres, *Avec preuve(s)* et *Sans preuve*, réduisent la liste.
 
+#### Déposer : deux champs qu'on confond
+
+La fenêtre de dépôt porte **deux listes voisines qui ne disent pas la même
+chose**. C'est la confusion la plus fréquente de l'écran.
+
+| Champ | Ce que c'est | Exemple |
+|---|---|---|
+| **Typologie de preuve** *(facultatif)* | L'une des **huit typologies techniques** de la matrice AIGMS, adossée à ISO/IEC 42001 : isolation, intégrité des données, équité, explicabilité, alignement, cybersécurité IA, surveillance et dérive, empreinte environnementale. | *Surveillance continue et dérive* |
+| **Nature** | La **forme matérielle** de la pièce. | Document, capture d'écran, extrait de journal, attestation, résultat de test, configuration, déclarative |
+
+Pour une charte ou une politique : **« — Aucune typologie technique »**, nature
+**Document**. Une charte n'est pas une preuve d'ingénierie.
+
+> **Le préfixe de criticité n'est pas décoratif.** La liste des typologies est
+> triée par ce que **le rôle de votre organisation vis-à-vis de l'IA** rend
+> exigeant. Un utilisateur métier voit *Surveillance et dérive* en **critique**
+> et l'équité en **faible** ; un développeur de modèles verrait l'inverse. On
+> ne vous demande pas de prouver l'équité d'un modèle que vous n'entraînez pas.
+
+#### Valider : un second acte, et il n'est pas facultatif
+
+**Registres → Preuves → filtre « À valider » → « Valider en mon nom ».**
+
+> **Un dépôt n'est pas une validation.** La pièce arrive « à valider », et
+> celui qui la fournit n'atteste pas lui-même de sa recevabilité. Tant que ce
+> second acte n'a pas eu lieu, **la preuve existe mais ne démontre rien** — et
+> c'est exactement ce que l'application en fait.
+
+Conséquence concrète : une **mise en production s'appuie sur au moins une pièce
+validée**. Si le registre n'en porte aucune, la décision ne part pas, et
+l'écran vous renvoie ici.
+
 > **La règle, partout dans l'outil.** Un contrôle n'est pas tenu parce qu'on l'a
 > déclaré opérant. Il est tenu parce qu'une **pièce validée et non échue** le
 > démontre. Une preuve expirée cesse de compter, sans que personne n'ait à
 > intervenir.
 
+#### Où l'on voit ce qui manque
+
+**Registres → Preuves**, carte **« Preuves attendues »**. Les huit typologies,
+triées par criticité pour votre rôle — et, sous chacune, **ce qui la sert** :
+
+| Ce qu'on lit | Ce que ça veut dire | Ce que l'écran propose |
+|---|---|---|
+| *Servie par AIGMS-MON-004 · A.6.2.6* | Un contrôle la porte, il manque la pièce | **Déposer** |
+| *Aucun contrôle ne la sert* | Rien ne la porte : déposer n'y suffira pas | **Retenir un contrôle** |
+
+Une preuve sans contrôle à démontrer ne démontre rien : c'est pourquoi le
+second cas renvoie à la Déclaration d'Applicabilité au lieu d'ouvrir un
+formulaire de dépôt.
+
 ### Geste 7 — Conduire l'étude d'impact
 
 **Cas d'usage → Conduire une étude d'impact IA.**
 
-Les parties prenantes, les constats, leur gravité et leur vraisemblance, les
-mesures de réduction. Un constat sévère **ouvre une action bloquante** : elle
-apparaît dans le suivi et retient la mise en production.
+L'écran suit le modèle **ISO/IEC 42005** en quatre rubriques. Trois se
+saisissent ; **la quatrième s'écrit toute seule**.
 
-### Geste 8 — Décider
+| Rubrique | Ce qu'on y fait | Qui l'écrit |
+|---|---|---|
+| **1. Cadrage et contexte** | Périmètre, méthode, phase du cycle de vie, AIPD | Vous — le reste vient de la fiche |
+| **1.1 Parties prenantes** | Les groupes affectés, vulnérables ou non, consultés ou non | Vous |
+| **2. Analyse croisée** | Bénéfices et préjudices, par domaine de la norme | Vous |
+| **3. Plan de gouvernance et remédiation** | Les mesures devenues actions, confiées et datées | **L'application** |
 
-**Onglet Décisions et changements.**
+**Les rubriques se replient**, et une rubrique fermée n'est pas muette : elle
+porte sa ligne de résumé — *« 3 groupe(s) · aucun vulnérable · 1 consulté »*,
+*« 2 mesure(s) · 1 action bloquante »*. Le cadrage se replie de lui-même dès
+qu'un constat existe.
 
-La décision de mise en production traverse les **passerelles**. L'écran liste
-ce qui est satisfait et ce qui ne l'est pas, contrôle par contrôle.
+#### Les parties prenantes : chercher celui qu'on n'a pas vu
 
-> **L'écart de preuve.** Si des contrôles applicables ne sont pas démontrés,
-> l'application ne bloque pas — mais elle **avertit par courriel et par
-> notification la personne appelée à se prononcer**, qui doit assumer l'écart
-> en son nom, avec une justification. Cette personne peut ensuite approuver.
-> C'est l'un des moments où la chaîne de responsabilité se voit le mieux.
+Un groupe affecté **directement ou non**. Les utilisateurs en sont, rarement
+les seuls : les personnes dont les données sont traitées, celles qui subissent
+la décision sans jamais voir l'outil, et les tiers dont les informations
+transitent sans qu'ils l'aient demandé.
+
+**Cocher « groupe vulnérable »** renforce le niveau d'examen attendu : la
+gravité d'un préjudice ne se cote pas de la même façon quand celui qui le subit
+ne peut ni le refuser ni le contester.
+
+#### Les constats : trois régimes, commandés par la gravité
+
+Chaque constat est un **bénéfice** ou un **préjudice**, dans l'un des douze
+domaines de la norme, groupés en quatre familles. Le champ *Gravité* devient
+*Ampleur* sur un bénéfice, et le cadre « mesure de réduction » disparaît : on
+ne réduit pas un bénéfice.
+
+| Gravité du préjudice | Ce que l'application en fait |
+|---|---|
+| **Grave** | Une action **bloquante** : le jalon Production ne passera pas |
+| **Significative** | Une action **suivie**, non bloquante |
+| **Limitée** ou négligeable | **Rien** — la ligne affiche *« Aucune action — gravité limitée »* |
+
+#### Deux champs marqués *facultatif* qui ne le sont qu'en apparence
+
+Dans le cadre **Mesure de réduction** :
+
+**L'échéance devient la date de l'action.** Vous la saisissez, l'action la
+porte. Vous la laissez vide, l'application pose **soixante jours** sans le
+dire. Vous la corrigez plus tard, l'action suit — tant qu'elle n'est ni close
+ni annulée. Et c'est cette date qui rend l'action **en retard** : comptée dans
+l'attention de l'organisation, portée en tête du courriel de son responsable.
+
+**La gravité résiduelle est ce que le Porteur devra assumer.** C'est le seul
+endroit où l'on dit ce qui reste **une fois la mesure en place**, et c'est
+exactement la liste qu'il verra avant de signer.
+
+| Vous renseignez | Ce que le Porteur assume |
+|---|---|
+| **Limitée** | Rien pour ce constat : il **sort** de la liste |
+| **Rien** | La gravité **initiale** — comme si la mesure n'existait pas |
+| Significative ou Grave | Ce niveau-là, et il signe en sachant quoi |
+
+> **Renseigner « résiduel : limité » ne débloque rien.** L'action reste
+> bloquante parce que le préjudice, lui, était grave : ce qui compte pour la
+> production, c'est ce qui aurait lieu **sans** la mesure, tant qu'elle n'est
+> pas faite. La gravité résiduelle dit à celui qui signe **ce qu'il signe**.
+
+#### La rubrique 3 ne se saisit pas
+
+Elle reprend les mesures de la rubrique 2 et donne, pour chacune, **le numéro
+de l'action ouverte**, qui ramène à l'onglet *Actions et incidents* du cas
+d'usage, sur la bonne ligne.
+
+> **La mesure EST l'action.** On ne recopie pas une mesure d'un rapport vers un
+> plan d'action : corrigez l'échéance dans l'étude, l'action suit. Et si vous
+> voulez une mesure de plus, **ajoutez le constat qui la justifie** — c'est la
+> différence entre un plan d'action et un plan d'action tracé.
+
+#### Conclure : deux actes, deux signataires
+
+L'AI Governance Officer **vise l'étude** — sa méthode tient. Le **Porteur de
+l'IA accepte les risques résiduels** — l'organisation assume ce qui reste. Une
+même personne ne pose pas les deux, et le Porteur peut **renvoyer l'étude** en
+disant pourquoi : le visa tombe alors.
+
+Avant de viser, la colonne de droite liste **ce qui manque** : partie prenante
+absente, aucun constat, préjudice grave sans mesure, AIPD requise sans
+référence. Quand tout est là : *« Rien ne manque : l'étude peut s'achever. »*
+
+#### Après l'achèvement
+
+Une **action s'ouvre** : *« Déposer la preuve de l'évaluation d'impact »*, à
+trente jours. Et le pavé **Preuve** porte un bouton : **« Déposer l'export comme
+preuve »** — un clic, l'export Word part au registre, à valider, et l'action se
+solde.
+
+> **Une étude ne se dépose qu'une fois par achèvement.** Le bouton disparaît
+> ensuite. Pour en verser une autre version, il faut **rouvrir l'étude en
+> disant pourquoi**, la réviser, la faire viser et accepter de nouveau. La
+> nouvelle pièce **remplace** alors la précédente — et le remplacement ne prend
+> effet qu'à **sa** validation : jusque-là, l'ancienne reste ce qui vaut.
+
+### Geste 8 — Faire évoluer, et décider
+
+**Le bouton « Faire évoluer », en tête de fiche.** L'onglet *Décisions et
+changements* **se lit ; il ne se saisit pas** — sauf pour se prononcer sur une
+décision qui attend, ce qui est un acte et non une saisie.
+
+#### Trois portes, trois questions
+
+| Intention | La question | Le statut |
+|---|---|---|
+| **Faire avancer l'instruction** | *Où en est le dossier ?* | change **tout de suite**, avec un motif |
+| **Décider — ce qui engage** | *À quoi s'engage-t-on ?* | change **quand la décision est approuvée**, à sa date d'effet |
+| **Déclarer un changement du système** | *Qu'est-ce qui change ?* | **ne bouge pas** |
+
+> **« Faire avancer » ne veut pas dire « avancer ».** Le partage n'est pas
+> entre l'avant et l'arrière, mais entre **ce qui instruit et ce qui engage**.
+> Au début du cycle, franchir avance. Après l'approbation, **tout ce qui avance
+> engage** — donc se décide — et il ne reste à franchir que le retour en
+> arrière. La carte vous le dit quand c'est le cas.
+
+Dans le sélecteur de transition, les cibles se rangent par sens :
+`→ Poursuivre l'instruction`, `↩ Revenir en arrière`, `⨯ Sortir du parcours`.
+
+#### Décider : neuf champs, dont quatre déjà rédigés
+
+La fenêtre s'ouvre sur un bandeau : **« Reprise du dossier. »** L'objet, ce qui
+est décidé, la justification et le contexte sont **proposés d'après ce que vous
+avez déjà posé** — la finalité de la fiche, la criticité, les contrôles statués,
+l'étude d'impact.
+
+| Champ | Exigé | D'où vient la proposition |
+|---|---|---|
+| Type de décision | oui | — |
+| Personne appelée à se prononcer | non | Celle qui tient l'arbitrage *(voir plus bas)* |
+| Objet | oui, 5 car. | Type + nom de la fiche |
+| **Ce qui est décidé** | oui, 20 car. | Type de décision |
+| **Justification** | oui, 20 car. | Des faits **comptés**, pas une appréciation |
+| **Contexte** | **oui**, 20 car. | La finalité de la fiche, mot pour mot |
+| Options écartées · Conditions | non | *(repliées)* |
+| Date d'effet · Date de revue | non* | Le jour même · dans un an |
+
+\* La **date de revue devient exigée** sur une mise en production, qui réclame
+aussi **au moins une preuve validée** rattachée.
+
+> **Relisez-les.** Ce sont des propositions, pas des champs remplis à votre
+> place : c'est votre nom qui les portera, et ce sont ces phrases qu'un auditeur
+> lira. *« Ce qui est décidé »* n'est pas *« Justification »* : l'un est
+> l'énoncé qui sera lu dans deux ans, l'autre le pourquoi.
+
+#### Qui peut se prononcer
+
+| Type de décision | Qui tranche |
+|---|---|
+| **Mise en production d'un cas critique**, **exception de politique**, **acceptation de risque** | **Deux rôles seulement** : l'Administrateur client et le Comité de direction |
+| Mise en production ordinaire, autorisation d'usage, pilote | Les relecteurs habilités |
+
+Et dans tous les cas : **l'auteur d'une décision engageante ne peut pas
+l'approuver lui-même**. La base le refuse, quel que soit son rôle.
+
+> **La garantie n'est pas dans le nombre de signataires, elle est dans la
+> séparation.** Celui qui demande ne peut pas accorder.
+
+#### Les deux écarts : AIGMS n'interdit pas, il fait assumer
+
+À la soumission, si quelque chose manque, l'application **le montre et vous
+demande de le dire** — elle ne refuse pas.
+
+| Écart | Ce qu'il dit | Ce qu'on vous demande |
+|---|---|---|
+| **Écart de preuve** | Des contrôles applicables ne sont démontrés par aucune pièce validée | *« Ce que vous en dites »* |
+| **Écart de jalon** | Des préconditions du jalon ne sont pas réunies | *« Ce que vous en dites »* |
+
+Les préconditions s'affichent **en liste**, chacune avec ce qu'elle a constaté
+et **le lien de l'écran qui la solde** — *« Clore les revues fournisseurs → »*,
+*« Solder les actions bloquantes → »*.
+
+La personne appelée à se prononcer reçoit les deux écarts **par alerte et par
+courriel**, les retrouve dans sa fenêtre de verdict, et doit **cocher deux
+cases** avant d'approuver. Chaque prise de connaissance est nominative.
+
+> **Approuver ne met rien en service tant que le jalon n'est pas prêt.** La
+> décision est enregistrée, la trace existe, et le statut **attend**. Celui qui
+> a soumis reçoit alors *« Décision approuvée, jalon non franchi »*, avec ce qui
+> manque. C'est un accord de principe tracé, qui n'ouvre pas la porte.
+
+**Ce que la décision garde** : l'état des deux écarts **figé au moment de la
+soumission**. Une preuve validée demain ne réécrit pas ce que l'approbateur a lu
+aujourd'hui.
+
+#### Déclarer un changement du système
+
+La troisième porte. Vous déclarez **un fait** — modèle, données, finalité,
+fournisseur, autonomie, population — à une date prévue. Le statut ne bouge pas.
+
+Le **moteur de réévaluation** le qualifie, dit ce qu'il rouvre — qualification,
+risques, contrôles, étude d'impact — et **s'il conclut à une réévaluation, il
+ouvre la décision lui-même**, déjà rédigée à partir de ce que vous venez de
+déclarer : les natures touchées, les faits cochés, l'écart d'autonomie chiffré,
+et la date prévue, qui devient sa date d'effet.
+
+Vous désignez **qui se prononcera** ; le Responsable redevable est proposé. Si
+vous en désignez un autre — un changement arrêté en réunion, que le Porteur
+déclare et fait trancher par la DSI — **le redevable en est informé quand
+même** : il répond du cas d'usage.
+
+> **C'est pourquoi « changement significatif » ne figure pas parmi les décisions
+> qu'on soumet.** Il doublait cette porte, dans l'ordre inverse : s'engager puis
+> analyser. **On ne sait pas d'avance si un changement engage** — c'est la
+> réévaluation qui le dit. Et un changement ne s'approuve pas sans sa décision.
 
 ---
 
@@ -289,6 +549,36 @@ Trois filtres se cumulent : **état**, **domaine** (GOV, DAT, SEC…) et
 > rattaché à aucun contrôle-type : il ne porte ni preuves attendues ni questions
 > d'évaluation, et n'apparaît dans aucune proposition. Préférez toujours
 > *Proposer*.
+
+### La Déclaration d'Applicabilité
+
+Le document qu'un auditeur ouvre en premier : exigence par exigence, ce qui la
+couvre **chez vous** et dans quel état.
+
+| État | Ce qu'il signifie |
+|---|---|
+| **Couverte et prouvée** | Un contrôle opérant, avec au moins une preuve rattachée |
+| **Opérante sans preuve** | Le contrôle fonctionne, mais rien ne permet de le démontrer |
+| **Contrôle déclaré** | Un contrôle est rattaché, sans être encore opérant |
+| **Non couverte** | Aucun contrôle ne répond à cette exigence |
+
+**Les quatre compteurs filtrent ce qu'ils comptent** : un clic réduit la liste,
+un second l'ôte. Ils se combinent avec le filtre d'écart et celui d'objectif
+sans les effacer, et l'adresse les porte — le lien se partage tel quel.
+
+> **La règle d'or, écrite en tête de page.** *« Aucune case vide : chaque
+> exigence est sélectionnée ou exclue, et justifiée. »* C'est le premier défaut
+> qu'un auditeur relève, et le seul qui ne se rattrape pas par un argument.
+
+**Le rôle de votre organisation commande le régime de preuve** : technique,
+organisationnelle, exclusion motivée. Le même référentiel ne demande pas la même
+chose à un hébergeur et à une PME qui achète un assistant — ce n'est pas de
+l'indulgence, c'est de la pertinence.
+
+> **Une exclusion n'est pas une case décochée** : c'est une décision signée,
+> avec son motif et le nom de qui l'a portée. Le jour de l'audit, on ne vous
+> demandera pas si vous avez tout fait — on vous demandera **ce que vous avez
+> décidé, et pourquoi**.
 
 ### Le registre des actifs et fournisseurs
 
@@ -328,6 +618,17 @@ l'écran, et quel que soit le rôle.
 | Effacer un risque qui a produit quelque chose | Il se clôt ; l'effacement est réservé à l'erreur de saisie |
 | Supprimer une organisation | Elle s'archive, pour que ses décisions restent lisibles |
 | Saisir un niveau de risque | Il se calcule, pour qu'il ne diverge pas de sa cotation |
+| Approuver sa propre décision engageante | Celui qui demande ne peut pas accorder |
+| Approuver un arbitrage critique sans en tenir le rôle | Deux rôles seulement l'exercent |
+| Approuver sans avoir déclaré connaître les écarts | Une prise de connaissance ne vaut que nominative |
+| Soumettre un écart sans dire ce qu'il en est | Un écart tu n'est pas un écart assumé |
+| Déposer deux fois la même étude d'impact | Une étude se dépose une fois par achèvement |
+| Valider une preuve qu'on a déposée soi-même | On n'atteste pas de sa propre pièce |
+
+> **Ce qu'elle ne refuse pas, et c'est délibéré.** Mettre en service avec des
+> écarts. L'organisation n'est pas empêchée : elle est **mise devant ce qu'elle
+> assume**, nommément, et la trace reste. Interdire produit des contournements ;
+> faire assumer produit un dossier.
 
 ### Clore ou effacer un risque
 
@@ -383,7 +684,7 @@ client et un contrôle-type s'y rattacher.
 
 ## 9. Travaux pratiques
 
-Six exercices, sur l'organisation de démonstration. Comptez deux heures.
+Huit exercices, sur l'organisation de démonstration. Comptez trois heures.
 
 ### TP 1 — Déclarer et trier *(20 min)*
 
@@ -411,16 +712,47 @@ Sur un contrôle technique, ouvrez le crayon. **À observer :** le point ambre s
 *Actifs d'IA*. Posez la mesure sur un actif, puis déclarez un outil — en créant
 le fournisseur sur place. Vérifiez ensuite le fournisseur dans le registre.
 
-### TP 5 — Produire une preuve *(15 min)*
+### TP 5 — Produire une preuve, et la valider *(20 min)*
 
-Cochez le filtre *Sans preuve*. Déposez une preuve sur un contrôle. **À
-observer :** l'icône qui change de couleur et le compte qui descend.
+Cochez le filtre *Sans preuve*. Déposez une preuve sur un contrôle, en laissant
+*Typologie de preuve* sur **« Aucune typologie technique »** et *Nature* sur
+**Document**. **À observer :** l'icône passe à l'ambre, pas au vert.
 
-### TP 6 — Décider, et assumer un écart *(20 min)*
+Allez ensuite dans **Registres → Preuves → À valider** et validez la pièce en
+votre nom. **À observer :** l'icône passe au vert, et le compte descend.
+*Pourquoi deux temps ?* Un dépôt n'est pas une validation.
 
-Tentez une mise en production avec des contrôles non démontrés. **À observer :**
-l'avertissement, le courriel envoyé à la personne appelée à se prononcer, et ce
-qu'elle doit écrire pour assumer l'écart.
+### TP 6 — Conduire une étude d'impact *(30 min)*
+
+Ouvrez une étude et posez trois constats : un bénéfice, un préjudice **grave**
+avec sa mesure, un préjudice **limité** sans mesure. **À observer :** la
+rubrique 3 se remplit toute seule, le grave ouvre une action **bloquante**, le
+limité n'ouvre rien.
+
+Laissez l'échéance vide sur l'un, saisissez-la sur l'autre. **À observer :**
+dans le suivi d'actions, l'une est datée à soixante jours, l'autre à votre date.
+
+### TP 7 — Décider, et assumer deux écarts *(25 min)*
+
+Tentez une mise en production sur un dossier incomplet. **À observer :** la
+liste des préconditions remonte en tête, chacune avec le lien qui la solde, et
+le champ *« Ce que vous en dites »* devient exigé.
+
+Écrivez-le, soumettez. **À observer :** la décision part, le courriel aussi.
+
+Connectez-vous au compte de la personne désignée. **À observer :** les **deux**
+encadrés — écart de preuve et écart de jalon —, les **deux** cases à cocher, et
+le fait qu'approuver **ne met rien en service** tant que le jalon n'est pas prêt.
+
+### TP 8 — Déclarer un changement du système *(15 min)*
+
+Déclarez un changement qui **augmente l'autonomie** d'un cas d'usage. **À
+observer :** le statut ne bouge pas, le moteur qualifie, et **la décision
+s'ouvre toute seule** — déjà rédigée avec les natures touchées, l'écart
+d'autonomie chiffré et la date prévue.
+
+*Pourquoi ne peut-on pas décider directement ?* Parce qu'on ne sait pas d'avance
+si un changement engage.
 
 ---
 
@@ -452,6 +784,33 @@ l'acceptation est retirée et son auteur averti.
 Non. Comme une organisation, il s'archive : ses décisions et ses preuves
 doivent rester lisibles.
 
+**J'ai déposé une preuve, mais le contrôle reste rouge.**
+Un dépôt n'est pas une validation. La pièce attend qu'une autre personne la
+valide en son nom : **Registres → Preuves → À valider**.
+
+**« Faire avancer l'instruction » est grisé.**
+Depuis ce statut, tout ce qui reste **engage** l'organisation : cela se décide,
+cela ne se franchit pas. La carte vous le dit en toutes lettres.
+
+**Je ne trouve pas « Changement significatif » dans les types de décision.**
+Il n'y est plus. Déclarez le changement par la troisième porte : le moteur de
+réévaluation dira s'il appelle une décision, et l'ouvrira lui-même.
+
+**J'ai approuvé la mise en production, mais le statut n'a pas changé.**
+Le jalon n'était pas prêt. La décision est enregistrée, la trace existe, et le
+statut attend que les préconditions soient réunies. Celui qui a soumis a reçu
+une alerte qui dit lesquelles.
+
+**Le bouton « Déposer l'export comme preuve » a disparu de mon étude.**
+Elle est déjà déposée. Une étude ne se dépose qu'une fois par achèvement : pour
+en verser une autre version, rouvrez-la en disant pourquoi, révisez-la, faites-la
+viser et accepter de nouveau.
+
+**La personne que je voulais désigner n'arbitre pas.**
+Sur une mise en production critique, une exception de politique ou une
+acceptation de risque, **deux rôles seulement** se prononcent : l'Administrateur
+client et le Comité de direction. La liste le dit à côté de chaque nom.
+
 **Qui peut voir ce que je saisis ?**
 Toutes les personnes de votre tenant, selon leur rôle. L'écriture, elle, est
 strictement bornée — et toute opération sensible est portée au journal, avec
@@ -459,5 +818,22 @@ votre nom et la date.
 
 ---
 
-*Ce guide décrit AIGMS au 28 septembre 2026. Les écrans évoluent ; les règles
+*Ce guide décrit AIGMS au 2 octobre 2026. Les écrans évoluent ; les règles
 qu'il énonce sont tenues par la base de données et changent rarement.*
+
+---
+
+## Ce qui a changé depuis la version 1 *(28 septembre 2026)*
+
+À l'usage des personnes déjà formées.
+
+| Où | Ce qui a changé |
+|---|---|
+| **Frise d'avancement** | Chevrons, sens de la marche, et ce qui s'ouvre d'ici. Les issues — « sous conditions », « refusé », « suspendu » — s'ancrent sur leur étape |
+| **Geste 6 — Preuve** | La distinction *Typologie de preuve* / *Nature* est explicitée. **La validation devient une étape à part entière** |
+| **Geste 7 — Étude d'impact** | Quatre rubriques repliables ; les trois régimes de gravité ; l'échéance et la gravité résiduelle disent ce qu'elles commandent ; une étude ne se dépose qu'une fois |
+| **Geste 8 — Décider** | « Faire évoluer » et ses trois portes renommées ; quatre champs repris du dossier ; **l'écart de jalon s'assume** comme l'écart de preuve ; l'arbitrage critique revient à deux rôles |
+| **Changement du système** | « Changement significatif » quitte les types de décision : on déclare le fait, le moteur conclut |
+| **Déclaration d'Applicabilité** | Les quatre compteurs filtrent ce qu'ils comptent |
+| **Preuves attendues** | La carte dit **ce qui sert** chaque typologie, ou que rien ne la sert |
+| **Travaux pratiques** | Huit au lieu de six : la validation, l'étude d'impact et le changement s'ajoutent |

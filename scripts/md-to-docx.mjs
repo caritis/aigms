@@ -18,7 +18,10 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { basename } from 'node:path'
 import { createRequire } from 'node:module'
-const require = createRequire('/tmp/claude-1000/tools/')
+// `docx` est une dependance du projet : on la resout depuis ce fichier. La
+// resoudre depuis un repertoire de session liait le script a la machine qui
+// l'avait ecrit, et il cessait de tourner ailleurs.
+const require = createRequire(import.meta.url)
 const {
   AlignmentType, BorderStyle, Document, HeadingLevel, Packer, Paragraph,
   ShadingType, Table, TableCell, TableRow, TextRun, WidthType,
