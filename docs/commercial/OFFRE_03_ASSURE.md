@@ -1,3 +1,18 @@
+> ## ⚠ Document remplacé
+>
+> **Ce document est caduc depuis le 2 octobre 2026.** Il décrivait trois offres
+> — Discover, Govern, Assure — chiffrées en jours × TJM 900 €.
+>
+> La structuration retenue en compte **huit offres** à **prix de résultat**, avec
+> un TJM de **650 € HT** réservé au hors-périmètre, et des charges nettement
+> plus serrées. Elle vit dans le catalogue Izarralde
+> *(`Catalogue_Izarralde_AI_Governance_TJM650`)*.
+>
+> **Ne pas s'en servir en rendez-vous.** Conservé pour mémoire du raisonnement
+> de cadrage ; à supprimer sur accord du propriétaire.
+
+---
+
 # Offre ASSURE
 ## Tenir la gouvernance dans la durée, et pouvoir le prouver à tout moment
 

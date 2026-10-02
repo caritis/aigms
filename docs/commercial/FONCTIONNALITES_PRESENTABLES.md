@@ -1,6 +1,7 @@
 # AIGMS — Ce qui se présente aujourd'hui
 
-*Inventaire commercial de la version en service. Version 1 — 2 octobre 2026.*
+*Inventaire commercial de la version en service. Version 2 — 2 octobre 2026.*
+*Aligné sur le catalogue Izarralde AI Governance à huit offres, TJM 650 € HT.*
 
 ---
 
@@ -18,6 +19,67 @@ Trois colonnes de lecture :
 | **◆** | **Différenciateur** — ce que les concurrents ne font pas, ou mal |
 | ● | Attendu du marché — il faut l'avoir, cela ne se vend pas seul |
 | ▸ | Détail qui convainc en démonstration |
+
+---
+
+## 0. Les huit offres, et ce qu'elles mobilisent
+
+Le catalogue Izarralde découpe l'accompagnement en **huit offres** à **prix de
+résultat**. Le TJM de **650 € HT** ne sert qu'au hors-périmètre et aux options
+à la journée : **un forfait catalogue ne se recalcule pas en jours × TJM.**
+
+| Offre | Cible | Charge experte | Prix public HT | Licence AIGMS |
+|---|---|---:|---:|---|
+| **AI START** | 10–49 pers. | 1,5–2 j | 1 990 € | *AIGMS START* — 149 €/mois après |
+| **DISCOVER** | 50–120 pers. | 3–4 j | 4 900 € | *Registry* — inclus 90 j, puis 190 €/mois |
+| **DISCOVER+** | 100–250 pers. | 5–6 j | 7 500 € | *Registry* — inclus 90 j, puis 190 €/mois |
+| **GOVERN Essential** | 30–120 pers. | 6–7 j | 8 900 € | *GOVERN Essential* — projet + 30 j, puis 290 €/mois |
+| **GOVERN Standard** | 120–250 pers. | 12–14 j | 17 900 € | *GOVERN* — projet + 30 j, puis 490 €/mois |
+| **ASSURE Essential** | 30–120 pers. | 4–5 j/an | 790 €/mois | **incluse** |
+| **ASSURE Managed** | 120–500 pers. | ≈12 j/an | 1 990 €/mois | **incluse** |
+| **ASSURE Regulated** | réglementé | sur cadrage | à partir de 2 900 €/mois | **incluse** |
+
+> **Ce que cela change pour la présentation produit.** Les charges sont serrées
+> — trois à quatre jours pour un DISCOVER. **C'est l'outil qui rend ces durées
+> tenables** : le référentiel est déjà chargé, les contrôles se proposent, le
+> triage se calcule, les documents s'exportent. Chaque fonctionnalité de ce
+> document est, littéralement, du temps de consultant qu'on ne facture pas.
+
+### Quelle fonctionnalité à quel palier
+
+Le catalogue nomme cinq paliers de licence sans dire ce que chacun ouvre.
+Proposition de découpage, **à arbitrer** :
+
+| Fonctionnalité | START | Registry | GOVERN Ess. | GOVERN | ASSURE |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Registre des usages et actifs | ● | ● | ● | ● | ● |
+| Triage de criticité | ● | ● | ● | ● | ● |
+| Contrôles essentiels *(10–15)* | ● | ● | ● | ● | ● |
+| Actions et plan 90 jours | ● | ● | ● | ● | ● |
+| Risques cotés, traitement, acceptation | — | ● | ● | ● | ● |
+| Qualification AI Act, fournisseurs | — | ● | ● | ● | ● |
+| Cartographie processus *(4 vues)* | — | ● | ● | ● | ● |
+| Cycle de vie, passerelles, **décisions** | — | — | ● | ● | ● |
+| Preuves et validation | — | — | ● | ● | ● |
+| Outillage des contrôles | — | — | ● | ● | ● |
+| **Étude d'impact ISO 42005** | — | — | ● | ● | ● |
+| **Déclaration d'Applicabilité** | — | — | ● | ● | ● |
+| Bibliothèque complète *(120 contrôles)* | — | — | — | ● | ● |
+| Matrice des preuves attendues | — | — | — | ● | ● |
+| Incidents, CAPA, changements | — | — | — | ● | ● |
+| Revues de gouvernance | — | — | — | ● | ● |
+| Pilotage multi-organisations | — | — | — | — | ● |
+| Alertes et synthèses par courriel | — | — | — | — | ● |
+
+> **Point d'honnêteté, à connaître absolument.** **Le produit ne porte
+> aujourd'hui aucun mécanisme de palier.** Il n'y a ni plan, ni licence, ni
+> restriction par fonctionnalité en base : toute organisation provisionnée a
+> accès à tout. Le découpage ci-dessus est **commercial**, et il se tient par
+> le contrat et le paramétrage, pas par le logiciel.
+>
+> Conséquence pratique : **ne jamais promettre qu'un client START « ne pourra
+> pas » accéder à une fonctionnalité.** Et si le découpage par palier devient
+> structurant pour la vente, c'est une évolution produit à chiffrer.
 
 ---
 
@@ -183,6 +245,21 @@ Trois colonnes de lecture :
 > Cette phrase protège autant la vente que la mission — et elle figure dans
 > l'application elle-même, sur la Déclaration d'Applicabilité.
 
+### Ce que les absences coûtent, offre par offre
+
+| Offre | L'absence qui pèse | Comment la traiter dans la proposition |
+|---|---|---|
+| **AI START** | Aucune | Le périmètre n'appelle ni connecteur ni SSO |
+| **DISCOVER** / **DISCOVER+** | Import en masse d'un inventaire existant | *« L'inventaire se saisit, et c'est souvent ce qu'on veut : la saisie est le moment où l'on comprend. »* Si le client arrive avec un tableur fourni, le chiffrer en jours hors périmètre |
+| **GOVERN Essential** | SSO | Le forfait n'inclut aucune intégration : c'est déjà dit au catalogue |
+| **GOVERN Standard** | **Connecteurs** | Le catalogue les chiffre en option — 3 000 € standard, 4 500 € complexe. **Les cadrer techniquement avant engagement** : aucun connecteur n'est livré par le produit, chacun est une construction |
+| **ASSURE** *(tous)* | Connecteurs, API | Le service repose sur les **alertes** et les écrans, qui existent. Ne pas promettre de remontée automatique depuis le SIEM ou l'ITSM |
+
+> **La ligne à ne pas franchir.** Le catalogue chiffre « connecteur standard,
+> 3 000 € ». Lisez-le comme **une construction à faire**, pas comme un module à
+> activer. Un connecteur vendu comme livré se découvre au jour de la mise en
+> service — et il n'y a pas de rattrapage commercial à cela.
+
 ---
 
 ## 10. Les cinq arguments à retenir
@@ -207,6 +284,19 @@ Si vous ne deviez en garder que cinq, ceux-ci.
 
 5. **Chaque acte porte un nom et une date.** Le jour où le responsable de
    gouvernance change de poste, ce qu'il savait reste dans le système.
+
+### À quel moment les sortir
+
+| Offre présentée | Les arguments qui portent |
+|---|---|
+| **AI START** | 4 *(l'effort suit la criticité)* et 5 *(nom et date)* — le dirigeant veut être rassuré, pas outillé |
+| **DISCOVER** / **DISCOVER+** | 4 d'abord : c'est lui qui rend la suite finançable, et c'est le livrable de l'offre |
+| **GOVERN** *(les deux)* | 1, 2 et 3 — les règles en base, l'écart assumé, CONNECT plutôt que rebuild |
+| **ASSURE** *(tous)* | 5 et 2 — la permanence de la trace, et le dossier présentable sans préparation |
+
+> **Un seul argument par rendez-vous suffit.** Les cinq alignés donnent
+> l'impression d'un catalogue ; un seul, démontré à l'écran, emporte la
+> décision.
 
 ---
 
