@@ -1,7 +1,7 @@
 # AIGMS — Ce qui se présente aujourd'hui
 
-*Inventaire commercial de la version en service. Version 2 — 2 octobre 2026.*
-*Aligné sur le catalogue Izarralde AI Governance à huit offres, TJM 650 € HT.*
+*Inventaire commercial de la version en service. Version 3 — 3 octobre 2026.*
+*Aligné sur le Pack AIGMS à trois offres, TJM 650 € HT.*
 
 ---
 
@@ -22,64 +22,63 @@ Trois colonnes de lecture :
 
 ---
 
-## 0. Les huit offres, et ce qu'elles mobilisent
+## 0. Les trois offres, et ce qu'elles mobilisent
 
-Le catalogue Izarralde découpe l'accompagnement en **huit offres** à **prix de
-résultat**. Le TJM de **650 € HT** ne sert qu'au hors-périmètre et aux options
-à la journée : **un forfait catalogue ne se recalcule pas en jours × TJM.**
+L'accompagnement se vend en **trois offres**, segmentées par **unités
+économiques** — usages, contrôles, connecteurs — et non par effectif. C'est le
+bon choix : la charge dépend de ce qu'il y a à gouverner, pas du nombre de
+salariés.
 
-| Offre | Cible | Charge experte | Prix public HT | Licence AIGMS |
-|---|---|---:|---:|---|
-| **AI START** | 10–49 pers. | 1,5–2 j | 1 990 € | *AIGMS START* — 149 €/mois après |
-| **DISCOVER** | 50–120 pers. | 3–4 j | 4 900 € | *Registry* — inclus 90 j, puis 190 €/mois |
-| **DISCOVER+** | 100–250 pers. | 5–6 j | 7 500 € | *Registry* — inclus 90 j, puis 190 €/mois |
-| **GOVERN Essential** | 30–120 pers. | 6–7 j | 8 900 € | *GOVERN Essential* — projet + 30 j, puis 290 €/mois |
-| **GOVERN Standard** | 120–250 pers. | 12–14 j | 17 900 € | *GOVERN* — projet + 30 j, puis 490 €/mois |
-| **ASSURE Essential** | 30–120 pers. | 4–5 j/an | 790 €/mois | **incluse** |
-| **ASSURE Managed** | 120–500 pers. | ≈12 j/an | 1 990 €/mois | **incluse** |
-| **ASSURE Regulated** | réglementé | sur cadrage | à partir de 2 900 €/mois | **incluse** |
+| | **DISCOVER** | **GOVERN** | **ASSURE** |
+|---|---|---|---|
+| Promesse | Voir, qualifier, prioriser | Mettre sous contrôle et décider | Maintenir et prouver |
+| Prix HT | **4 900 €** | **12 900 €** | **1 690 €/mois** |
+| Jours expert | 4 j | 10 j | 12 j/an |
+| Cas d'usage | 4 | 8 | 15 actifs |
+| Contrôles | 15 | 40 | 60 suivis |
+| Connecteurs | 0 | 1 existant | 2 existants |
+| AIGMS | 90 jours | 12 mois | inclus |
 
-> **Ce que cela change pour la présentation produit.** Les charges sont serrées
-> — trois à quatre jours pour un DISCOVER. **C'est l'outil qui rend ces durées
-> tenables** : le référentiel est déjà chargé, les contrôles se proposent, le
-> triage se calcule, les documents s'exportent. Chaque fonctionnalité de ce
-> document est, littéralement, du temps de consultant qu'on ne facture pas.
+**Unités d'ajustement** : +4 usages 1 300 € · +10 contrôles 650 € · +1 jour
+expert 650 € · nouveau connecteur 2 à 5 j × 650 €.
 
-### Quelle fonctionnalité à quel palier
+> **Un forfait catalogue ne se recalcule pas en jours × TJM.** Les 650 € ne
+> servent qu'au hors-périmètre, aux options en régie et au développement de
+> connecteurs.
 
-Le catalogue nomme cinq paliers de licence sans dire ce que chacun ouvre.
-Proposition de découpage, **à arbitrer** :
+### Ce que chaque offre mobilise dans le produit
 
-| Fonctionnalité | START | Registry | GOVERN Ess. | GOVERN | ASSURE |
-|---|:---:|:---:|:---:|:---:|:---:|
-| Registre des usages et actifs | ● | ● | ● | ● | ● |
-| Triage de criticité | ● | ● | ● | ● | ● |
-| Contrôles essentiels *(10–15)* | ● | ● | ● | ● | ● |
-| Actions et plan 90 jours | ● | ● | ● | ● | ● |
-| Risques cotés, traitement, acceptation | — | ● | ● | ● | ● |
-| Qualification AI Act, fournisseurs | — | ● | ● | ● | ● |
-| Cartographie processus *(4 vues)* | — | ● | ● | ● | ● |
-| Cycle de vie, passerelles, **décisions** | — | — | ● | ● | ● |
-| Preuves et validation | — | — | ● | ● | ● |
-| Outillage des contrôles | — | — | ● | ● | ● |
-| **Étude d'impact ISO 42005** | — | — | ● | ● | ● |
-| **Déclaration d'Applicabilité** | — | — | ● | ● | ● |
-| Bibliothèque complète *(120 contrôles)* | — | — | — | ● | ● |
-| Matrice des preuves attendues | — | — | — | ● | ● |
-| Incidents, CAPA, changements | — | — | — | ● | ● |
-| Revues de gouvernance | — | — | — | ● | ● |
-| Pilotage multi-organisations | — | — | — | — | ● |
-| Alertes et synthèses par courriel | — | — | — | — | ● |
+| Composant | DISCOVER | GOVERN | ASSURE |
+|---|---|---|---|
+| Registre des usages, actifs, fournisseurs | ● **cœur** | ● | ● |
+| Triage de criticité, qualification AI Act | ● **cœur** | ● | suivi |
+| Risques : cotation | ● identification | ● traitement, acceptation | ● surveillance, réévaluation |
+| Contrôles | 15 retenus | 40 statués et **outillés** | 60 suivis |
+| Preuves | plan de preuves | preuves initiales, renouvellement | **fraîcheur, expiration** |
+| Étude d'impact ISO 42005 | screening *(option)* | selon criticité | suivi |
+| Cycle de vie, passerelles, décisions | vue | ● **cœur** | revue des décisions |
+| Actions, incidents, CAPA | plan 90 jours | ● | ● |
+| Revues de gouvernance | — | préparées | ● **cœur** |
+| Alertes nominatives | — | ● | ● **cœur** |
 
-> **Point d'honnêteté, à connaître absolument.** **Le produit ne porte
-> aujourd'hui aucun mécanisme de palier.** Il n'y a ni plan, ni licence, ni
-> restriction par fonctionnalité en base : toute organisation provisionnée a
-> accès à tout. Le découpage ci-dessus est **commercial**, et il se tient par
-> le contrat et le paramétrage, pas par le logiciel.
->
-> Conséquence pratique : **ne jamais promettre qu'un client START « ne pourra
-> pas » accéder à une fonctionnalité.** Et si le découpage par palier devient
-> structurant pour la vente, c'est une évolution produit à chiffrer.
+> **Ce que cela dit du produit.** Quatre jours pour un DISCOVER, dix pour un
+> GOVERN : ces durées ne tiennent que parce que le référentiel est déjà chargé,
+> que les contrôles se proposent, que le triage se calcule et que les documents
+> s'exportent. **Chaque fonctionnalité est du temps de consultant qu'on ne
+> facture pas.**
+
+### Les unités économiques, vues du produit
+
+| Unité vendue | Ce qu'elle coûte réellement en delivery | Ce que l'outil en absorbe |
+|---|---|---|
+| **1 cas d'usage** | Atelier, saisie, triage, qualification, risques | Le triage **se calcule** ; la qualification est guidée ; l'import CSV existe |
+| **10 contrôles** | Statuer, relier aux actifs, outiller, poser les preuves attendues | La **proposition motivée** évite de parcourir 120 contrôles ; la fiche en trois onglets évite trois écrans |
+| **1 connecteur** | Configuration, mapping, tests | **Rien** aujourd'hui : voir le chapitre 9 |
+
+> **Ne jamais facturer les 120 contrôles du référentiel.** Seule la sélection
+> réellement applicable produit du travail — et sur la démonstration BATIVAL,
+> **44 contrôles proposés en donnent 4 retenus** plus un organisationnel. C'est
+> l'argument qui rend le bloc de 10 contrôles crédible.
 
 ---
 
@@ -232,33 +231,89 @@ Proposition de découpage, **à arbitrer** :
 
 | Sujet | État réel | Quoi dire si on vous le demande |
 |---|---|---|
-| **Connecteurs automatisés** *(SIEM, DLP, ITSM, GED)* | La colonne existe en base ; **aucun connecteur livré** | « Le branchement se conçoit en mission ; l'outil référence, il ne tire pas encore les preuves tout seul » |
+| **Connecteurs automatisés** *(SIEM, DLP, ITSM, GED)* | La colonne existe en base ; **aucun connecteur livré, et aucun catalogue de connecteurs** | « Le branchement se conçoit en mission ; l'outil référence, il ne tire pas encore les preuves tout seul » |
 | **SSO / annuaire** | Non livré | « Comptes nommés aujourd'hui ; le raccordement est au programme » |
-| Import en masse d'un inventaire existant | Partiel — référentiels et outillage s'importent, pas les cas d'usage | « L'inventaire se saisit, et c'est souvent ce qu'on veut : la saisie est le moment où l'on comprend » |
 | **API publique** | Non | — |
 | Multilingue | Français uniquement | « L'anglais est une option de mission » |
 | **Typologie de preuve déduite du contrôle** | En cours | Ne pas annoncer |
 | Déclaration d'Applicabilité pour d'autres référentiels qu'ISO 42001 | Le modèle le permet ; une seule est livrée | « Le moteur est multi-référentiel ; la Déclaration ISO 42001 est celle qui est faite » |
+| Tableau de bord consolidé **exportable** | Partiel : le Pilotage existe et huit vues d'impression aussi ; **l'export du tableau de bord et la consolidation multi-clients, non** | « Le pilotage se lit à l'écran et s'imprime ; la synthèse de portefeuille se produit à la main aujourd'hui » |
+| **Evidence pack** ciblé | Partiel : les preuves sont liées aux contrôles et se téléchargent une par une ; **pas de bundle indexé** | « Les pièces sont là, rattachées et horodatées ; le dossier se constitue à la demande » |
+
+> ### Une correction au fichier `Fonctionnalites_AIGMS_3_Offres.xlsx`
+>
+> Il classe **« Import massif des cas d'usage »** en *non livré*, priorité P0.
+> **C'est inexact** : la fonction existe et tourne.
+>
+> `app.import_use_cases`, `app.import_ai_assets`, `app.import_vendors`
+> *(migrations 0061 et 0092)* importent un CSV, avec **modèle téléchargeable**,
+> reconnaissance des **synonymes de colonnes** des exports d'ITSM, rapprochement
+> par nom — une ligne connue met à jour, une ligne nouvelle crée — et **chaque
+> refus est nommé**. L'écran est sur *Registres → Actifs d'IA et fournisseurs*.
+>
+> Deux conséquences : **un P0 sort du backlog**, et **DISCOVER gagne un
+> argument** — un client qui arrive avec son tableur n'est pas un hors-périmètre
+> à chiffrer en jours.
 
 > **Règle d'or commerciale.** AIGMS **ne garantit aucune conformité** et ne vaut
 > **ni certification ni avis d'audit**. Il rend la conformité *démontrable*.
 > Cette phrase protège autant la vente que la mission — et elle figure dans
 > l'application elle-même, sur la Déclaration d'Applicabilité.
 
-### Ce que les absences coûtent, offre par offre
+### Les absences, offre par offre
 
-| Offre | L'absence qui pèse | Comment la traiter dans la proposition |
+| Offre | L'absence qui pèse | Comment la traiter |
 |---|---|---|
-| **AI START** | Aucune | Le périmètre n'appelle ni connecteur ni SSO |
-| **DISCOVER** / **DISCOVER+** | Import en masse d'un inventaire existant | *« L'inventaire se saisit, et c'est souvent ce qu'on veut : la saisie est le moment où l'on comprend. »* Si le client arrive avec un tableur fourni, le chiffrer en jours hors périmètre |
-| **GOVERN Essential** | SSO | Le forfait n'inclut aucune intégration : c'est déjà dit au catalogue |
-| **GOVERN Standard** | **Connecteurs** | Le catalogue les chiffre en option — 3 000 € standard, 4 500 € complexe. **Les cadrer techniquement avant engagement** : aucun connecteur n'est livré par le produit, chacun est une construction |
-| **ASSURE** *(tous)* | Connecteurs, API | Le service repose sur les **alertes** et les écrans, qui existent. Ne pas promettre de remontée automatique depuis le SIEM ou l'ITSM |
+| **DISCOVER** | Aucune | Le périmètre n'appelle ni connecteur ni SSO. L'import CSV couvre le client qui arrive avec son tableur |
+| **GOVERN** | **Le connecteur inclus** | Voir ci-dessous : c'est le seul endroit où la grille promet plus que le produit |
+| **ASSURE** | Connecteurs, tableau de bord consolidé | Le service repose sur les **alertes** et les écrans, qui existent. La synthèse de portefeuille se produit à la main : c'est tenable à 12 j/an, pas à l'échelle |
 
-> **La ligne à ne pas franchir.** Le catalogue chiffre « connecteur standard,
-> 3 000 € ». Lisez-le comme **une construction à faire**, pas comme un module à
-> activer. Un connecteur vendu comme livré se découvre au jour de la mise en
-> service — et il n'y a pas de rattrapage commercial à cela.
+> ### Le point le plus délicat de la grille : « 1 connecteur inclus »
+>
+> GOVERN annonce **1 connecteur existant à configurer**, ASSURE **2**. Le
+> README le dit lui-même : *« un connecteur inclus signifie la configuration
+> d'un connecteur déjà présent au catalogue AIGMS »*.
+>
+> **Il n'y a pas de catalogue de connecteurs.** Aucun connecteur n'existe, donc
+> aucun n'est configurable. Le quota inclus est aujourd'hui **vide de contenu** —
+> ce qui n'est pas grave tant que personne ne le lit comme une promesse.
+>
+> **Ce qu'il faut dire** : *« Le connecteur inclus couvre la configuration quand
+> le catalogue en portera un. Aujourd'hui, toute intégration est un
+> développement, chiffré 2 à 5 jours. »* C'est exactement ce que prévoit la
+> grille — il suffit de le dire **avant** la signature, pas au moment de la mise
+> en service.
+
+---
+
+## 9 bis. Le backlog produit, chiffré
+
+Le fichier `Fonctionnalites_AIGMS_3_Offres.xlsx` priorise huit évolutions.
+Voici ce qu'elles coûtent **en jours de développement**, vu du code — à ne pas
+confondre avec les jours de delivery vendus au client.
+
+| Prio | Évolution | Charge dév. | État réel | Ce qu'elle débloque commercialement |
+|---|---|---:|---|---|
+| ~~P0~~ | ~~Import massif des cas d'usage~~ | **0 j** | ✅ **déjà livré** | Rien à faire — à retirer du backlog |
+| **P0** | **Catalogue de connecteurs** *(Evidence Providers)* | **15 à 25 j** | Rien n'existe | Le quota « 1 connecteur inclus » de GOVERN et les 2 d'ASSURE. **C'est le seul P0 qui tient une promesse déjà écrite** |
+| **P0** | Tableau de bord consolidé et exportable | **5 à 8 j** | Pilotage existe, export non | ASSURE à l'échelle : au-delà de 5 clients, la synthèse manuelle mange la marge |
+| **P0** | Evidence pack ciblé | **4 à 6 j** | Pièces liées, bundle non | Le livrable qu'un donneur d'ordre réclame — et un argument de renouvellement |
+| P1 | SSO / annuaire | **4 à 7 j** | Non livré | Clients structurés. Supabase porte déjà OIDC : l'essentiel est le mapping des rôles |
+| P1 | Impact screening court | **3 à 5 j** | L'étude complète existe | DISCOVER : évite de sur-traiter un usage faible, et tient les 4 jours |
+| P1 | Diff réglementaire et note d'impact | **5 à 8 j** | Référentiels versionnés, diff non | ASSURE : la veille devient un livrable, pas une promesse |
+| P2 | API publique | **10 à 15 j** | Non | Écosystème intégrateur — après stabilisation des connecteurs |
+
+**Total P0 restant : 24 à 39 jours.** C'est la mesure de ce qui sépare la grille
+commerciale de l'état du produit.
+
+> **L'arbitrage que je vous soumets.** Le catalogue de connecteurs est le seul
+> P0 qui **tient une promesse déjà écrite dans la grille**. Les deux autres
+> protègent la marge d'ASSURE quand le portefeuille grandit — ils ne sont
+> urgents qu'au cinquième client.
+>
+> Tant qu'aucun connecteur n'existe, **le quota inclus se présente comme une
+> option à venir**, jamais comme un livrable. C'est dit au chapitre 9, et c'est
+> la seule ligne de la grille qui peut se retourner contre vous.
 
 ---
 
@@ -289,10 +344,9 @@ Si vous ne deviez en garder que cinq, ceux-ci.
 
 | Offre présentée | Les arguments qui portent |
 |---|---|
-| **AI START** | 4 *(l'effort suit la criticité)* et 5 *(nom et date)* — le dirigeant veut être rassuré, pas outillé |
-| **DISCOVER** / **DISCOVER+** | 4 d'abord : c'est lui qui rend la suite finançable, et c'est le livrable de l'offre |
-| **GOVERN** *(les deux)* | 1, 2 et 3 — les règles en base, l'écart assumé, CONNECT plutôt que rebuild |
-| **ASSURE** *(tous)* | 5 et 2 — la permanence de la trace, et le dossier présentable sans préparation |
+| **DISCOVER** | **4** d'abord — l'effort suit la criticité : c'est lui qui rend la suite finançable, et c'est le livrable de l'offre |
+| **GOVERN** | **1, 2 et 3** — les règles en base, l'écart assumé, CONNECT plutôt que rebuild |
+| **ASSURE** | **5 et 2** — la permanence de la trace, et le dossier présentable sans préparation |
 
 > **Un seul argument par rendez-vous suffit.** Les cinq alignés donnent
 > l'impression d'un catalogue ; un seul, démontré à l'écran, emporte la

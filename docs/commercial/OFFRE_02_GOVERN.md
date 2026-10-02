@@ -3,10 +3,11 @@
 > **Ce document est caduc depuis le 2 octobre 2026.** Il décrivait trois offres
 > — Discover, Govern, Assure — chiffrées en jours × TJM 900 €.
 >
-> La structuration retenue en compte **huit offres** à **prix de résultat**, avec
+> La structuration retenue compte **trois offres** à **prix de résultat**,
+> segmentées par **unités économiques** — usages, contrôles, connecteurs — avec
 > un TJM de **650 € HT** réservé au hors-périmètre, et des charges nettement
-> plus serrées. Elle vit dans le catalogue Izarralde
-> *(`Catalogue_Izarralde_AI_Governance_TJM650`)*.
+> plus serrées : 4 jours pour DISCOVER, 10 pour GOVERN, 12 par an pour ASSURE.
+> Elle vit dans le `Pack_AIGMS_3_Offres_TJM650`.
 >
 > **Ne pas s'en servir en rendez-vous.** Conservé pour mémoire du raisonnement
 > de cadrage ; à supprimer sur accord du propriétaire.
